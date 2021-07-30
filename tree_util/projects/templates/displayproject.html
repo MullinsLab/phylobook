@@ -1,0 +1,731 @@
+{% extends "base.html" %}
+{% block page_content %}
+    <style>
+        .tree {
+            size: 100%;
+            border: 2px solid;
+            padding: 4px;
+            margin: 4px;
+        }
+        .editedhighlight {
+            border: 4px solid;
+            border-color: red;
+        }
+        .images {
+            size: 100%;
+            overflow-x: scroll;
+            border: 1px solid lightgray;
+            padding: 4px;
+            margin: 4px;
+        }
+        .imgparent {
+            white-space: nowrap;
+            height: 200px;
+        }
+        .svgimage {
+            display: inline-block;
+            height: 100%;
+        }
+        svg {
+            font-size: 8px !important;
+            height: 100% !important;
+            width: 100% !important;
+        }
+        .highlighter {
+            display: inline-block;
+            height: 100%;
+        }
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .magnifybar {
+            margin: 0 auto;
+            width: 200px;
+        }
+        /* Context menu */
+        #context-menu, #context-menu-circle {
+            position: fixed;
+            z-index: 10000;
+            width: 150px;
+            background: #bfbdbd;
+            border-top: 1px solid black;
+            border-left: 1px solid black;
+            border-right: 1px solid black;
+            /* border-radius: 5px; */
+            transform: scale(0);
+            transform-origin: top left;
+        }
+
+        #context-menu.visible, #context-menu-circle.visible {
+            transform: scale(1);
+            transition: transform 200ms ease-in-out;
+        }
+
+        #context-menu .item, #context-menu-circle .item {
+            padding: 8px 10px;
+            font-size: 15px;
+            color: #eee;
+            cursor: pointer;
+            border-bottom: 1px solid black;
+            border-radius: inherit;
+        }
+
+        #context-menu .item:hover, #context-menu-circle .item:hover {
+            opacity: 1.0;
+            background: #c7c9c9
+        }
+
+        .dot {
+            height: 16px;
+            width: 16px;
+            /* background-color: #bbb; */
+            border-radius: 50%;
+            display: inline-block;
+            pointer-events:none;
+        }
+
+        .rectangle {
+            height: 16px;
+            width: 30px;
+            margin:auto;
+            display: inline-block;
+            vertical-align: middle;
+            pointer-events:none;
+            background-color: transparent !important;
+        }
+
+        .Red {
+            background-color: Red;
+            border: 1px solid Red;
+        }
+        .Yellow {
+            background-color: #efe645;
+            border: 1px solid #efe645;
+        }
+        .Pink {
+            background-color: #e935a1;
+            border: 1px solid #e935a1;
+        }
+        .Lightblue {
+            background-color: #00e3ff;
+            border: 1px solid #00e3ff;
+        }
+        .Orange {
+            background-color: orange;
+            border: 1px solid orange;
+        }
+        .Neonblue {
+            background-color: #537eff;
+            border: 1px solid #537eff;
+        }
+        .Green {
+            background-color: #00cb85;
+            border: 1px solid #00cb85;
+        }
+        #slider-range {
+            background-image: linear-gradient(to right, yellow , red);
+            width: 600px;
+            display: inline-block;
+            margin-left: 10px;
+            margin-right: 10px;
+
+        }
+        #slidercontainer {
+            display: inline;
+            width: 100%;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+        .hide {
+            display: none;
+        }
+    </style>
+
+    <script>
+        var token = '{{csrf_token}}';
+
+        tinymce.init({
+            selector: '.notes',
+            inline: true,
+            menubar: false,
+            content_style: "p { margin: 0; }",
+            save_enablewhendirty: true,
+            plugins: [
+            'save',
+            'link',
+            'lists',
+            'autolink',
+            ],
+            color_map: [
+                "000000", "Black",
+                "FF0000", "Red",
+                "EFE645", "Yellow",
+                "E935A1", "Pink",
+                "00E3FF", "Light Blue",
+                "FFA500", "Orange",
+                "537EFF", "Neon Blue",
+                "00CB85", "Green",
+            ],
+            toolbar: [
+            'save undo redo | bold italic underline | fontselect fontsizeselect',
+            'forecolor backcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent'
+            ],
+            valid_elements: 'p[style],strong,em,span[style],a[href],ul,ol,li',
+            valid_styles: {
+            '*': 'font-size,font-family,color,text-decoration,text-align,background-color'
+            },
+            powerpaste_word_import: 'clean',
+            powerpaste_html_import: 'clean',
+            setup:function(ed) {
+                ed.on('change', function(e) {
+                   $("#" + ed.id).closest(".tree").addClass("editedhighlight");
+               });
+            },
+            //Save button call back function
+            save_onsavecallback: function () {
+                var content = tinymce.activeEditor.getContent();
+                var id = tinymce.activeEditor.id.replace("notes-", "");
+                var svg = $("#" + id).find(".svgimage").html();
+                var proj = $("#project").val();
+                $.ajax({
+                    type: "POST",
+                    headers: { "X-CSRFToken": token },
+                    url: '/projects/note/update/' + proj + "/" + id,
+                    data: { "notes": content },
+                    success: function() {
+                        $.ajax({
+                            type: "POST",
+                            headers: { "X-CSRFToken": token },
+                            url: '/projects/svg/update/' + proj + "/" + id,
+                            data: { "svg": svg },
+                            success: function() {
+                                $("#" + tinymce.activeEditor.id).closest(".tree").removeClass("editedhighlight");
+                                alert( id + " saved successfully." );
+                            },
+                            error: function (err) {
+                                alert( id + " Failed to save!!!  Contact dev team." );
+                            }
+                        });
+                    },
+                    error: function (err) {
+                        alert( id + " Failed to save!!!  Contact dev team." );
+                    }
+                });
+            }
+        });
+
+        function setAllDirtyUnsaved() {
+            $('.tree').each(function(i, obj) {
+                var noteId = $(this).children(".notes").first().attr("id");
+                setDirtyUnsaved(noteId);
+            });
+        }
+
+        function setDirtyUnsaved(edId) {
+            $("#" + edId).closest(".tree").addClass("editedhighlight");
+            tinyMCE.get(edId).setDirty(true);
+        }
+
+        function setDirtySaved(edId) {
+            $("#" + edId).closest(".tree").removeClass("editedhighlight");
+            tinyMCE.get(edId).setDirty(false);
+        }
+
+        window.addEventListener('beforeunload', function (e) {
+            var isDirty = false;
+            var dirtyEditors = [];
+            for (inst in tinyMCE.editors) {
+                let dirty = tinyMCE.editors[inst].isDirty();
+                if (dirty) {
+                    dirtyEditors.push(tinyMCE.editors[inst].id);
+                    isDirty = true;
+                }
+            }
+            if(isDirty) {
+                //following two lines will cause the browser to ask the user if they
+                //want to leave. The text of this dialog is controlled by the browser.
+                e.preventDefault(); //per the standard
+                e.returnValue = ''; //required for Chrome
+            }
+            //else: user is allowed to leave without a warning dialog
+        });
+
+        $(document).ready(function() {
+            $( ".fullsize" ).on( "click", function() {
+                var imgparentid = $(this).attr('id').replace("full-", "");
+                $('#' + imgparentid).height($('.imgparent').find('svg').attr('height'));
+            });
+            $( ".minsize" ).on( "click", function() {
+                var imgparentid = $(this).attr('id').replace("min-", "");
+                $('#' + imgparentid).height(200);
+            });
+            $( ".zoomin" ).on( "click", function() {
+                var imgparentid = $(this).attr('id').replace("zin-", "");
+                var currentheight = $('#' + imgparentid).height();
+                var increase = currentheight * 1.1;
+                $('#' + imgparentid).height(increase);
+            });
+            $( ".zoomout" ).on( "click", function() {
+                var imgparentid = $(this).attr('id').replace("zout-", "");
+                var currentheight = $('#' + imgparentid).height();
+                var decrease = currentheight * .9;
+                $('#' + imgparentid).height(decrease);
+            });
+            $( "#saveall" ).on( "click", function() {
+                saveAll();
+            });
+            $( "#removesequencecolor" ).on( "click", function() {
+                removeAllSeqnum();
+            });
+            $( "#sequencecolor" ).on( "click", function() {
+                removeAllSeqnum();
+                d3.selectAll('text').each(function(d) {
+                    var label = d3.select(this);
+                    var min = $("#min").val();
+                    var max = $("#max").val();
+                    var lastunderscore = label.text().lastIndexOf("_");
+                    var numseqs = parseInt(label.text().substring(label.text().lastIndexOf("_") + 1));
+                    var labelcolor = [];
+                    if (numseqs < min || lastunderscore == -1) {
+                        return;
+                    } else if (numseqs >= max) {
+                        var values = $( "#slider-range" ).slider( "values");
+                        labelcolor = pickHex([255, 0, 0], [255, 255, 0], values[ 1 ]/100);
+                    } else if (numseqs == min) {
+                        var values = $( "#slider-range" ).slider( "values");
+                        labelcolor = pickHex([255, 0, 0], [255, 255, 0], values[ 0 ]/100);
+                    } else if (numseqs >= min) {
+                        var incrementweight = 100/(max - min);
+                        var weight = ((numseqs - min) * incrementweight)/100;
+                        var values = $( "#slider-range" ).slider( "values");
+                        var minColor = pickHex([255, 0, 0], [255, 255, 0], values[ 0 ]/100);
+                        var maxColor = pickHex([255, 0, 0], [255, 255, 0], values[ 1 ]/100);
+                        var labelcolor = pickHex(maxColor, minColor, weight);
+                    }
+
+                    var currentSelectedTextNode = label.node();
+                    var svgcanvas = d3.select(currentSelectedTextNode.parentNode);
+                    var rect = currentSelectedTextNode.getBBox();
+                    var square = d3.symbol().size("36").type(d3.symbolSquare);
+
+                    // if there is a transform, grab the x, y
+                    if (label.attr("transform") != null) {
+                        rect.x = label.node().transform.baseVal[0].matrix.e - 2;
+                        rect.y = label.node().transform.baseVal[0].matrix.f + 2;
+                    }
+
+                    svgcanvas
+                        .append("path")
+                        .attr("d", square)
+                        .attr('class', 'seqnum')
+                        .attr("transform", "translate(" + (rect.x - 4) + "," + (rect.y + 4) + ")")
+                        .style('fill', rgb(labelcolor[0],labelcolor[1],labelcolor[2]))
+                        .style("stroke", rgb(labelcolor[0],labelcolor[1],labelcolor[2]));
+
+                    //if (label.text() == 'V704_0175_100_REN_NT_11_2')
+                    //    console.log(rect.x, rect.y, label.text(), numseqs);
+
+                    /*
+                    .append('circle')
+                    .attr('class', 'seqnum')
+                    .attr('cx', rect.x - 3)
+                    .attr('cy', rect.y + 3)
+                    .attr('r', 4)
+                    .style('fill', rgb(labelcolor[0],labelcolor[1],labelcolor[2]));
+                    */
+                    //console.log(label.text(), numseqs);
+                    //d3.select(this) // Transform to d3 Object
+                });
+                setAllDirtyUnsaved();
+            });
+
+            function removeAllSeqnum() {
+                d3.selectAll(".seqnum").each(function(d, i) {
+                    d3.select(this).remove();
+                });
+                setAllDirtyUnsaved();
+            }
+
+            ///////
+            const contextMenu = document.getElementById("context-menu");
+            const contextMenuCircle = document.getElementById("context-menu-circle");
+            const scope = document.querySelector("body");
+            var currentSelectedText = "";
+            var currentSelectedCircleParent = "";
+            var currentSelectedCircleEvent = "";
+            var isCircleSelected = false;
+            var currentSelectedCircle = "";
+
+            const normalizePozition = (mouseX, mouseY, menu) => {
+                // ? compute what is the mouse position relative to the container element (scope)
+                const {
+                  left: scopeOffsetX,
+                  top: scopeOffsetY,
+                } = scope.getBoundingClientRect();
+
+                const scopeX = mouseX - scopeOffsetX;
+                const scopeY = mouseY - scopeOffsetY;
+
+                // ? check if the element will go out of bounds
+                const outOfBoundsOnX =
+                  scopeX + menu.clientWidth > scope.clientWidth;
+
+                const outOfBoundsOnY =
+                  scopeY + menu.clientHeight > scope.clientHeight;
+
+                let normalizedX = mouseX;
+                let normalizedY = mouseY;
+
+                // ? normalzie on X
+                if (outOfBoundsOnX) {
+                  normalizedX =
+                    scopeOffsetX + scope.clientWidth - menu.clientWidth;
+                }
+
+                // ? normalize on Y
+                if (outOfBoundsOnY) {
+                  normalizedY =
+                    scopeOffsetY + scope.clientHeight - menu.clientHeight;
+                }
+
+                return { normalizedX, normalizedY };
+            };
+            function hideContextMenu() {
+                 contextMenu.classList.remove("visible");
+                 contextMenuCircle.classList.remove("visible");
+                 currentSelectedText = "";
+                 currentSelectedCircleParent = "";
+                 currentSelectedCircleEvent = "";
+                 isCircleSelected = false;
+                 currentSelectedCircle = "";
+            }
+
+            // hide contextMenu if scroll happens while displayed
+            window.onscroll = function() {
+                hideContextMenu();
+            };
+            window.addEventListener("click", (e) => {
+                // ? close the menu if the user clicks outside of it
+                if (e.target.offsetParent != contextMenu && e.target.offsetParent != contextMenuCircle) {
+                    hideContextMenu();
+                } else if (e.target.offsetParent == contextMenuCircle) {
+                    var colorText = $(e.target).attr("id");
+                    var color = getColor(colorText.replace("circle", ""));
+                    if (colorText == "circleremove" && isCircleSelected) {
+                        setDirtyUnsaved("notes-" + $(currentSelectedCircle).closest(".imgparent").attr("id"));
+                        d3.select(currentSelectedCircle).remove();
+                        hideContextMenu();
+                        return;
+                    } else if (isCircleSelected) {
+                        d3.select(currentSelectedCircle).style("fill", color);
+                        setDirtyUnsaved("notes-" + $(currentSelectedCircle).closest(".imgparent").attr("id"));
+                        hideContextMenu();
+                        return;
+                    }
+                    var newcircle = drawCircleMarker(color);
+                    setDirtyUnsaved("notes-" + $(newcircle.node()).closest(".imgparent").attr("id"));
+                    hideContextMenu();
+                } else if (e.target.offsetParent == contextMenu)  {
+                    var currentSelectedTextNode = currentSelectedText.node();
+                    var svgcanvas = d3.select(currentSelectedTextNode.parentNode);
+                    var rect = currentSelectedTextNode.getBBox();
+                    var offset = 2; // enlarge rect box 2 px on left & right side
+                    currentSelectedText.classed("mute", (currentSelectedText.classed("mute") ? false : true));
+                    var labelText = currentSelectedText.text();
+                    var colorText = $(e.target).attr("id");
+                    var existingColoredBox = d3.select("#" + labelText);
+                    if (colorText == "boxremove") {
+                        existingColoredBox.remove();
+                        hideContextMenu();
+                        setDirtyUnsaved("notes-" + $(currentSelectedText.node()).closest(".imgparent").attr("id"));
+                        return;
+                    }
+                    var color = getColor(colorText.replace("box", ""));
+
+                    // if there is a transform, grab the x, y
+                    if (currentSelectedText.attr("transform") != null) {
+                        rect.x = currentSelectedText.node().transform.baseVal[0].matrix.e;
+                        rect.y = currentSelectedText.node().transform.baseVal[0].matrix.f + 1;
+                    }
+
+                    pathinfo = [
+                        {x: rect.x-offset, y: rect.y },
+                        {x: rect.x+offset + rect.width, y: rect.y},
+                        {x: rect.x+offset + rect.width, y: rect.y + rect.height },
+                        {x: rect.x-offset, y: rect.y + rect.height},
+                        {x: rect.x-offset, y: rect.y },
+                    ];
+
+                    if (existingColoredBox.node()) {
+                        existingColoredBox.style("stroke", color);
+                    } else {
+                        // Specify the function for generating path data
+                        var d3line = d3.line()
+                            .x(function(d){return d.x;})
+                            .y(function(d){return d.y;})
+                            .curve(d3.curveLinear);
+
+                        // Draw the line
+                        svgcanvas.append("path")
+                            .attr("id", labelText)
+                            .attr("d", d3line(pathinfo))
+                            .style("stroke-width", 1)
+                            .style("stroke", color)
+                            .style("fill", "none");
+                    }
+                    setDirtyUnsaved("notes-" + $(currentSelectedText.node()).closest(".imgparent").attr("id"));
+                    hideContextMenu();
+                }
+            });
+            ///////
+            //scope.addEventListener('contextmenu', (e) => {
+            window.addEventListener('contextmenu', function(e) {
+                if (e.target.tagName.toLowerCase() == 'text') {
+                    e.preventDefault();
+                    const { clientX: mouseX, clientY: mouseY } = e;
+                    const { normalizedX, normalizedY } = normalizePozition(mouseX, mouseY, contextMenu);
+                    hideContextMenu();
+                    contextMenu.style.top = `${normalizedY}px`;
+                    contextMenu.style.left = `${normalizedX}px`;
+
+                    setTimeout(() => {
+                      contextMenu.classList.add("visible");
+                    });
+                    currentSelectedText = d3.select(e.target);
+                } else if (e.target.tagName.toLowerCase() == 'circle') {
+                    e.preventDefault();
+                    contextMenu.classList.remove("visible");
+                    isCircleSelected = true;
+                    currentSelectedCircle = e.target;
+                    showContextMenuCircle(e, contextMenuCircle);
+                } else if (e.target.tagName.toLowerCase() == 'svg') {
+                    e.preventDefault();
+                    contextMenu.classList.remove("visible");
+                    currentSelectedCircleParent = e.target;
+                    currentSelectedCircleEvent = e;
+                    showContextMenuCircle(e, contextMenuCircle);
+                    //drawCircleMarker(e.target, e);
+                } else if (e.target.ownerSVGElement) {
+                    e.preventDefault();
+                    currentSelectedCircleParent = e.target.ownerSVGElement;
+                    currentSelectedCircleEvent = e;
+                    showContextMenuCircle(e, contextMenuCircle);
+                    //drawCircleMarker(e.target.ownerSVGElement, e);
+                }
+            });
+
+            function showContextMenuCircle(e, cMenu) {
+                const { clientX: mouseX, clientY: mouseY } = e;
+                const { normalizedX, normalizedY } = normalizePozition(mouseX, mouseY, cMenu);
+                cMenu.style.top = `${normalizedY}px`;
+                cMenu.style.left = `${normalizedX}px`;
+
+                setTimeout(() => {
+                  cMenu.classList.add("visible");
+                });
+            }
+
+            function drawCircleMarker(color) {
+                var xy = d3.pointer(currentSelectedCircleEvent, currentSelectedCircleParent);
+                return d3.select(currentSelectedCircleParent)
+                .append('circle')
+                .attr('cx', xy[0])
+                .attr('cy', xy[1])
+                .attr('r', 3)
+                .style('fill', color)
+                .call(drag);
+            }
+
+            // Define drag beavior
+            var drag = d3.drag()
+                .on("drag", dragged);
+
+            function dragged(event, d) {
+                d3.select(this).attr("cx", event.x).attr("cy", event.y);
+            }
+
+            function getColor(name) {
+                if (name == "red") {
+                    return "red";
+                } else if (name == "yellow") {
+                    return "#efe645";
+                } else if (name == "pink") {
+                    return "#e935a1";
+                } else if (name == "lightblue") {
+                    return "#00e3ff";
+                } else if (name == "orange") {
+                    return "orange";
+                } else if (name == "neonblue") {
+                    return "#537eff";
+                } else if (name == "green") {
+                    return "#00cb85";
+                }
+            }
+        });
+
+    </script>
+    <script>
+        $( function() {
+            $( "#slider-range" ).slider({
+                range: true,
+                min: 1,
+                max: 100,
+                values: [ 1, 100 ],
+                create: function( event, ui ) {
+                    // color between rage sliders
+                    var markers=$(this).slider('values');
+                    minColor = pickHex([255, 0, 0], [255, 255, 0], markers[ 0 ]/100);
+                    maxColor = pickHex([255, 0, 0], [255, 255, 0], markers[ 1 ]/100);
+                    $( "#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+                },
+                slide: function( event, ui ) {
+                    $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+                    // color between rage sliders
+                    minColor = pickHex([255, 0, 0], [255, 255, 0], ui.values[ 0 ]/100);
+                    maxColor = pickHex([255, 0, 0], [255, 255, 0], ui.values[ 1 ]/100);
+                    $( "#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+                }
+            });
+            //$( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
+            //  " - $" + $( "#slider-range" ).slider( "values", 1 ) );
+        });
+        function rgb(r, g, b){
+            return ["rgb(",r,",",g,",",b,")"].join("");
+        }
+        function pickHex(color1, color2, weight) {
+            var p = weight;
+            var w = p * 2 - 1;
+            var w1 = (w/1+1) / 2;
+            var w2 = 1 - w1;
+            var rgb = [Math.round(color1[0] * w1 + color2[0] * w2),
+                Math.round(color1[1] * w1 + color2[1] * w2),
+                Math.round(color1[2] * w1 + color2[2] * w2)];
+            return rgb;
+        }
+    </script>
+    <script>
+        function updateProgress(percentage) {
+            if(percentage > 100) percentage = 100;
+            $('#progressBar').css('width', percentage+'%');
+            $('#progressBar').attr('aria-valuenow', percentage);
+            $('#progressBar').html(percentage+'%');
+        }
+
+        function saveAll() {
+            updateProgress(0);
+            var treescount = $('.tree').length;
+            var treesdone = 0;
+            $('.tree').each(function(i, obj) {
+                $("#saveallprog").removeClass("hide");
+                var noteId = $(this).children(".notes").first().attr("id");
+                var content = tinymce.get(noteId).getContent();
+                var id = noteId.replace("notes-", "");
+                var svg = $("#" + id).find(".svgimage").html();
+                var proj = $("#project").val();
+                $.ajax({
+                    type: "POST",
+                    headers: { "X-CSRFToken": token },
+                    url: '/projects/note/update/' + proj + "/" + id,
+                    data: { "notes": content },
+                    success: function() {
+                        $.ajax({
+                            type: "POST",
+                            headers: { "X-CSRFToken": token },
+                            url: '/projects/svg/update/' + proj + "/" + id,
+                            data: { "svg": svg },
+                            success: function() {
+                                setDirtySaved(noteId);
+                                treesdone++;
+                                updateProgress(Math.round((treesdone/treescount)*100));
+                                if (treesdone == treescount) {
+                                    setTimeout(function() {
+                                      $("#saveallprog").addClass("hide");
+                                    }, 2000);
+
+                                }
+                            },
+                            error: function (err) {
+                                alert( id + " Failed to save!!!  Contact dev team." );
+                            }
+                        });
+                    },
+                    error: function (err) {
+                        alert( id + " Failed to save!!!  Contact dev team." );
+                    }
+                });
+
+            });
+
+        }
+    </script>
+    {% if user.is_authenticated %}
+        <input type="hidden" id="project" value="{{ project }}" />
+        <div id="context-menu">
+            <div id="boxred" class="item"><span class="rectangle Red"></span>&nbsp;&nbsp;Red</div>
+            <div id="boxyellow"  class="item"><span class="rectangle Yellow"></span>&nbsp;&nbsp;Yellow</div>
+            <div id="boxpink"  class="item"><span class="rectangle Pink"></span>&nbsp;&nbsp;Pink</div>
+            <div id="boxlightblue"  class="item"><span class="rectangle Lightblue"></span>&nbsp;&nbsp;Light Blue</div>
+            <div id="boxorange"  class="item"><span class="rectangle Orange"></span>&nbsp;&nbsp;Orange</div>
+            <div id="boxneonblue"  class="item"><span class="rectangle Neonblue"></span>&nbsp;&nbsp;Neon Blue</div>
+            <div id="boxgreen"  class="item"><span class="rectangle Green"></span>&nbsp;&nbsp;Green</div>
+            <div id="boxremove"  class="item">Remove</div>
+        </div>
+        <div id="context-menu-circle">
+            <div id="circlered" class="item"><span class="dot Red"></span>&nbsp;&nbsp;Red</div>
+            <div id="circleyellow"  class="item"><span class="dot Yellow"></span>&nbsp;&nbsp;Yellow</div>
+            <div id="circlepink"  class="item"><span class="dot Pink"></span>&nbsp;&nbsp;Pink</div>
+            <div id="circlelightblue"  class="item"><span class="dot Lightblue"></span>&nbsp;&nbsp;Light Blue</div>
+            <div id="circleorange"  class="item"><span class="dot Orange"></span>&nbsp;&nbsp;Orange</div>
+            <div id="circleneonblue"  class="item"><span class="dot Neonblue"></span>&nbsp;&nbsp;Neon Blue</div>
+            <div id="circlegreen"  class="item"><span class="dot Green"></span>&nbsp;&nbsp;Green</div>
+            <div id="circleremove"  class="item">Remove</div>
+        </div>
+
+        <p>&nbsp;{{ user.username }} <a href="{% url 'logout' %}">logout</a></p>
+        <p>&nbsp;<b>{{ project }}</b> ({{ entries | length }} trees)</p>
+<!--        <p>-->
+<!--            <label for="amount">Price range:</label>-->
+<!--            <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">-->
+<!--        </p>-->
+        <div id="slidercontainer">
+            <span>Number of sequences color range:&nbsp;&nbsp;</span>
+            <label for="min">Min(cutoff):</label><input type="number" id="min" name="min" min="1" max="500"  value="2" style="width: 4em">
+            <div id="slider-range"></div>
+            <label for="max">Max(threshold >=):</label><input type="number" id="max" name="max" min="2" max="500" value="50" style="width: 4em">
+            <button type="button" id="sequencecolor">Update</button>
+            <button type="button" id="removesequencecolor">Remove</button>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="button" id="saveall">Save All</button>
+        </div>
+        <div id="saveallprog" class="progress hide">
+            <div id="progressBar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+        </div>
+        <form method="post">
+        {% for entry in entries %}
+            <div class="tree">
+            <h6>{{ entry.uniquesvg }}</h6>
+            <div class="notes" id="notes-{{ entry.uniquesvg }}"></div>
+            <div class="magnifybar">
+               <button type="button" class="fullsize" id="full-{{ entry.uniquesvg }}"> Full</button>
+               <button type="button" class="minsize"  id="min-{{ entry.uniquesvg }}"> Min</button>
+               <button type="button" class="zoomin"  id="zin-{{ entry.uniquesvg }}"> +</button>
+               <button type="button" class="zoomout"  id="zout-{{ entry.uniquesvg }}"> -</button>
+            </div>
+            <div class="images">
+                <div class='imgparent' id='{{ entry.uniquesvg }}'>
+                   <div class='svgimage'></div>
+                   <div class='highlighter'><img src="{{ entry.highlighter }}" /></div>
+                </div>
+            </div>
+            <script type="text/javascript">
+               $('#{{ entry.uniquesvg }}').find(".svgimage").load('{{ entry.svg }}');
+               $('#notes-' + "{{ entry.uniquesvg }}").load('/projects/note/read/{{ project }}/' + "{{ entry.uniquesvg }}" + ".notes.txt");
+            </script>
+            </div>
+        {% endfor %}
+        </form>
+        {% else %}
+            Permissions failed.
+        {% endif %}
+{% endblock %}
+

@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+	<style>
+        .colorEntry {
+            line-height: 40px;
+        }
+
+        li {
+            list-style-type: none;
+        }
+
+        h6 {
+            word-wrap: break-word;
+            margin-bottom: 0 !important;
+            font-size: .80rem;
+            margin-top: 5px;
+        }
+
+        .parent {
+            display: flex;
+            border: 3px double #999;
+        }
+        .narrow {
+            width: 500px;
+        }
+        .wide {
+            flex: 1;
+            position: relative;
+        }
+
+        .colorpick {
+            border-right: 1px solid;
+        }
+
+        .treedisplay {
+            height: 200px;
+        }
+
+        svg {
+            font-size: 8px !important;
+            height: 100%;
+        }
+
+        /* DropZone */
+        .dropzone {
+          border: 2px dashed #dedede;
+          border-radius: 5px;
+          background: #f5f5f5;
+          /* */
+          overflow-y: auto;
+          max-width: 800px;
+          max-height: 600px;
+        }
+
+        .dropzone i{
+          font-size: 5rem;
+        }
+
+        .dropzone .dz-message {
+          color: rgba(0,0,0,.54);
+          font-weight: 500;
+          font-size: initial;
+          text-transform: uppercase;
+        }
+
+        .dropzone .dz-preview {
+            margin: 0px;
+            min-height: 0px;
+        }
+        /* end DropZone */
+
+    </style>
+    <script>
+        var test =
+        {
+            "file1": [
+                { "sample":"sample1_a", "color": "" },
+                { "sample":"sample1_b", "color": "" },
+                { "sample":"sample1_c", "color": "" },
+                { "sample":"sample1_d", "color": "" },
+                { "sample":"sample1_e", "color": "" }
+            ]
+        };
+
+        var defaultColors = ["#000000", "#0000ff", "#ff00ff", "#ffa500", "#008000"];
+
+        function buildColorEntry(id, sample, color) {
+            var div = $("<div class='colorEntry'>");
+            var entry = "<input type='text' id='" + id + "-text' style='font-size: 14pt; height: 26px; color: " + color + ";' value='" + sample  + "' /> \n" +
+                        "<span id='" + id + "-hex' style='font-family: Courier New, monospace;'>" + color + "</span> \n" +
+                        "<input type='text' id='" + id + "' /> \n";
+
+            var script= "<script> \n" +
+                        "	$('#" + id + "').spectrum({ \n" +
+                        "       color: '" + color + "', \n" +
+                        "		showInput: true, \n" +
+                        "		showPalette: true, \n" +
+                        "		palette: [ \n" +
+                        "		             ['black', 'blue', 'magenta'], \n" +
+                        "		             ['orange', 'green'] \n" +
+                        "		         ], \n" +
+                        "		change: function(color) { \n" +
+                        "		    $('#" + id + "-hex').text(color.toHexString()); \n" +
+                        "			$('#" + id + "-text').css('color', color.toHexString()); \n" +
+                        "		} \n" +
+                        "	}); \n</" + "script>";
+            div.append( entry ).append(script);
+            return div;
+        }
+
+        function colorFileSequences(fileInfo) {
+            var div = $("#" + fileIndexMap[fileInfo.name] + "-container");
+            var h = $("<h6 id='" + fileIndexMap[fileInfo.name] + "-h'>" + fileInfo.name + "</h6>");
+            var ul = $("<ul id='" + fileIndexMap[fileInfo.name] + "-ul' aria-labelledby='" + fileIndexMap[fileInfo.name] + "-h' >");
+            var li = $("<li>");
+            Object.keys(fileInfo.colors).forEach(function(key) {
+                li.append(buildColorEntry(fileIndexMap[fileInfo.name] + "-" + key, key, fileInfo.colors[key]));
+            });
+
+            ul.append(li);
+            div.append([h, ul]);
+            loadImage(fileIndexMap[fileInfo.name] + "-display", fileInfo);
+        }
+
+
+
+        var fileIndex = 0;
+        var fileIndexMap = {};
+        function addFileToMap(filename) {
+            fileIndexMap[filename] = fileIndex;
+            fileIndex = fileIndex + 1;
+        }
+
+
+        function buildTreeList(files) {
+            if (files.length) {
+                var ul = $("<ul>");
+                var t = 0;
+                for (var i = 0; i < files.length; i++) {
+                    var li = $("<li>");
+                    addFileToMap(files[i].name);
+                    var parentdiv = $("<div class='parent'>");
+                    var div = $("<div class='colorpick narrow' id='" + fileIndexMap[files[i].name] + "-container" + "'>");
+                    var divdisplay = $("<div class='treedisplay wide' id='" + fileIndexMap[files[i].name] + "-display" + "'>");
+                    //divdisplay.html("<img height='100'/>");
+                    parentdiv.append([div, divdisplay]);
+                    li.append(parentdiv);
+                    ul.append(li);
+                }
+                return ul;
+            }
+        }
+
+        function loadImage(displayid, fileInfo) {
+            var cnt = 0;
+            var colorstring = "";
+
+            Object.keys(fileInfo.colors).forEach(function(key) {
+                if (cnt == 0) {
+                    colorstring = key + ":" + fileInfo.colors[key];
+                } else {
+                    colorstring = colorstring + "," + key + ":" + fileInfo.colors[key];
+                }
+                cnt = cnt + 1;
+            });
+            $.ajax({
+                url:'api/treeimage',
+                type: "POST",
+                //dataType: 'image/jpg',
+                data: {
+                    "tree": fileInfo["nexus"],
+                    "colors": colorstring,
+                },
+                cache:false,
+                beforeSend: function () {
+                    var displaycontainer = $("#" + displayid);
+                    displaycontainer.html('');
+                    addSpinner(displaycontainer);
+                },
+                success: function (data) {
+                    removeSpinner($("#" + displayid), function () {
+                        $("#" + displayid).html(data);
+                    });
+                },
+                //success: function(data){
+                //    $("#" + displayid).html(data)
+                //},
+                error:function(){
+                    alert("Image failed");
+                }
+            });
+        }
+
+        function loadData() {
+            $('#main').append(colorFileSequences("file1", test["file1"]));
+        }
+
+        function displayCode() {
+            var execString = "java -jar figtree.jar -settings DIVEIN.settings -colors " + "sample1_a:#000000,sample1_b:#0000ff,sample1_c:#ff00ff,sample1_d:#ffa500,sample1_e:#008000" + " -newickexport -nexusexport -graphic SVG -height 768 -width 783 " + 									"file1.sequence.txt_phyml_tree.tre file1.sequence.txt_phyml_tree.svg";
+            $("#code").append(execString);
+        }
+
+        Dropzone.autoDiscover = false;
+
+        $( document ).ready(function() {
+
+            var myDropzone = new Dropzone("div#myDropzone", {
+                url: "api/treenexusinfo",
+                autoProcessQueue: false,
+                uploadMultiple: false,
+                parallelUploads: 100,
+                maxFiles: 100,
+                previewTemplate: document.querySelector("#tpl").innerHTML,
+                method: 'POST',
+                success: function (response) {
+                    var fileInfo = JSON.parse(response.xhr.response);
+                    console.log(response.xhr.response);
+                    colorFileSequences(fileInfo);
+                },
+
+                init: function () {
+
+                    var submitButton = document.querySelector("#submit-all");
+                    var wrapperThis = this;
+
+                    submitButton.addEventListener("click", function () {
+                        $("#treelist").html(buildTreeList(myDropzone.files));
+                        //debugger;
+                        //alert($("#" + $.escapeSelector("V704_1528_240-241-310_REN_NT_161680772749.sequence.txt_phyml_tree.tre-container")).text());
+
+                        wrapperThis.processQueue();
+                    });
+
+                    this.on("addedfile", function (file) {
+                        if (this.files.length) {
+                            var i, len;
+                            for (i = 0, len = this.files.length; i < len - 1; i++) // -1 to exclude current file
+                            {
+                                if(this.files[i].name === file.name) {
+                                    alert("Failed to add " + file.name + ", it has already been added or has a duplicate name.");
+                                    this.removeFile(file);
+                                }
+                            }
+                        }
+                    });
+
+                    this.on('sendingmultiple', function (data, xhr, formData) {
+                        formData.append("Username", $("#Username").val());
+                    });
+                }
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!event.target.closest('.treedisplay')) return;
+                if ($(event.target).closest('.treedisplay').height() == 200) {
+                    $(event.target).closest('.treedisplay').css("height", "auto");
+                } else {
+                    $(event.target).closest('.treedisplay').css("height", "200");
+                }
+            }, false);
+
+            $("#showModal").click(function(){
+                window.location.href = '/convert/getprogress';
+                //setTimeout(function () {
+                //    $("#myModal").modal('hide');
+                //}, 5000);
+            });
+
+        });
+    </script>
+
+<!--	 <button onclick="loadData()">Load Samples</button>-->
+<!--	 <button onclick="displayCode()">Display FigTree String</button>-->
+	<div id="main"></div>
+    <code id="code"></code>
+    <br>
+
+    <!-- Link to trigger modal -->
+    <a id="showModal" data-toggle="modal" data-target="#myModal" class="btn btn-primary">Show progress dialog box</a>
+
+    <!-- Modal definition
+    <div id="myModal" class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-m">
+            <div class="modal-content">
+                <div class="modal-header"><h3 style="margin:0;">Loading...</h3></div>
+                <div class="modal-body">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                    </div>
+                </div>
+            </div>
+       </div>
+    </div>
+-->
+    <div id="treelist"></div>
+
+    <div class="dropzone dz-clickable" id="myDropzone">
+      <div class="dz-message d-flex flex-column">
+        <i class="material-icons text-muted">cloud_upload</i>
+        Drag &amp; Drop here or click
+      </div>
+    </div>
+    <div>
+        <button type="submit" id="submit-all"> Upload </button>
+    </div>
+
+    <div id="tpl" style="display: none;">
+        <div class="dz-preview dz-file-preview">
+                <span class="" data-dz-name></span> <span class="pull-right">(<span class="dz-size" data-dz-size></span>)<a href="javascript:undefined;" alt="Click me to remove the file." data-dz-remove>&nbsp;&times;</a></span>
+<!--                <span class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></span>-->
+                <span class="dz-error-message"><span data-dz-errormessage></span></span>
+            <!--
+            <div id="dz-info">
+                <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+                <div class="dz-error-message"><span data-dz-errormessage></span></div>
+            </div>
+
+            <div class="dz-details">
+                <div class="dz-filename"><span data-dz-name></span></div>
+                <div class="dz-size" data-dz-size></div>
+                <img data-dz-thumbnail />
+            </div>
+            <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+            <div class="dz-success-mark"><span>✔</span></div>
+            <div class="dz-error-mark"><span>✘</span></div>
+            <div class="dz-error-message"><span data-dz-errormessage></span></div>
+        -->
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block page_content %}
+
+    <div class="container">
+        <div class="table-responsive">
+            {% if noaccess %}
+                <div class="alert alert-danger" role="alert">
+                    You don't have permission to access {{ noaccess }}.
+                </div>
+            {% endif %}
+            <!-- PROJECT TABLE -->
+            <table class="table colored-header datatable project-list">
+                <thead>
+                    <tr>
+                        <th>Projects</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for entry in projects %}
+                    <tr>
+                        <td><a href="/projects/{{ entry }}">{{ entry }}</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <!-- END PROJECT TABLE -->
+        </div>
+    </div>
+{% endblock %}
