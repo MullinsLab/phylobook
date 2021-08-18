@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -70,6 +70,8 @@ TEMPLATES = [
         },
     },
 ]
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 WSGI_APPLICATION = 'tree_util.wsgi.application'
 
@@ -130,8 +132,26 @@ STATICFILES_DIRS = (
     os.path.join(CURRENT_PATH, 'static'),
 )
 
+LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = '/projects'
 LOGOUT_REDIRECT_URL = '/projects'
 
 PROJECT_PATH = "/Users/jfurlong/PycharmProjects/notebooks"
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'outlook.office365.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'adminpb@uw.edu'
+EMAIL_HOST_PASSWORD = 'dzogchen9vehicles!!!'
+SERVER_EMAIL = EMAIL_HOST_USER
+
+# from django.core.mail import send_mail
+#
+# send_mail(
+#     'Subject here',
+#     'Here is the message.',
+#     'adminpb@uw.edu',
+#     ['jfurlong@uw.edu'],
+#      fail_silently=False,
+# )

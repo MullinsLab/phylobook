@@ -1,7 +1,33 @@
-<h2>Log In</h2>
+
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block page_content %}
+    <br>
+    <br>
+    <div  class="row justify-content-center">
+      <div  class="col-4">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title titlefont">Log in to your account</h4>
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+                {{ form|crispy }}
+                <button type="submit" class="btn btn-primary btn-block">Log in</button>
+                <br>
+                <a href="/password_reset">Forgot password?</a>
+              </form>
+          </div>
+        </div>
+      </div>
+    </div>
+<!--
+<h2>Phylobook Login</h2>
 <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit">Log In</button>
 </form>
-
+-->
+{% endblock %}

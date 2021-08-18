@@ -9,12 +9,14 @@
         <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500,500i,700" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         {% load static %}
+        <link rel="stylesheet" href="{% static 'css/all.css' %}" />
     	<link rel="stylesheet" href="{% static 'css/spectrum.css' %}" />
         <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
         <link rel="stylesheet" href="{% static 'css/dropzone.css' %}" />
         <link rel="stylesheet" href="{% static 'css/spinner.css' %}" />
         <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}" />
         <link rel="stylesheet" href="{% static 'css/jquery-ui.theme.css' %}" />
+        <link rel="stylesheet" href="{% static 'css/phylobook.css' %}" />
 
         <script src="{% static 'script/jquery-3.4.1.min.js' %}"></script>
         <script src="{% static 'script/jquery-ui.js' %}"></script>
@@ -28,6 +30,22 @@
     </head>
 
     <body>
+            <div class="container-fluid">
+                <div class="row headernav">
+                    <div style="white-space:nowrap; width: 150px;" class="col-auto mr-auto">
+                        <div style="display:inline-block;" >
+                            <img class="titleimg" src="{% static 'images/phylobook.png' %}" height="50" width="50"/>
+                        </div>
+
+                        <div style="display:inline-block; vertical-align: bottom;">
+                            <h3 class=titlefont">Phylobook</h3>
+                        </div>
+                    </div>
+<!--
+                    <div class="col-auto mr-auto" ><img class="titleimg" src="{% static 'images/phylobook.png' %}" height="50" width="50"/> <h4 class=titlefont">Phylobook</h4></div>
+-->
+                    <div class="col-auto">{{ user.username }} {% if user.is_authenticated %} {% if request.user.is_staff %} (<a href="/admin">Admin</a>) {%endif %}&nbsp;&nbsp;&nbsp;<a href="{% url 'logout' %}">Logout</a>{% endif %}</div>
+            </div>
         {% block page_content %}{% endblock %}
     </body>
 </html>

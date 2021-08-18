@@ -13,16 +13,29 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.contrib.auth import views as auth_views
 from django.urls import path, include, re_path
 from django.views.generic.base import RedirectView
+from django.contrib import admin
+from django.contrib.auth import views as auth_views
+import tree_util.views as views
+
+admin.site.site_header  =  "Phylobook admin"
+admin.site.site_title  =  "Phylobook admin site"
+admin.site.index_title  =  "Phylobook Admin"
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
-    path("convert/", include("tree_util.convert.urls")),
+    #re_path(r"^accounts/", include("django.contrib.auth.urls")),
+    path('login/', auth_views.LoginView.as_view(), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    #path('password-reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
+    path("password_reset", views.password_reset_request, name="password_reset"),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('password-change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
+    path('password-change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
     path("projects/", include("tree_util.projects.urls")),
     re_path(r'^$', RedirectView.as_view(url='/projects')),
-    re_path(r'^celery-progress/', include('celery_progress.urls')),  # the endpoint is configurable
 ]
