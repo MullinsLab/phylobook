@@ -31,7 +31,6 @@ ALLOWED_HOSTS = []
 # Application definition
 INSTALLED_APPS = [
     'phylobook',
-    'phylobook.convert',
     'phylobook.projects',
     'celery_progress',
     'django.contrib.admin',

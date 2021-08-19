@@ -28,6 +28,7 @@
         <script src="{% static 'script/spinner.js' %}"></script>
         <script src="{% static 'script/tinymce.min.js' %}"></script>
         <script src="{% static 'script/d3.min.js' %}"></script>
+        <script src="{% static 'script/phylobook.js' %}"></script>
 
         <title>Phylobook</title>
     </head>
@@ -44,19 +45,19 @@
                             <h3 class=titlefont">Phylobook</h3>
                         </div>
                     </div>
-<!--
-                    <div class="col-auto mr-auto" ><img class="titleimg" src="{% static 'images/phylobook.png' %}" height="50" width="50"/> <h4 class=titlefont">Phylobook</h4></div>
--->
+                    {% if user.is_authenticated %}
                     <div class="col-auto">
                         <div class="btn-group">
-                            <button type="button" class="btn btn-secondary dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             {{ user.username }}
                             </button>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" href="/password-change">Change Password</a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="/password_change">Change Password</a>
                             </div>
                         </div>
-                         {% if user.is_authenticated %} {% if request.user.is_staff %} (<a href="/admin">Admin</a>) {%endif %}&nbsp;&nbsp;&nbsp;<a href="{% url 'logout' %}">Logout</a>{% endif %}</div>
+                        {% if request.user.is_staff %} (<a href="/admin">Admin</a>) {%endif %}&nbsp;&nbsp;&nbsp;<a href="{% url 'logout' %}">Logout</a>
+                    </div>
+                    {% endif %}
             </div>
         {% block page_content %}{% endblock %}
     </body>

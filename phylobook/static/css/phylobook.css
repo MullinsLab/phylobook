@@ -9,6 +9,9 @@
     margin-top: 10px;
     margin-bottom: 10px;
 }
+.dropdown-menu {
+    font-size: .85rem;
+}
 .btn:focus {
     outline: none;
     box-shadow: none;
