@@ -1,4 +1,4 @@
-"""tree_util URL Configuration
+"""phylobook URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.1/topics/http/urls/
@@ -17,10 +17,10 @@ from django.urls import path, include, re_path
 from django.views.generic.base import RedirectView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-import tree_util.views as views
+import phylobook.views as views
 
-admin.site.site_header  =  "Phylobook admin"
-admin.site.site_title  =  "Phylobook admin site"
+admin.site.site_header  =  "Phylobook Admin"
+admin.site.site_title  =  "Phylobook Admin Site"
 admin.site.index_title  =  "Phylobook Admin"
 
 
@@ -36,6 +36,6 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('password-change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
     path('password-change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
-    path("projects/", include("tree_util.projects.urls")),
+    path("projects/", include("phylobook.projects.urls")),
     re_path(r'^$', RedirectView.as_view(url='/projects')),
 ]

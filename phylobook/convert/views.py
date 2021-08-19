@@ -1,7 +1,7 @@
 import json
 import subprocess
 import tempfile
-import tree_util.convert.tasks
+import phylobook.convert.tasks
 from Bio import Phylo
 from django.http import HttpResponseServerError, HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render
@@ -23,13 +23,13 @@ def convert(request):
     return render(request, "convert.html", context)
 
 def getProgress(request):
-    result = tree_util.convert.tasks.my_task.delay(10)
+    result = phylobook.convert.tasks.my_task.delay(10)
     return render(request, 'display_progress.html', context={'task_id': result.task_id})
 
 def downloadFiles(request):
     # the .delay() call here is all that's needed
     # to convert the function to be called asynchronously
-    tree_util.convert.tasks.my_task.delay()
+    phylobook.convert.tasks.my_task.delay()
     # we can't say 'work done' here anymore because all we did was kick it off
     return HttpResponse('work kicked off!')
 

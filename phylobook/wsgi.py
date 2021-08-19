@@ -1,5 +1,5 @@
 """
-WSGI config for tree_util project.
+WSGI config for phylobook project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -19,7 +19,7 @@ sys.path.append('/var/www/vhosts/tree_project')
 # adjust the Python version in the line below as needed
 sys.path.append('/var/www/vhosts/tree_project/vvenv/lib/python3.6/site-packages')
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'tree_util.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'phylobook.settings')
 
 try:
     application = get_wsgi_application()

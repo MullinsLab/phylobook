@@ -7,6 +7,8 @@ from django.shortcuts import render
 from django.contrib.auth.models import Group
 from pathlib import Path
 from django.conf import settings
+from phylobook.models import Project
+from guardian.shortcuts import get_perms
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -19,7 +21,10 @@ def projects(request):
     return render(request, "projects.html", context)
 
 def displayProject(request, name):
-    if request.user.groups.filter(name=name).exists():
+    project = Project.objects.get(name=name)
+    print(project)
+    print(get_perms(request.user, project))
+    if project and request.user.has_perm('phylobook.change_project', project):
         entries = []
         projectPath = os.path.join(PROJECT_PATH, name)
         for file in sorted(os.listdir(projectPath)):
@@ -41,20 +46,20 @@ def displayProject(request, name):
 
 
 def getUserProjects(user):
-    # filter the Group model for current logged in user instance
-    query_set = Group.objects.filter(user=user)
-
+    # filter the Project model for what the user can "change_project"
+    query_set = Project.objects.all()
     availableProjects = []
-    # print to console for debug/checking
-    for g in query_set:
-        # this should print all group names for the user
-        availableProjects.append(g.name)  # or id or whatever Group field that you want to display
-
+    for project in query_set:
+        # check permissions and add to available if user has permission
+        if user.has_perm('phylobook.change_project', project):
+            print(get_perms(user, project))
+            availableProjects.append(project.name)
 
     return sorted(availableProjects)
 
 def getFile(request, name, file):
-    if request.user.groups.filter(name=name).exists():
+    project = Project.objects.get(name=name)
+    if project and request.user.has_perm('phylobook.change_project', project):
         filePath = os.path.join(PROJECT_PATH, name, file)
         try:
             if file.endswith(".svg"):
@@ -69,7 +74,8 @@ def getFile(request, name, file):
         return HttpResponseNotFound("File not found!")
 
 def readNote(request, name, file):
-    if request.user.groups.filter(name=name).exists() and request.is_ajax():
+    project = Project.objects.get(name=name)
+    if project and request.user.has_perm('phylobook.change_project', project) and request.is_ajax():
         filePath = Path(os.path.join(PROJECT_PATH, name, file))
         if filePath.is_file():
             notes = ""
@@ -92,7 +98,8 @@ def readNote(request, name, file):
         return response
 
 def updateNote(request, name, file):
-    if request.user.groups.filter(name=name).exists() and request.is_ajax():
+    project = Project.objects.get(name=name)
+    if project and request.user.has_perm('phylobook.change_project', project) and request.is_ajax():
         if request.method == 'POST':
             filePath = Path(os.path.join(PROJECT_PATH, name, file + ".notes.txt"))
             notes = request.POST.get('notes')
@@ -112,7 +119,8 @@ def updateNote(request, name, file):
         return response
 
 def updateSVG(request, name, file):
-    if request.user.groups.filter(name=name).exists() and request.is_ajax():
+    project = Project.objects.get(name=name)
+    if project and request.user.has_perm('phylobook.change_project', project) and request.is_ajax():
         if request.method == 'POST':
             projectPath = os.path.join(PROJECT_PATH, name)
             for f in sorted(os.listdir(projectPath)):
