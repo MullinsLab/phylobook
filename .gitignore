@@ -109,3 +109,6 @@ Control.ca-bundle
 Control.system-ca-bundle 
 GitHub.sublime-settings  
 
+/phylobook/settings.py.prod
+/phylobook/settings.py
+/phylobook/settings.py.dev

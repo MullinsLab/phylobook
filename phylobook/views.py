@@ -9,7 +9,7 @@ from django.db.models.query_utils import Q
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
-
+from django.conf import settings
 
 def password_reset_request(request):
 	if request.method == "POST":
@@ -23,7 +23,7 @@ def password_reset_request(request):
 					email_template_name = "registration/password_reset_email.txt"
 					c = {
 					"email":user.email,
-					'domain':'127.0.0.1:3030',
+					'domain':settings.SERVER_NAME,
 					'site_name': 'Phylobook',
 					"uid": urlsafe_base64_encode(force_bytes(user.pk)),
 					"user": user,

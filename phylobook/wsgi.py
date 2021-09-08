@@ -15,9 +15,9 @@ import sys
 
 from django.core.wsgi import get_wsgi_application
 
-sys.path.append('/var/www/vhosts/tree_project')
+sys.path.append('/var/www/vhosts/phylobook')
 # adjust the Python version in the line below as needed
-sys.path.append('/var/www/vhosts/tree_project/vvenv/lib/python3.6/site-packages')
+sys.path.append('/var/www/vhosts/phylobook/venv/lib/python3.6/site-packages')
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'phylobook.settings')
 

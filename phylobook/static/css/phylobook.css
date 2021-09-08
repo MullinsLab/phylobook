@@ -12,6 +12,9 @@
 .dropdown-menu {
     font-size: .85rem;
 }
+.reg-dialog {
+    width: 600px;
+}
 .btn:focus {
     outline: none;
     box-shadow: none;

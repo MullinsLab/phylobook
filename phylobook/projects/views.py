@@ -4,7 +4,6 @@ import time
 
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render
-from django.contrib.auth.models import Group
 from pathlib import Path
 from django.conf import settings
 from phylobook.models import Project
@@ -22,9 +21,7 @@ def projects(request):
 
 def displayProject(request, name):
     project = Project.objects.get(name=name)
-    print(project)
-    print(get_perms(request.user, project))
-    if project and request.user.has_perm('phylobook.change_project', project):
+    if project and (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)):
         entries = []
         projectPath = os.path.join(PROJECT_PATH, name)
         for file in sorted(os.listdir(projectPath)):
@@ -37,7 +34,8 @@ def displayProject(request, name):
 
         context = {
             "entries": entries,
-            "project": name
+            "project": name,
+            "project_obj": project
         }
         return render(request, "displayproject.html", context)
 
@@ -46,20 +44,19 @@ def displayProject(request, name):
 
 
 def getUserProjects(user):
-    # filter the Project model for what the user can "change_project"
+    # filter the Project model for what the user can "change_project" or "view_project"
     query_set = Project.objects.all()
     availableProjects = []
     for project in query_set:
         # check permissions and add to available if user has permission
-        if user.has_perm('phylobook.change_project', project):
-            print(get_perms(user, project))
+        if user.has_perm('phylobook.change_project', project) or user.has_perm('phylobook.view_project', project):
             availableProjects.append(project.name)
 
     return sorted(availableProjects)
 
 def getFile(request, name, file):
     project = Project.objects.get(name=name)
-    if project and request.user.has_perm('phylobook.change_project', project):
+    if project and (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)):
         filePath = os.path.join(PROJECT_PATH, name, file)
         try:
             if file.endswith(".svg"):
@@ -73,9 +70,16 @@ def getFile(request, name, file):
     else:
         return HttpResponseNotFound("File not found!")
 
+# This should be refactored along with updateNote
 def readNote(request, name, file):
     project = Project.objects.get(name=name)
-    if project and request.user.has_perm('phylobook.change_project', project) and request.is_ajax():
+    noNotesText = ''
+    savedNoNotesHTML = '<p>Click to add notes</p>\n\n'
+    if project and \
+            (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)) \
+            and request.is_ajax():
+        if request.user.has_perm('phylobook.change_project', project):
+            noNotesText = "Click to add notes"
         filePath = Path(os.path.join(PROJECT_PATH, name, file))
         if filePath.is_file():
             notes = ""
@@ -87,12 +91,15 @@ def readNote(request, name, file):
                             started = True
                             continue
                         else:
-                            return HttpResponse(notes)
+                            if notes == savedNoNotesHTML and request.user.has_perm('phylobook.view_project', project):
+                                return HttpResponse(noNotesText)
+                            else:
+                                return HttpResponse(notes)
                     notes = notes + line + '\n'
             f.close()
-            return HttpResponse("Click to add notes")
+            return HttpResponse(noNotesText)
         else:
-            return HttpResponse("Click to add notes")
+            return HttpResponse(noNotesText)
     else:
         response = HttpResponseForbidden("Permission Denied.")
         return response
@@ -136,11 +143,16 @@ def updateSVG(request, name, file):
         return response
 
 def downloadProjectFiles(request, name):
-    response = HttpResponse(content_type='application/x-gzip')
-    response['Content-Disposition'] = 'attachment; filename=' + name + '-' + time.strftime("%Y%m%d-%H%M%S") + '.tar.gz'
-    tarred = tarfile.open(fileobj=response, mode='w:gz')
-    tarred.add(os.path.join(PROJECT_PATH, name), arcname=name)
-    tarred.close()
+    project = Project.objects.get(name=name)
+    if project and (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)):
+        response = HttpResponse(content_type='application/x-gzip')
+        response['Content-Disposition'] = 'attachment; filename=' + name + '-' + time.strftime("%Y%m%d-%H%M%S") + '.tar.gz'
+        tarred = tarfile.open(fileobj=response, mode='w:gz')
+        tarred.add(os.path.join(PROJECT_PATH, name), arcname=name)
+        tarred.close()
+    else:
+        response = HttpResponseForbidden("Permission Denied.")
+        return response
 
     return response
 
