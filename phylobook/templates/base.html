@@ -38,14 +38,25 @@
                     {% if user.is_authenticated %}
                     <div class="col-auto">
                         <div class="btn-group">
-                            <button type="button" class="btn btn-outline-secondary dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {% if user.has_usable_password == False or user.has_usable_password == None %} disabled{% endif %}>
                             {{ user.username }}
                             </button>
+                            {% if user.has_usable_password %}
                             <div class="dropdown-menu dropdown-menu-right">
                                 <a class="dropdown-item" href="/password_change">Change Password</a>
                             </div>
+                            {% endif %}
                         </div>
-                        {% if request.user.is_staff %} (<a href="/admin">Admin</a>) {%endif %}&nbsp;&nbsp;&nbsp;<a href="{% url 'logout' %}">Logout</a>
+                        {% if request.user.is_staff %} (<a href="/admin">Admin</a>) {%endif %}&nbsp;&nbsp;&nbsp;
+                        {% if settings.LOGIN_TYPE == "local" or settings.LOGIN_TYPE == "dual" %}
+                            {% if user.has_usable_password == False or user.has_usable_password == None %}
+                                <a href="/saml/logout?next=/login">Logout</a>
+                            {% elif user.has_usable_password %}
+                                <a href="/logout?next=/login">Logout</a>
+                            {% endif %}
+                        {% elif settings.LOGIN_TYPE == "sso" %}
+                            <a href="/saml/logout">Logout</a>
+                        {% endif %}
                     </div>
                     {% endif %}
             </div>

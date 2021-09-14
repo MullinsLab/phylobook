@@ -1,7 +1,6 @@
 
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
-
 {% block page_content %}
     <br>
     <br>
@@ -10,6 +9,13 @@
         <div class="card">
           <div class="card-body">
             <h4 class="card-title titlefont">Log in to your account</h4>
+            {% if settings.LOGIN_TYPE == "dual" %}
+              <a href="/saml/saml_login?next=/projects">{{ settings.LOGIN_SSO_TITLE }}</a>
+              <br/>
+              <br/>
+              or &nbsp;{{ settings.LOGIN_SSO_COLLABORATOR_TITLE }}
+              <br/>
+            {% endif %}
               <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ next }}">

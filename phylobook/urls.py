@@ -18,6 +18,7 @@ from django.views.generic.base import RedirectView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 import phylobook.views as views
+import phylobook.settings as settings
 
 admin.site.site_header  =  "Phylobook Admin"
 admin.site.site_title  =  "Phylobook Admin Site"
@@ -27,8 +28,6 @@ admin.site.index_title  =  "Phylobook Admin"
 urlpatterns = [
     path('admin/', admin.site.urls),
     #re_path(r"^accounts/", include("django.contrib.auth.urls")),
-    path('login/', auth_views.LoginView.as_view(), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path("password_reset", views.password_reset_request, name="password_reset"),
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
@@ -39,3 +38,12 @@ urlpatterns = [
     re_path(r'^saml/', include('phylobook.uw_saml.urls')),
     re_path(r'^$', RedirectView.as_view(url='/projects')),
 ]
+
+if settings.LOGIN_TYPE == 'dual' or settings.LOGIN_TYPE == 'local':
+    additional_settings =[
+      path('login/', auth_views.LoginView.as_view(), name='login'),
+      path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    ]
+    urlpatterns += additional_settings
+
+

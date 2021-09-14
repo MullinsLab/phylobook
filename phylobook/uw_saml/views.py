@@ -71,17 +71,12 @@ class MockSSOLoginView(DjangoLoginView):
     Overrides LoginView.form_valid() to insert a mocked SSO Login.
     """
     template_name = 'uw_saml/mock/login.html'
-    print("*************************Hi")
     def form_valid(self, form):
-        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         response = super().form_valid(form)
         manufactured_request = RequestFactory().post(
             reverse_lazy('saml_sso'),
             data={'RelayState': self.get_success_url()}
         )
-
-        print("*************************" + str(self.request.session['_auth_user_id']))
-
         manufactured_request.user = (
             User.objects.get(pk=self.request.session['_auth_user_id']))
         manufactured_request.session = self.request.session
