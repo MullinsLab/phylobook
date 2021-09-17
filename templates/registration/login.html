@@ -12,8 +12,9 @@
             {% if settings.LOGIN_TYPE == "dual" %}
               <a href="/saml/saml_login?next=/projects">{{ settings.LOGIN_SSO_TITLE }}</a>
               <br/>
+              or &nbsp;
               <br/>
-              or &nbsp;{{ settings.LOGIN_SSO_COLLABORATOR_TITLE }}
+              {{ settings.LOGIN_SSO_COLLABORATOR_TITLE }}
               <br/>
             {% endif %}
               <form method="post">

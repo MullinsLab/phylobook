@@ -19,22 +19,25 @@ def password_reset_request(request):
 			associated_users = User.objects.filter(Q(email=data))
 			if associated_users.exists():
 				for user in associated_users:
-					subject = "Password Reset Requested"
-					email_template_name = "registration/password_reset_email.txt"
-					c = {
-					"email":user.email,
-					'domain':settings.SERVER_NAME,
-					'site_name': 'Phylobook',
-					"uid": urlsafe_base64_encode(force_bytes(user.pk)),
-					"user": user,
-					'token': default_token_generator.make_token(user),
-					'protocol': 'http',
-					}
-					email = render_to_string(email_template_name, c)
-					try:
-						send_mail(subject, email, 'Phylobook Admin <adminpb@uw.edu>' , [user.email], fail_silently=False)
-					except BadHeaderError:
-						return HttpResponse('Invalid header found.')
-					return redirect ("/password_reset/done/")
+					if user.has_usable_password():
+						subject = "Password Reset Requested"
+						email_template_name = "registration/password_reset_email.txt"
+						c = {
+						"email":user.email,
+						'domain':settings.SERVER_NAME,
+						'site_name': 'Phylobook',
+						"uid": urlsafe_base64_encode(force_bytes(user.pk)),
+						"user": user,
+						'token': default_token_generator.make_token(user),
+						'protocol': 'http',
+						}
+						email = render_to_string(email_template_name, c)
+						try:
+							send_mail(subject, email, 'Phylobook Admin <adminpb@uw.edu>' , [user.email], fail_silently=False)
+						except BadHeaderError:
+							return HttpResponse('Invalid header found.')
+						return redirect("/password_reset/done/")
+					else:
+						return render(request=request, template_name="registration/password_external.html", context={})
 	password_reset_form = PasswordResetForm()
 	return render(request=request, template_name="registration/password_reset.html", context={"password_reset_form":password_reset_form})
