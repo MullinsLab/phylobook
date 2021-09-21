@@ -23,7 +23,7 @@ $(document).ready(function() {
         resizeHighlighterWidth(imgparentid, svgoriginalheight);
     });
     $( ".minsize" ).on( "click", function() {
-        var imgparentid = $(this).attr('id').replace("min-", "");
+        var imgparentid = $(this).attr('id').replace("minsize-", "");
         var minheight = 200;
         $('#' + imgparentid).height(minheight);
         resizeSVGWidth(imgparentid, minheight);

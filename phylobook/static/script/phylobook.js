@@ -34,15 +34,16 @@ tinymce.init({
     powerpaste_html_import: 'clean',
     setup:function(ed) {
         ed.on('change', function(e) {
-           $("#" + ed.id).closest(".tree").addClass("editedhighlight");
+            setDirtyUnsaved(ed.id);
        });
     },
     //Save button call back function
-    save_onsavecallback: function () {
+    save_onsavecallback: function (ed) {
         var content = tinymce.activeEditor.getContent();
         var id = tinymce.activeEditor.id.replace("notes-", "");
         var svg = $("#" + id).find(".svgimage").html();
         var proj = $("#project").val();
+        var edId = ed.id;
         $.ajax({
             type: "POST",
             headers: { "X-CSRFToken": token },
@@ -55,7 +56,7 @@ tinymce.init({
                     url: '/projects/svg/update/' + proj + "/" + id,
                     data: { "svg": svg },
                     success: function() {
-                        $("#" + tinymce.activeEditor.id).closest(".tree").removeClass("editedhighlight");
+                        setDirtySaved(edId);
                         alert( id + " saved successfully." );
                     },
                     error: function (err) {
@@ -80,11 +81,17 @@ function setAllDirtyUnsaved() {
 function setDirtyUnsaved(edId) {
     $("#" + edId).closest(".tree").addClass("editedhighlight");
     tinyMCE.get(edId).setDirty(true);
+    var savebtnId = edId.replace("notes", "save");
+    $("#" + savebtnId).prop('disabled', false);
+    $("#" + savebtnId).removeClass("disabled");
 }
 
 function setDirtySaved(edId) {
     $("#" + edId).closest(".tree").removeClass("editedhighlight");
     tinyMCE.get(edId).setDirty(false);
+    var savebtnId = edId.replace("notes", "save");
+    $("#" + savebtnId).prop('disabled', true);
+    $("#" + savebtnId).addClass("disabled");
 }
 
 window.addEventListener('beforeunload', function (e) {
@@ -164,30 +171,82 @@ $(document).ready(function() {
     $( "#saveall" ).on( "click", function() {
         saveAll();
     });
-    $( "#removesequencecolor" ).on( "click", function() {
-        removeAllSeqnum();
+    $(".save").on("click", function() {
+        var btnId = $(this).attr('id');
+        var edId = btnId.replace("save", "notes");
+        tinyMCE.get(edId).execCommand('mceSave');
     });
-    $( "#sequencecolor" ).on( "click", function() {
-        removeAllSeqnum();
-        d3.selectAll('text').each(function(d) {
+    $( ".removesequencecolor" ).on( "click", function() {
+        var saveid = $(this).attr('id');
+        if (saveid == "removesequencecolor") {
+            removeAllSeqnum();
+        } else {
+            var id = saveid.replace("removesequencecolor-", "");
+            removeAllSeqnum(id);
+        }
+    });
+    $( ".sequencecolor" ).on( "click", function() {
+        var saveid = $(this).attr('id');
+        var textitems;
+        if (saveid == "sequencecolor") {
+            removeAllSeqnum();
+            textitems = d3.selectAll('text');
+            colorizeSeqnum(textitems);
+            var values = $("#slider-range").slider("values");
+            $(".min").val($("#min").val());
+            $(".max").val($("#max").val());
+            $(".slider-range").slider('values',0, values[0]);
+            $(".slider-range").slider('values',1, values[1]);
+            setAllDirtyUnsaved();
+        } else {
+            var id = saveid.replace("sequencecolor-", "");
+            removeAllSeqnum(id);
+            var svg = $("#" + id).find("svg")[0];
+            textitems = d3.select(svg).selectAll('text');
+            colorizeSeqnum(textitems, id);
+            setDirtyUnsaved("notes-" + id);
+        }
+    });
+
+    function removeAllSeqnum(id) {
+        if (id) {
+            var svg = $("#" + id).find("svg")[0];
+            d3.select(svg).selectAll(".seqnum").each(function(d, i) {
+                d3.select(this).remove();
+            });
+            setDirtyUnsaved("notes-" + id);
+        } else {
+            d3.selectAll(".seqnum").each(function(d, i) {
+                d3.select(this).remove();
+            });
+            setAllDirtyUnsaved();
+        }
+    }
+
+    function colorizeSeqnum(textitems, id) {
+        var dashId = "";
+        if (id) {
+            dashId = "-" + id;
+        }
+        textitems.each(function(d) {
             var label = d3.select(this);
-            var min = $("#min").val();
-            var max = $("#max").val();
+            var min = $("#min" + dashId).val();
+            var max = $("#max" + dashId).val();
             var lastunderscore = label.text().lastIndexOf("_");
             var numseqs = parseInt(label.text().substring(label.text().lastIndexOf("_") + 1));
             var labelcolor = [];
             if (numseqs < min || lastunderscore == -1) {
                 return;
             } else if (numseqs >= max) {
-                var values = $( "#slider-range" ).slider( "values");
+                var values = $( "#slider-range" + dashId).slider( "values");
                 labelcolor = pickHex([255, 0, 0], [255, 255, 0], values[ 1 ]/100);
             } else if (numseqs == min) {
-                var values = $( "#slider-range" ).slider( "values");
+                var values = $( "#slider-range" + dashId).slider( "values");
                 labelcolor = pickHex([255, 0, 0], [255, 255, 0], values[ 0 ]/100);
             } else if (numseqs >= min) {
                 var incrementweight = 100/(max - min);
                 var weight = ((numseqs - min) * incrementweight)/100;
-                var values = $( "#slider-range" ).slider( "values");
+                var values = $( "#slider-range" + dashId).slider( "values");
                 var minColor = pickHex([255, 0, 0], [255, 255, 0], values[ 0 ]/100);
                 var maxColor = pickHex([255, 0, 0], [255, 255, 0], values[ 1 ]/100);
                 var labelcolor = pickHex(maxColor, minColor, weight);
@@ -213,16 +272,7 @@ $(document).ready(function() {
                 .style("stroke", rgb(labelcolor[0],labelcolor[1],labelcolor[2]));
 
         });
-        setAllDirtyUnsaved();
-    });
-
-    function removeAllSeqnum() {
-        d3.selectAll(".seqnum").each(function(d, i) {
-            d3.select(this).remove();
-        });
-        setAllDirtyUnsaved();
     }
-
     ///////
     const contextMenu = document.getElementById("context-menu");
     const contextMenuCircle = document.getElementById("context-menu-circle");

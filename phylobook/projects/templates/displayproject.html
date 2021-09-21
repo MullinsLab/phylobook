@@ -35,7 +35,7 @@
             <div id="circlegreen"  class="item"><span class="dot Green"></span>&nbsp;&nbsp;Green</div>
             <div id="circleremove"  class="item">Remove</div>
         </div>
-        <div class="container-fluid">
+        <div class="container-fluid app-container">
             <div class="row">
                 <div class="col-auto align-self-center"><a href="/projects">Projects</a> &gt; <b>{{ project }}</b>&nbsp;({{ entries | length }} trees)</div>
                 <div class="col-auto mr-auto align-self-center"><button type="button" id="downloadproject" class="btn btn-outline-primary btn-sm">Download Project Files</button>
@@ -47,11 +47,11 @@
             <div class="row">
                 <div class="col-auto mr-auto text-nowrap">
                     <label for="min">Min(cutoff):</label><input type="number" id="min" name="min" min="1" max="500"  value="2" style="width: 4em">
-                    <div id="slider-range"></div>
+                    <div class="slider-range" id="slider-range"></div>
                     <label for="max">Max(threshold >=):</label><input type="number" id="max" name="max" min="2" max="500" value="50" style="width: 4em">
                     {% if 'change_project' in context_perms %}
-                    <button type="button"  class="btn btn-outline-secondary btn-sm" id="sequencecolor">Update</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="removesequencecolor">Remove</button>
+                    <button type="button"  class="btn btn-outline-secondary btn-sm sequencecolor" id="sequencecolor">Update All</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm removesequencecolor" id="removesequencecolor">Remove All</button>
                     {% endif %}
                 </div>
                 {% if 'change_project' in context_perms %}
@@ -66,10 +66,49 @@
         {% for entry in entries %}
             <div class="tree">
             <h6>{{ entry.uniquesvg }}</h6>
+            <div class="row">
+                <div class="col-auto mr-auto text-nowrap">
+                    <label for="min-{{ entry.uniquesvg }}">Min(cutoff):</label><input type="number" class="min" id="min-{{ entry.uniquesvg }}" name="min" min="1" max="500"  value="2" style="width: 4em">
+                    <div class="slider-range" id="slider-range-{{ entry.uniquesvg }}"></div>
+                    <label for="max-{{ entry.uniquesvg }}">Max(threshold >=):</label><input type="number" class="max" id="max-{{ entry.uniquesvg }}" name="max" min="2" max="500" value="50" style="width: 4em">
+                    {% if 'change_project' in context_perms %}
+                    <button type="button"  class="btn btn-outline-secondary btn-sm sequencecolor" id="sequencecolor-{{ entry.uniquesvg }}">Update</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm removesequencecolor" id="removesequencecolor-{{ entry.uniquesvg }}">Remove</button>
+                    {% endif %}
+                    <script>
+                    // Slider/colorization functions
+                    $( function() {
+                        $( "#slider-range-{{ entry.uniquesvg }}" ).slider({
+                            range: true,
+                            min: 1,
+                            max: 100,
+                            values: [ 1, 100 ],
+                            create: function( event, ui ) {
+                                // color between rage sliders
+                                var markers=$(this).slider('values');
+                                minColor = pickHex([255, 0, 0], [255, 255, 0], markers[ 0 ]/100);
+                                maxColor = pickHex([255, 0, 0], [255, 255, 0], markers[ 1 ]/100);
+                                $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+                            },
+                            slide: function( event, ui ) {
+                                $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+                                // color between rage sliders
+                                minColor = pickHex([255, 0, 0], [255, 255, 0], ui.values[ 0 ]/100);
+                                maxColor = pickHex([255, 0, 0], [255, 255, 0], ui.values[ 1 ]/100);
+                                $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+                            }
+                        });
+                    });
+                    </script>
+                </div>
+                {% if 'change_project' in context_perms %}
+                <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
+                {% endif %}
+            </div>
             <div {% if 'change_project' in context_perms %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
             <div class="magnifybar">
                 <button type="button" class="fullsize btn btn-outline-secondary btn-sm" id="full-{{ entry.uniquesvg }}"> Full</button>
-                <button type="button" class="minsize btn btn-outline-secondary btn-sm"  id="min-{{ entry.uniquesvg }}"> Min</button>
+                <button type="button" class="minsize btn btn-outline-secondary btn-sm"  id="minsize-{{ entry.uniquesvg }}"> Min</button>
                 <button type="button" class="zoomin btn btn-outline-secondary btn-sm"  id="zin-{{ entry.uniquesvg }}"><i class="fas fa-search-plus"></i></button>
                 <button type="button" class="zoomout btn btn-outline-secondary btn-sm"  id="zout-{{ entry.uniquesvg }}"><i class="fas fa-search-minus"></i></button>
             </div>
