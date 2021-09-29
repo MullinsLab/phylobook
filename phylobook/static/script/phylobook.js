@@ -3,6 +3,7 @@
 tinymce.init({
     selector: '.notes',
     inline: true,
+    placeholder: "Click here to add notes.",
     menubar: false,
     content_style: "p { margin: 0; }",
     save_enablewhendirty: true,
@@ -48,7 +49,14 @@ tinymce.init({
             type: "POST",
             headers: { "X-CSRFToken": token },
             url: '/projects/note/update/' + proj + "/" + id,
-            data: { "notes": content },
+            data: {
+                "notes": content,
+                "minval": $("#minval-" + id).val(),
+                "maxval": $("#maxval-" + id).val(),
+                "colorlowval": $("#colorlowval-" + id).val(),
+                "colorhighval": $("#colorhighval-" + id).val(),
+                "iscolored": $("#iscolored-" + id).val(),
+            },
             success: function() {
                 $.ajax({
                     type: "POST",
@@ -135,7 +143,14 @@ function saveAll() {
             type: "POST",
             headers: { "X-CSRFToken": token },
             url: '/projects/note/update/' + proj + "/" + id,
-            data: { "notes": content },
+            data: {
+                "notes": content,
+                "minval": $("#minval-" + id).val(),
+                "maxval": $("#maxval-" + id).val(),
+                "colorlowval": $("#colorlowval-" + id).val(),
+                "colorhighval": $("#colorhighval-" + id).val(),
+                "iscolored": $("#iscolored-" + id).val()
+            },
             success: function() {
                 $.ajax({
                     type: "POST",
@@ -180,30 +195,48 @@ $(document).ready(function() {
         var saveid = $(this).attr('id');
         if (saveid == "removesequencecolor") {
             removeAllSeqnum();
+            resetSlider();
         } else {
             var id = saveid.replace("removesequencecolor-", "");
             removeAllSeqnum(id);
+            resetSlider(id);
         }
     });
     $( ".sequencecolor" ).on( "click", function() {
         var saveid = $(this).attr('id');
         var textitems;
         if (saveid == "sequencecolor") {
-            removeAllSeqnum();
-            textitems = d3.selectAll('text');
-            colorizeSeqnum(textitems);
-            var values = $("#slider-range").slider("values");
-            $(".min").val($("#min").val());
-            $(".max").val($("#max").val());
-            $(".slider-range").slider('values',0, values[0]);
-            $(".slider-range").slider('values',1, values[1]);
-            setAllDirtyUnsaved();
+            if (confirm("This will set the sequence number color range for <b>all</b> trees.  Do you want to proceed?")) {
+                removeAllSeqnum();
+                textitems = d3.selectAll('text');
+                colorizeSeqnum(textitems);
+                var values = $("#slider-range").slider("values");
+                $(".min").val($("#min").val());
+                $(".minval").val($("#min").val());
+                $(".max").val($("#max").val());
+                $(".maxval").val($("#max").val());
+                $(".slider-range").slider('values',0, values[0]);
+                $(".colorlowval").val(values[0]);
+                $(".slider-range").slider('values',1, values[1]);
+                $(".colorhighval").val(values[1]);
+                $(".iscolored").val("true");
+                var minColor = pickHex([255, 0, 0], [255, 255, 0], values[ 0 ]/100);
+                var maxColor = pickHex([255, 0, 0], [255, 255, 0], values[ 1 ]/100);
+                $( ".slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+                setAllDirtyUnsaved();
+            }
         } else {
             var id = saveid.replace("sequencecolor-", "");
             removeAllSeqnum(id);
             var svg = $("#" + id).find("svg")[0];
             textitems = d3.select(svg).selectAll('text');
             colorizeSeqnum(textitems, id);
+            var values = $("#slider-range-" + id).slider("values");
+            $("#minval-" + id).val($("#min-" + id).val());
+            $("#maxval-" + id).val($("#max-" + id).val());
+            $("#colorlowval-" + id).val(values[0]);
+            $("#colorhighval-" + id).val(values[1]);
+            $("#iscolored-" + id).val("true");
             setDirtyUnsaved("notes-" + id);
         }
     });
@@ -220,6 +253,30 @@ $(document).ready(function() {
                 d3.select(this).remove();
             });
             setAllDirtyUnsaved();
+        }
+    }
+
+    function resetSlider(id) {
+        if (id) {
+            $("#minval-" + id).val("");
+            $("#maxval-" + id).val("");
+            $("#colorlowval-" + id).val("");
+            $("#colorhighval-" + id).val("");
+            $("#iscolored-" + id).val("false");
+            $("#slider-range-" + id).slider('values',0, 1);
+            $("#slider-range-" + id).slider('values',1, 100);
+            $("#min-" + id).val("2");
+            $("#max-" + id).val("50");
+        } else {
+            $(".minval").val("");
+            $(".maxval").val("");
+            $(".colorlowval").val("");
+            $(".colorhighval").val("");
+            $(".iscolored").val("false");
+            $(".slider-range").slider('values',0, 1);
+            $(".slider-range").slider('values',1, 100);
+            $(".min" + id).val("2");
+            $(".max" + id).val("50");
         }
     }
 
@@ -349,8 +406,10 @@ $(document).ready(function() {
                 hideContextMenu();
                 return;
             }
-            var newcircle = drawCircleMarker(color);
-            setDirtyUnsaved("notes-" + $(newcircle.node()).closest(".imgparent").attr("id"));
+            if (colorText != "circleremove") {
+                var newcircle = drawCircleMarker(color);
+                setDirtyUnsaved("notes-" + $(newcircle.node()).closest(".imgparent").attr("id"));
+            }
             hideContextMenu();
         } else if (e.target.offsetParent == contextMenu)  {
             var currentSelectedTextNode = currentSelectedText.node();
@@ -504,7 +563,7 @@ $( function() {
             $( "#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
         },
         slide: function( event, ui ) {
-            $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+            //$( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
             // color between rage sliders
             minColor = pickHex([255, 0, 0], [255, 255, 0], ui.values[ 0 ]/100);
             maxColor = pickHex([255, 0, 0], [255, 255, 0], ui.values[ 1 ]/100);
@@ -512,18 +571,5 @@ $( function() {
         }
     });
 });
-function rgb(r, g, b){
-    return ["rgb(",r,",",g,",",b,")"].join("");
-}
-function pickHex(color1, color2, weight) {
-    var p = weight;
-    var w = p * 2 - 1;
-    var w1 = (w/1+1) / 2;
-    var w2 = 1 - w1;
-    var rgb = [Math.round(color1[0] * w1 + color2[0] * w2),
-        Math.round(color1[1] * w1 + color2[1] * w2),
-        Math.round(color1[2] * w1 + color2[2] * w2)];
-    return rgb;
-}
 
 //

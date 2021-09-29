@@ -1,3 +1,14 @@
+function showhideColorRange(id, tag) {
+    var text = tag.innerHTML;
+    if (text.startsWith("Show")) {
+        tag.innerHTML = "Hide color range";
+        $("#" + id).removeClass("hide");
+    } else {
+        tag.innerHTML = "Show color range";
+        $("#" + id).addClass("hide");
+    }
+}
+
 function resizeHighlighterWidth(imgparentid, adjustment) {
     var imgheight = $('#' + imgparentid).find('img').prop("naturalHeight");
     var imgwidth = $('#' + imgparentid).find('img').prop("naturalWidth");

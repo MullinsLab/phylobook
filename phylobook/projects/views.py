@@ -1,6 +1,8 @@
 import os
 import tarfile
 import time
+import json
+from datetime import datetime
 
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render
@@ -30,7 +32,13 @@ def displayProject(request, name):
                 for svg in os.listdir(projectPath):
                     if svg.endswith(".svg"):
                         if uniquesvg in svg:
-                            entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file)})
+                            filePath = Path(os.path.join(PROJECT_PATH, name, uniquesvg + ".json"))
+                            if filePath.is_file():
+                                with open(filePath, 'r') as json_file:
+                                    data = json.load(json_file)
+                                    entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": data["minval"], "maxval": data["maxval"], "colorlowval": data["colorlowval"], "colorhighval": data["colorhighval"], "iscolored": data["iscolored"]})
+                            else:
+                                entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false"})
 
         context = {
             "entries": entries,
@@ -70,36 +78,20 @@ def getFile(request, name, file):
     else:
         return HttpResponseNotFound("File not found!")
 
-# This should be refactored along with updateNote
 def readNote(request, name, file):
     project = Project.objects.get(name=name)
-    noNotesText = ''
-    savedNoNotesHTML = '<p>Click to add notes</p>\n\n'
     if project and \
             (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)) \
             and request.is_ajax():
-        if request.user.has_perm('phylobook.change_project', project):
-            noNotesText = "Click to add notes"
-        filePath = Path(os.path.join(PROJECT_PATH, name, file))
+        filePath = Path(os.path.join(PROJECT_PATH, name, file + ".json"))
+        notes = ""
         if filePath.is_file():
-            notes = ""
-            started = False
-            with open(filePath, 'r') as f:
-                for line in f:
-                    if '[~~~~~~~~~~]' in line:
-                        if not started:
-                            started = True
-                            continue
-                        else:
-                            if notes == savedNoNotesHTML and request.user.has_perm('phylobook.view_project', project):
-                                return HttpResponse(noNotesText)
-                            else:
-                                return HttpResponse(notes)
-                    notes = notes + line + '\n'
-            f.close()
-            return HttpResponse(noNotesText)
+            with open(filePath, 'r') as json_file:
+                data = json.load(json_file)
+                notes = data["notes"][-1]["note"]
+            return HttpResponse(notes)
         else:
-            return HttpResponse(noNotesText)
+            return HttpResponse(notes)
     else:
         response = HttpResponseForbidden("Permission Denied.")
         return response
@@ -108,18 +100,33 @@ def updateNote(request, name, file):
     project = Project.objects.get(name=name)
     if project and request.user.has_perm('phylobook.change_project', project) and request.is_ajax():
         if request.method == 'POST':
-            filePath = Path(os.path.join(PROJECT_PATH, name, file + ".notes.txt"))
+            filePath = Path(os.path.join(PROJECT_PATH, name, file + ".json"))
             notes = request.POST.get('notes')
+            minval = request.POST.get('minval')
+            maxval = request.POST.get('maxval')
+            colorlowval = request.POST.get('colorlowval')
+            colorhighval = request.POST.get('colorhighval')
+            iscolored = request.POST.get('iscolored')
+            dateTimeObj = datetime.now()
+            data = {}
+            data['notes'] = []
+            #print("minval=" + minval + " maxval=" + maxval + " colorlowval=" + colorlowval + " colorhighval=" + colorhighval + " iscolored=" + iscolored)
             if filePath.is_file():
-                with open(filePath, 'r+') as f:
-                    content = f.read()
-                    f.seek(0, 0)
-                    f.write('[~~~~~~~~~~]\n' + notes + '\n[~~~~~~~~~~]\n' + content)
-                    f.close()
-            else:
-                f = open(filePath, "w+")
-                f.write('[~~~~~~~~~~]\n' + notes + '\n[~~~~~~~~~~]\n')
-                f.close()
+                with open(filePath, 'r+') as json_file:
+                    data = json.load(json_file)
+            with open(filePath, "w+") as outfile:
+                data['notes'].append({
+                    'note': notes,
+                    'user': request.user.username,
+                    'datetime': str(dateTimeObj)
+                })
+                data['minval'] = minval
+                data['maxval'] = maxval
+                data['colorlowval'] = colorlowval
+                data['colorhighval'] = colorhighval
+                data['iscolored'] = iscolored
+                json.dump(data, outfile)
+
             return HttpResponse("Note Saved.")
     else:
         response = HttpResponseForbidden("Permission Denied.")
