@@ -36,7 +36,12 @@ def displayProject(request, name):
                             if filePath.is_file():
                                 with open(filePath, 'r') as json_file:
                                     data = json.load(json_file)
-                                    entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": data["minval"], "maxval": data["maxval"], "colorlowval": data["colorlowval"], "colorhighval": data["colorhighval"], "iscolored": data["iscolored"]})
+                                    minval = data["minval"] if (data["minval"] != "None" and data["minval"] != None and data["minval"] != "") else ""
+                                    maxval = data["maxval"] if (data["maxval"] != "None" and data["maxval"] != None and data["maxval"] != "") else ""
+                                    colorlowval = data["colorlowval"] if (data["colorlowval"] != "None" and data["colorlowval"] != None and data["colorlowval"] != "") else ""
+                                    colorhighval = data["colorhighval"] if (data["colorhighval"] != "None" and data["colorhighval"] != None and data["colorhighval"] != "") else ""
+                                    iscolored = data["iscolored"] if (data["iscolored"] != "None" and data["iscolored"] != None and data["iscolored"] != "") else "false"
+                                    entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": minval, "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored})
                             else:
                                 entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false"})
 

@@ -5,6 +5,7 @@ tinymce.init({
     inline: true,
     placeholder: "Click here to add notes.",
     menubar: false,
+    toolbar_location: 'bottom',
     content_style: "p { margin: 0; }",
     save_enablewhendirty: true,
     plugins: [
@@ -65,7 +66,7 @@ tinymce.init({
                     data: { "svg": svg },
                     success: function() {
                         setDirtySaved(edId);
-                        alert( id + " saved successfully." );
+                        //alert( id + " saved successfully." );
                     },
                     error: function (err) {
                         alert( id + " Failed to save!!!  Contact dev team." );
@@ -95,11 +96,11 @@ function setDirtyUnsaved(edId) {
 }
 
 function setDirtySaved(edId) {
-    $("#" + edId).closest(".tree").removeClass("editedhighlight");
     tinyMCE.get(edId).setDirty(false);
     var savebtnId = edId.replace("notes", "save");
     $("#" + savebtnId).prop('disabled', true);
     $("#" + savebtnId).addClass("disabled");
+    $("#" + edId).closest(".tree").removeClass("editedhighlight");
 }
 
 window.addEventListener('beforeunload', function (e) {
