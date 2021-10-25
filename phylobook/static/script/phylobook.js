@@ -207,7 +207,7 @@ $(document).ready(function() {
         var saveid = $(this).attr('id');
         var textitems;
         if (saveid == "sequencecolor") {
-            if (confirm("This will set the sequence number color range for <b>all</b> trees.  Do you want to proceed?")) {
+            if (confirm("This will set the sequence number color range for *all* trees.  Do you want to proceed?")) {
                 removeAllSeqnum();
                 textitems = d3.selectAll('text');
                 colorizeSeqnum(textitems);
@@ -342,6 +342,27 @@ $(document).ready(function() {
     var currentSelectedCircle = "";
 
     const normalizePozition = (mouseX, mouseY, menu) => {
+        menuWidth = menu.offsetWidth + 4;
+        menuHeight = menu.offsetHeight + 4;
+
+        windowWidth = window.innerWidth;
+        windowHeight = window.innerHeight;
+
+        if ( (windowWidth - mouseX) < menuWidth ) {
+          menu.style.left = windowWidth - menuWidth + "px";
+        } else {
+          menu.style.left = mouseX + "px";
+        }
+
+        if ( (windowHeight - mouseY) < menuHeight ) {
+          menu.style.top = windowHeight - menuHeight + "px";
+        } else {
+          menu.style.top = mouseY + "px";
+        }
+
+
+
+        /*
         // ? compute what is the mouse position relative to the container element (scope)
         const {
           left: scopeOffsetX,
@@ -374,6 +395,7 @@ $(document).ready(function() {
         }
 
         return { normalizedX, normalizedY };
+        */
     };
     function hideContextMenu() {
          contextMenu.classList.remove("visible");
@@ -469,11 +491,8 @@ $(document).ready(function() {
         if (e.target.tagName.toLowerCase() == 'text') {
             e.preventDefault();
             const { clientX: mouseX, clientY: mouseY } = e;
-            const { normalizedX, normalizedY } = normalizePozition(mouseX, mouseY, contextMenu);
+            normalizePozition(mouseX, mouseY, contextMenu);
             hideContextMenu();
-            contextMenu.style.top = `${normalizedY}px`;
-            contextMenu.style.left = `${normalizedX}px`;
-
             setTimeout(() => {
               contextMenu.classList.add("visible");
             });
@@ -490,22 +509,17 @@ $(document).ready(function() {
             currentSelectedCircleParent = e.target;
             currentSelectedCircleEvent = e;
             showContextMenuCircle(e, contextMenuCircle);
-            //drawCircleMarker(e.target, e);
         } else if (e.target.ownerSVGElement) {
             e.preventDefault();
             currentSelectedCircleParent = e.target.ownerSVGElement;
             currentSelectedCircleEvent = e;
             showContextMenuCircle(e, contextMenuCircle);
-            //drawCircleMarker(e.target.ownerSVGElement, e);
         }
     });
 
     function showContextMenuCircle(e, cMenu) {
         const { clientX: mouseX, clientY: mouseY } = e;
-        const { normalizedX, normalizedY } = normalizePozition(mouseX, mouseY, cMenu);
-        cMenu.style.top = `${normalizedY}px`;
-        cMenu.style.left = `${normalizedX}px`;
-
+        normalizePozition(mouseX, mouseY, cMenu);
         setTimeout(() => {
           cMenu.classList.add("visible");
         });

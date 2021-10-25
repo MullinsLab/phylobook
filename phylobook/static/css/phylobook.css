@@ -12,6 +12,9 @@
     margin-top: 10px;
     margin-bottom: 10px;
 }
+.highlighterdoc {
+    font-size: .75rem;
+}
 .dropdown-menu {
     font-size: .85rem;
 }
