@@ -33,6 +33,10 @@ def displayProject(request, name):
                     if svg.endswith(".svg"):
                         if uniquesvg in svg:
                             filePath = Path(os.path.join(PROJECT_PATH, name, uniquesvg + ".json"))
+                            clusterPath = Path(os.path.join(PROJECT_PATH, name, uniquesvg + ".cluster"))
+                            clusterFile = ""
+                            if clusterPath.is_file():
+                                clusterFile = uniquesvg + ".cluster"
                             if filePath.is_file():
                                 with open(filePath, 'r') as json_file:
                                     data = json.load(json_file)
@@ -41,9 +45,11 @@ def displayProject(request, name):
                                     colorlowval = data["colorlowval"] if (data["colorlowval"] != "None" and data["colorlowval"] != None and data["colorlowval"] != "") else ""
                                     colorhighval = data["colorhighval"] if (data["colorhighval"] != "None" and data["colorhighval"] != None and data["colorhighval"] != "") else ""
                                     iscolored = data["iscolored"] if (data["iscolored"] != "None" and data["iscolored"] != None and data["iscolored"] != "") else "false"
-                                    entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": minval, "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored})
+                                    entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": minval, \
+                                                    "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored, "clusterfile": clusterFile})
                             else:
-                                entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false"})
+                                entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", \
+                                                "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfile": clusterFile})
 
         context = {
             "entries": entries,
@@ -78,6 +84,9 @@ def getFile(request, name, file):
             if file.endswith(".png"):
                 with open(filePath, "rb") as f:
                     return HttpResponse(f.read(), content_type="image/png")
+            if file.endswith(".cluster"):
+                with open(filePath, "rt") as f:
+                    return HttpResponse(f.read(), content_type="text/csv")
         except IOError:
             return HttpResponseNotFound("File not found!")
     else:

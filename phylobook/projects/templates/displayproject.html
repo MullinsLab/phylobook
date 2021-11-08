@@ -6,6 +6,7 @@
 {% get_obj_perms request.user for project_obj as "context_perms" %}
 {% if "change_project" in context_perms %}
     <script src="{% static 'script/phylobook.js' %}"></script>
+    <script src="{% static 'script/csvToArray.v2.1.js' %}"></script>
 {% endif %}
     <script src="{% static 'script/phylobookview.js' %}"></script>
     <script>
@@ -24,6 +25,88 @@
                 Math.round(color1[1] * w1 + color2[1] * w2),
                 Math.round(color1[2] * w1 + color2[2] * w2)];
             return rgb;
+        }
+
+        function showCluster(project, file, id) {
+            $.ajax({
+                type: "GET",
+                headers: { "X-CSRFToken": token },
+                url: '/projects/' + project + '/' + file,
+                cache: false,
+                success: function(csvAsString) {
+                    clusterArray=csvAsString.csvToArray({ rSep:'\n' });
+                    var svg = $("#" + id).find("svg")[0];
+                    var max = 0;
+                    for (let i = 0; i < clusterArray.length; i++) {
+                        var key = parseInt(clusterArray[i][1]);
+                        if (key > max) max = key;
+                        var color = getClassficationColor(key);
+                        if (color != "key not found") {
+                            var label = d3.select(svg).selectAll("text")
+                                  .filter(function(){
+                                    return d3.select(this).text() == clusterArray[i][0];
+                                  });
+                            var currentSelectedTextNode = label.node();
+                            var svgcanvas = d3.select(currentSelectedTextNode.parentNode);
+                            var rect = currentSelectedTextNode.getBBox();
+                            var triangle = d3.symbol().size(12).type(d3.symbolTriangle);
+
+                            // if there is a transform, grab the x, y
+                            if (label.attr("transform") != null) {
+                                rect.x = label.node().transform.baseVal[0].matrix.e - 2;
+                                rect.y = label.node().transform.baseVal[0].matrix.f + 2;
+                            }
+
+                            svgcanvas
+                                .append("path")
+                                .attr("d", triangle)
+                                .attr('class', 'cluster')
+                                .attr("transform", "translate(" + (rect.x  + rect.width + 3) + "," + (rect.y + 4) + ")")
+                                .style('fill', color)
+                                .style("stroke", color);
+
+                        } else {
+                            alert(`Not color found for classification #(line ${i}): ${clusterArray[i][1]}`);
+                        }
+                    }
+                    $("#cluster-" + id).html(buildClusterLegend(max));
+                },
+                error: function (err) {
+                    alert( " Failed to get " + project + "/" + file + ". Contact dev team." );
+                }
+            });
+        }
+
+        function buildClusterLegend(max) {
+            var div = "";
+            for (let cluster = 1; cluster <= max; cluster++) {
+                div = div + cluster + "<div class='triangle' + style='border-bottom: 12px solid " + getClassficationColor(cluster) + " !important;'></div>&nbsp;&nbsp;";
+            }
+            return div;
+        }
+
+        function getClassficationColor(key) {
+            switch(key) {
+                case 1:
+                    return "#8931ef"; //Blue-Violet
+                case 2:
+                    return "#f2ca19"; //Jonquil
+                case 3:
+                    return "#ff00bd"; //Shocking Pink
+                case 4:
+                    return "#000000"; //black
+                case 5:
+                    return "#87e911"; //Alien Armpit
+                case 6:
+                    return "#0057e9"; //RYB Blue
+                case 7:
+                    return "#d3d3d3"; //light gray
+                case 8:
+                    return "#e11845"; //Spanish Crimson
+                default:
+                    alert("No color found for classification #: " + key);
+                    return "key not found";
+            }
         }
     </script>
 
@@ -82,7 +165,7 @@
                         <h6>{{ entry.uniquesvg }}</h6>
                     </div>
                     {% if 'change_project' in context_perms %}
-                    <div class="col-auto"><a href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
+                    <div class="col-auto">{% if entry.clusterfile %}<div id="cluster-{{ entry.uniquesvg }}" class="d-flex justify-content-start" style="font-size: 14px;"></div><a href="#" onclick="showCluster('{{ project }}', '{{ entry.clusterfile }}', '{{ entry.uniquesvg }}'); return false;" class="clustercolor">Show cluster classification</a>&nbsp;|&nbsp;{% endif %}<a href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
                     {% endif %}
                 </div>
                 <div class="row {% if 'change_project' in context_perms %} hide {% endif %}"  id="color-{{ entry.uniquesvg }}">

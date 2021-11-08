@@ -51,6 +51,16 @@ a, a:hover,a:visited, a:focus {
 .seqcolor{
     font-size: 14px;
 }
+.clustercolor{
+    font-size: 14px;
+}
+.triangle {
+	width: 0;
+	height: 0;
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-bottom: 12px solid #555;
+}
 .images {
     size: 100%;
     overflow-x: scroll;
