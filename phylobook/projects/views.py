@@ -33,10 +33,7 @@ def displayProject(request, name):
                     if svg.endswith(".svg"):
                         if uniquesvg in svg:
                             filePath = Path(os.path.join(PROJECT_PATH, name, uniquesvg + ".json"))
-                            clusterPath = Path(os.path.join(PROJECT_PATH, name, uniquesvg + ".cluster"))
-                            clusterFile = ""
-                            if clusterPath.is_file():
-                                clusterFile = uniquesvg + ".cluster"
+                            prefix = uniquesvg + ".cluster"
                             if filePath.is_file():
                                 with open(filePath, 'r') as json_file:
                                     data = json.load(json_file)
@@ -46,10 +43,10 @@ def displayProject(request, name):
                                     colorhighval = data["colorhighval"] if (data["colorhighval"] != "None" and data["colorhighval"] != None and data["colorhighval"] != "") else ""
                                     iscolored = data["iscolored"] if (data["iscolored"] != "None" and data["iscolored"] != None and data["iscolored"] != "") else "false"
                                     entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": minval, \
-                                                    "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored, "clusterfile": clusterFile})
+                                                    "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored, "clusterfiles": getClusterFiles(projectPath, prefix)})
                             else:
                                 entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", \
-                                                "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfile": clusterFile})
+                                                "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, prefix)})
 
         context = {
             "entries": entries,
@@ -61,6 +58,13 @@ def displayProject(request, name):
     else:
         return render(request, "projects.html", { "noaccess": name, "projects": getUserProjects(request.user) })
 
+def getClusterFiles(projectPath, prefix):
+    clusters = []
+    for file in sorted(os.listdir(projectPath)):
+        if file.startswith(prefix):
+            name = file[file.index(".cluster.") + 9:]
+            clusters.append({ "name": name, "file": file})
+    return clusters
 
 def getUserProjects(user):
     # filter the Project model for what the user can "change_project" or "view_project"
@@ -81,10 +85,10 @@ def getFile(request, name, file):
             if file.endswith(".svg"):
                 with open(filePath, "rt") as f:
                     return HttpResponse(f.read(), content_type="image/svg+xml")
-            if file.endswith(".png"):
+            elif file.endswith(".png"):
                 with open(filePath, "rb") as f:
                     return HttpResponse(f.read(), content_type="image/png")
-            if file.endswith(".cluster"):
+            elif ".cluster" in file:
                 with open(filePath, "rt") as f:
                     return HttpResponse(f.read(), content_type="text/csv")
         except IOError:

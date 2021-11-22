@@ -69,7 +69,7 @@
                             alert(`Not color found for classification #(line ${i}): ${clusterArray[i][1]}`);
                         }
                     }
-                    $("#cluster-" + id).html(buildClusterLegend(max));
+                    $("#clusterlegend-" + id).html(buildClusterLegend(max));
                 },
                 error: function (err) {
                     alert( " Failed to get " + project + "/" + file + ". Contact dev team." );
@@ -108,6 +108,24 @@
                     return "key not found";
             }
         }
+        // add listener for cluster select
+        $(function(){
+            $('.cluster-select').on('change', function() {
+                var clusterid = $(this).attr("id");
+                var id = clusterid.replace("cluster-", "");
+                var text = $("#" + clusterid + " option:selected").val();
+                if (text == "None") {
+                    var svg = $("#" + id).find("svg")[0];
+                    d3.select(svg).selectAll(".cluster").each(function(d, i) {
+                        d3.select(this).remove();
+                    });
+                    $("#clusterlegend-" + id).html(buildClusterLegend(0));
+                } else {
+                    var project = "{{ project }}";
+                    showCluster(project, this.value, id);
+                }
+            });
+        });
     </script>
 
     {% if user.is_authenticated %}
@@ -165,7 +183,26 @@
                         <h6>{{ entry.uniquesvg }}</h6>
                     </div>
                     {% if 'change_project' in context_perms %}
-                    <div class="col-auto">{% if entry.clusterfile %}<div id="cluster-{{ entry.uniquesvg }}" class="d-flex justify-content-start" style="font-size: 14px;"></div><a href="#" onclick="showCluster('{{ project }}', '{{ entry.clusterfile }}', '{{ entry.uniquesvg }}'); return false;" class="clustercolor">Show cluster classification</a>&nbsp;|&nbsp;{% endif %}<a href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
+                    <div class="col-auto">
+                        {% if entry.clusterfiles|length > 0 %}
+
+                            <div class="d-flex justify-content-start">
+                                <label for="cluster-{{ entry.uniquesvg }}">Cluster:&nbsp;</label>
+                                <select id="cluster-{{ entry.uniquesvg }}" class="cluster-select form-control form-control-sm" autocomplete="off">
+                                        <option value="None" selected="selected">None</option>
+                                    {% for cluster in entry.clusterfiles %}
+                                        <option value="{{ cluster.file }}">{{ cluster.name }}</option>
+                                    {% endfor %}
+                                </select>&nbsp;<div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex justify-content-start" style="font-size: 14px;"></div>&nbsp;|&nbsp;
+                                <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button>
+                            </div>
+                        {% else %}
+                            <div class="d-flex justify-content-start">
+                                <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button>
+                            </div>
+                        {% endif %}
+
+                    </div>
                     {% endif %}
                 </div>
                 <div class="row {% if 'change_project' in context_perms %} hide {% endif %}"  id="color-{{ entry.uniquesvg }}">
@@ -209,7 +246,7 @@
                         </script>
                     </div>
                 </div>
-                <div {% if 'change_project' in context_perms %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
+                <div style="width: 50%;" {% if 'change_project' in context_perms %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
                 <div class="magnifybar">
                     <button type="button" class="fullsize btn btn-outline-secondary btn-sm" id="full-{{ entry.uniquesvg }}"> Full</button>
                     <button type="button" class="minsize btn btn-outline-secondary btn-sm"  id="minsize-{{ entry.uniquesvg }}"> Min</button>
