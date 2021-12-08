@@ -8,7 +8,7 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFoun
 from django.shortcuts import render
 from pathlib import Path
 from django.conf import settings
-from phylobook.models import Project
+from .models import Project
 from guardian.shortcuts import get_perms
 
 PROJECT_PATH = settings.PROJECT_PATH
@@ -90,11 +90,26 @@ def getFile(request, name, file):
                     return HttpResponse(f.read(), content_type="image/png")
             elif ".cluster" in file:
                 with open(filePath, "rt") as f:
-                    return HttpResponse(f.read(), content_type="text/csv")
+                    lines = f.readlines()
+                    cleaned = ""
+                    for line in lines:
+                        line = cleanClusterRow(line)
+                        cleaned = cleaned + line
+
+                    print(cleaned)
+                    return HttpResponse(cleaned, content_type="text/csv")
         except IOError:
             return HttpResponseNotFound("File not found!")
     else:
         return HttpResponseNotFound("File not found!")
+
+# removes commas that aren't separating fields
+def cleanClusterRow(row):
+    commaCount = row.count(",")
+    while commaCount > 1:
+        row = "".join(row.rsplit(",", 1))
+        commaCount = row.count(",")
+    return row;
 
 def readNote(request, name, file):
     project = Project.objects.get(name=name)

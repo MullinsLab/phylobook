@@ -36,11 +36,22 @@
                 success: function(csvAsString) {
                     clusterArray=csvAsString.csvToArray({ rSep:'\n' });
                     var svg = $("#" + id).find("svg")[0];
-                    var max = 0;
+                    //var max = 0;
+                    var set = new Set();
                     for (let i = 0; i < clusterArray.length; i++) {
-                        var key = parseInt(clusterArray[i][1]);
-                        if (key > max) max = key;
-                        var color = getClassficationColor(key);
+                        var key = clusterArray[i][1];
+                        set.add(key);
+                    }
+                    var uniqueClusters = Array.from(set);
+                    uniqueClusters.sort();
+                    var clusterColorKeys = {};
+                    for (let i = 0; i < uniqueClusters.length; i++) {
+                        clusterColorKeys[uniqueClusters[i]] = i+1;
+                    }
+                    for (let i = 0; i < clusterArray.length; i++) {
+                        var key = clusterArray[i][1];
+                        //if (key > max) max = key;
+                        var color = getClassficationColor(clusterColorKeys[key]);
                         if (color != "key not found") {
                             var label = d3.select(svg).selectAll("text")
                                   .filter(function(){
@@ -69,7 +80,7 @@
                             alert(`Not color found for classification #(line ${i}): ${clusterArray[i][1]}`);
                         }
                     }
-                    $("#clusterlegend-" + id).html(buildClusterLegend(max));
+                    $("#clusterlegend-" + id).html(buildClusterLegend(uniqueClusters, clusterColorKeys));
                 },
                 error: function (err) {
                     alert( " Failed to get " + project + "/" + file + ". Contact dev team." );
@@ -77,10 +88,10 @@
             });
         }
 
-        function buildClusterLegend(max) {
+        function buildClusterLegend(uniqueClusters, clusterColorKeys) {
             var div = "";
-            for (let cluster = 1; cluster <= max; cluster++) {
-                div = div + cluster + "<div class='triangle' + style='border-bottom: 12px solid " + getClassficationColor(cluster) + " !important;'></div>&nbsp;&nbsp;";
+            for (let cluster = 0; cluster < uniqueClusters.length; cluster++) {
+                div = div + "<span style='white-space: nowrap;'>" + uniqueClusters[cluster] + "</span>" + "<div class='triangle' + style='border-bottom: 12px solid " + getClassficationColor(clusterColorKeys[uniqueClusters[cluster]]) + " !important;'></div>&nbsp;&nbsp;";
             }
             return div;
         }
