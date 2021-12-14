@@ -192,7 +192,10 @@
             <div class="tree">
                 <div class="row" style="height: 32px">
                     <div class="col-auto mr-auto text-nowrap ">
-                        <h6>{{ entry.uniquesvg }}</h6>
+                        <div class="d-flex justify-content-start">
+                            <h6>{{ entry.uniquesvg }}</h6>&nbsp;
+                            <a target="_blank" class="highlighterdoc" href="/projects/files/download/fasta/{{ project }}/{{ entry.uniquesvg }}">Download ordered fasta</a>
+                        </div>
                     </div>
                     {% if 'change_project' in context_perms %}
                     <div class="col-auto">

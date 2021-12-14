@@ -1,4 +1,5 @@
 asgiref==3.4.1
+biopython=1.79
 certifi==2021.10.8
 charset-normalizer==2.0.7
 defusedxml==0.7.1
@@ -9,7 +10,7 @@ django-settings-export==1.2.1
 idna==3.3
 isodate==0.6.0
 Jinja2==2.11.3
-lxml==4.6.4
+lxml==4.6.5
 MarkupSafe==2.0.1
 mock==4.0.3
 onelogin==2.0.2

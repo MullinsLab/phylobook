@@ -3,13 +3,18 @@ import tarfile
 import time
 import json
 from datetime import datetime
+import glob
 
+from Bio import SeqIO
+from Bio.SeqIO.FastaIO import SimpleFastaParser
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import render
 from pathlib import Path
 from django.conf import settings
 from .models import Project
 from guardian.shortcuts import get_perms
+
+
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -95,8 +100,6 @@ def getFile(request, name, file):
                     for line in lines:
                         line = cleanClusterRow(line)
                         cleaned = cleaned + line
-
-                    print(cleaned)
                     return HttpResponse(cleaned, content_type="text/csv")
         except IOError:
             return HttpResponseNotFound("File not found!")
@@ -196,4 +199,46 @@ def downloadProjectFiles(request, name):
 
     return response
 
+def downloadOrderedFasta(request, name, file):
+    project = Project.objects.get(name=name)
+    if project and (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)):
+        orderedFasta = buildOrderedFastaFile(name, file)
+        response = HttpResponse(orderedFasta, content_type='application/x-fasta')
+        response['Content-Disposition'] = 'attachment; filename=' + file + '-ordered.fasta'
+        return response
+    else:
+        response = HttpResponseForbidden("Permission Denied.")
+        return response
 
+    return response
+
+def buildOrderedFastaFile(name, file):
+    fastaFile = glob.glob(os.path.join(PROJECT_PATH, name, file + "*.fasta"))
+    highlighterDataFile = os.path.join(PROJECT_PATH, name, file + "_highlighter.txt")
+    if fastaFile[0] and highlighterDataFile:
+        orderedFasta = ""
+        recordDict = SeqIO.index(fastaFile[0], "fasta")
+        highlighterData = open(highlighterDataFile, 'r')
+        while True:
+            record = readNextHighlighterRecord(highlighterData)
+            if record is None:
+                break
+            else:
+                name = record["name"].strip()
+                orderedFasta = orderedFasta + recordDict.get_raw(name).decode()
+        return orderedFasta
+    else:
+        return None
+
+def readNextHighlighterRecord(highlighterData):
+    seqName = highlighterData.readline()
+    if seqName is None or seqName == '':
+        return None;
+    annotations = []
+    while True:
+        line = highlighterData.readline()
+        if line == "\n" or line == "" or line is None:
+            break
+        else:
+            annotations.append(line)
+    return {"name": seqName, "annotations": annotations}
