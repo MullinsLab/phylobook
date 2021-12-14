@@ -3,7 +3,7 @@ biopython==1.79
 certifi==2021.10.8
 charset-normalizer==2.0.7
 defusedxml==0.7.1
-Django==3.2.9
+Django==3.2.10
 django-crispy-forms==1.13.0
 django-guardian==2.4.0
 django-settings-export==1.2.1
