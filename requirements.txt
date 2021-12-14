@@ -1,5 +1,5 @@
 asgiref==3.4.1
-biopython=1.79
+biopython==1.79
 certifi==2021.10.8
 charset-normalizer==2.0.7
 defusedxml==0.7.1
