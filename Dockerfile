@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.9
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -13,10 +13,16 @@ RUN apt -y install wget software-properties-common
 RUN apt update
 RUN apt -y install pkg-config
 RUN apt-get -y install libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+RUN apt-get install -y apt-utils vim curl apache2 apache2-utils
+RUN apt-get -y install libapache2-mod-wsgi-py3
 RUN apt-get -y install python3-pip
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 RUN apt-get install -y apt-utils vim curl
 RUN ln /usr/bin/python3 /usr/bin/python
-EXPOSE 3500
+RUN ln -s /usr/local/lib/python3.9 /usr/local/lib/python3
+RUN python manage.py collectstatic --noinput
+ADD ./phylobook.conf /etc/apache2/sites-available/000-default.conf
+EXPOSE 80
+CMD ["apache2ctl", "-D", "FOREGROUND"]
 #CMD ["./manage.py", "runserver", "0.0.0.0:3500"]

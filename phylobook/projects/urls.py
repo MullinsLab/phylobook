@@ -13,5 +13,6 @@ urlpatterns = [
     path("svg/update/<str:name>/<str:file>", login_required(views.updateSVG)),
     path("files/download/<str:name>", login_required(views.downloadProjectFiles)),
     path("files/download/fasta/<str:name>/<str:file>", login_required(views.downloadOrderedFasta)),
+    path("files/download/extractedfasta/<str:name>/<str:file>", login_required(views.downloadExtractedFasta)),
 ]
 

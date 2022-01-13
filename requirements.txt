@@ -14,7 +14,7 @@ lxml==4.6.5
 MarkupSafe==2.0.1
 mock==4.0.3
 onelogin==2.0.2
-psycopg2-binary==2.8.6
+psycopg2==2.9.2
 python-dateutil==2.8.2
 python3-saml==1.12.0
 pytz==2021.3

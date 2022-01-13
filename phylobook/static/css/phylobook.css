@@ -185,3 +185,99 @@ img {
 .hide {
     display: none;
 }
+
+/* extract dialog */
+.custom-radio-button div {
+  display: inline-block;
+}
+.custom-radio-button input[type="radio"] {
+  display: none;
+}
+.custom-radio-button input[type="radio"] + label {
+  color: #333;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+.custom-radio-button input[type="radio"] + label span {
+  display: inline-block;
+  width: 30px;
+  height: 16px;
+  margin: -1px 4px 0 0;
+  vertical-align: middle;
+  cursor: pointer;
+/*   border-radius: 50%; */
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.33);
+  background-repeat: no-repeat;
+  background-position: center;
+  text-align: center;
+  line-height: 30px;
+}
+.custom-radio-button input[type="radio"] + label span img {
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+.custom-radio-button input[type="radio"]#extractred + label span {
+    border-color: Red;
+    border: 1px solid Red;
+}
+.custom-radio-button input[type="radio"]#extractyellow + label span {
+    border-color: #efe645;
+    border: 1px solid #efe645;
+}
+.custom-radio-button input[type="radio"]#extractpink + label span {
+    border-color: #e935a1;
+    border: 1px solid #e935a1;
+}
+.custom-radio-button input[type="radio"]#extractlightblue + label span {
+    border-color: #00e3ff;
+    border: 1px solid #00e3ff;
+}
+.custom-radio-button input[type="radio"]#extractorange + label span {
+    border-color: orange;
+    border: 1px solid orange;
+}
+.custom-radio-button input[type="radio"]#extractneonblue + label span {
+    border-color: #537eff;
+    border: 1px solid #537eff;
+}
+.custom-radio-button input[type="radio"]#extractgreen + label span {
+    border-color: #00cb85;
+    border: 1px solid #00cb85;
+}
+.custom-radio-button input[type="radio"][disabled] + label span::before {
+  content: '\2715';
+  font-size: 14px;
+  color: lightgray;
+  vertical-align: middle;
+}
+.custom-radio-button input[type="radio"][disabled] + label span {
+    line-height: 14px !important;
+}
+.custom-radio-button input[type="radio"]:checked + label span {
+  opacity: 1;
+  content: '\2713';
+  /*background: url("https://www.positronx.io/wp-content/uploads/2019/06/tick-icon-4657-01.png")
+    center center no-repeat; */
+
+  width: 60px;
+  height: 32px;
+  display: inline-block;
+}
+.custom-radio-button input[type="radio"]:checked + label span::before {
+  content: '\2713';
+  font-size: 28px;
+  vertical-align: middle;
+
+}
+#seqbox {
+    font-size: 10px;
+    font-family: monospace;
+    white-space: pre;
+    overflow-y: scroll;
+    overflow-x: scroll;
+    height: 300px;
+    width: 100%;
+    resize: none; /* Remove this if you want the user to resize the textarea */
+}
+/* end extract dialog */

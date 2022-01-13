@@ -7,16 +7,29 @@ services:
       - "POSTGRES_HOST_AUTH_METHOD=trust"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+
   web:
     build: .
-    command: python /code/manage.py runserver 0.0.0.0:3500
+    container_name: phylobook
     volumes:
       - /Users/jfurlong/dev/FigTree-command-line/phylobook_fixed:/data
-      - .:/code
+#      - .:/code
     ports:
-      - 3500:3500
+      - 80:80
     depends_on:
       - db
+
+
+#  web:
+#    build: .
+#    command: python /code/manage.py runserver 0.0.0.0:3500
+#    volumes:
+#      - /Users/jfurlong/dev/FigTree-command-line/phylobook_fixed:/data
+#      - .:/code
+#    ports:
+#      - 3500:3500
+#    depends_on:
+#      - db
 
 volumes:
   postgres_data:

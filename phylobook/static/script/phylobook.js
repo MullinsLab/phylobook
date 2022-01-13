@@ -192,6 +192,25 @@ $(document).ready(function() {
         var edId = btnId.replace("save", "notes");
         tinyMCE.get(edId).execCommand('mceSave');
     });
+    $("#sequencedownloadbutton").on( "click", function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            headers: { "X-CSRFToken": token },
+            url: '/projects/files/download/extractedfasta/' + projectName + "/" + $("#seqsid").val(),
+            data: {
+                "seqs": getSelectedExtractColorSeqs(),
+                "suffix": $("#suffix").val()
+            },
+            success: function(result) {
+                $("#seqbox").val(result);
+            },
+            error: function (err) {
+                alert( $("#seqsid").val() + " Failed to extract!  Contact dev team." );
+            }
+        });
+    });
+
     $( ".removesequencecolor" ).on( "click", function() {
         var saveid = $(this).attr('id');
         if (saveid == "removesequencecolor") {
@@ -408,6 +427,88 @@ $(document).ready(function() {
          currentSelectedCircle = "";
     }
 
+    function getColorTextLabels(svg, colorClass) {
+        var colorLabels = [];
+        svg.selectAll("." + colorClass)
+        .each(function() {
+            colorLabels.push(this.innerHTML);
+        });
+        return colorLabels;
+    }
+
+    function getSelectedExtractColorSeqs() {
+        var selected = $('input[name=color]:checked').val();
+        var seqs = selected.replace("extract", "seqs");
+        return $("#" + seqs).val();
+    }
+
+    function showExtractDialog(svg) {
+        $("#seqbox").val("");
+        var id = $(svg.node()).closest(".imgparent").attr("id");
+        var extractred = getColorTextLabels(svg, "boxred");
+        var extractyellow = getColorTextLabels(svg, "boxyellow");
+        var extractpink = getColorTextLabels(svg, "boxpink");
+        var extractlightblue = getColorTextLabels(svg, "boxlightblue");
+        var extractorange = getColorTextLabels(svg, "boxorange");
+        var extractneonblue = getColorTextLabels(svg, "boxneonblue");
+        var extractgreen = getColorTextLabels(svg, "boxgreen");
+
+        $("#seqsid").val(id);
+        if (extractred.length === 0) {
+            $("#extractred").prop("checked", false);
+            $("#extractred").attr("disabled", true);
+        } else {
+             $("#extractred").attr("disabled", false);
+            $("#seqsred").val(extractred.join());
+        }
+        if (extractyellow.length === 0) {
+            $("#extractyellow").prop("checked", false);
+            $("#extractyellow").attr("disabled", true);
+        } else {
+            $("#extractyellow").attr("disabled", false);
+            $("#seqsyellow").val(extractyellow.join());
+        }
+        if (extractpink.length === 0) {
+            $("#extractpink").prop("checked", false);
+            $("#extractpink").attr("disabled", true);
+        } else {
+            $("#extractpink").attr("disabled", false);
+            $("#seqspink").val(extractpink.join());
+        }
+        if (extractlightblue.length === 0) {
+            $("#extractlightblue").prop("checked", false);
+            $("#extractlightblue").attr("disabled", true);
+        } else {
+            $("#extractlightblue").attr("disabled", false);
+            $("#seqslightblue").val(extractlightblue.join());
+        }
+        if (extractorange.length === 0) {
+            $("#extractorange").prop("checked", false);
+            $("#extractorange").attr("disabled", true);
+        } else {
+            $("#extractorange").attr("disabled", false);
+            $("#seqsorange").val(extractorange.join());
+        }
+        if (extractneonblue.length === 0) {
+            $("#extractneonblue").prop("checked", false);
+            $("#extractneonblue").attr("disabled", true);
+        } else {
+            $("#extractneonblue").attr("disabled", false);
+            $("#seqsneonblue").val(extractneonblue.join());
+        }
+        if (extractgreen.length === 0) {
+            $("#extractgreen").prop("checked", false);
+            $("#extractgreen").attr("disabled", true);
+        } else {
+            $("#extractgreen").attr("disabled", false);
+            $("#seqsgreen").val(extractgreen.join());
+        }
+
+        $('#myModal').modal({show:true});
+        //$("#totalSequences").text(sequenceTable.page.info().recordsDisplay.toLocaleString());
+        //});
+    }
+
     // hide contextMenu if scroll happens while displayed
     window.onscroll = function() {
         hideContextMenu();
@@ -446,23 +547,34 @@ $(document).ready(function() {
             var existingColoredBox = d3.select("#" + labelText);
             if (colorText == "boxremove") {
                 existingColoredBox.remove();
+                // remove the class of currentSelectedText
+                currentSelectedText.attr("class", null);
                 hideContextMenu();
                 setDirtyUnsaved("notes-" + $(currentSelectedText.node()).closest(".imgparent").attr("id"));
                 return;
             }
+            if (colorText == "boxextract") {
+                showExtractDialog(d3.select(currentSelectedTextNode.ownerSVGElement));
+                hideContextMenu();
+                return;
+            }
+
+            // set the class of currentSelectedText to be colorText
+            currentSelectedText.attr("class", colorText);
+
             var color = getColor(colorText.replace("box", ""));
 
             // if there is a transform, grab the x, y
             if (currentSelectedText.attr("transform") != null) {
                 rect.x = currentSelectedText.node().transform.baseVal[0].matrix.e;
-                rect.y = currentSelectedText.node().transform.baseVal[0].matrix.f + 1;
+                rect.y = currentSelectedText.node().transform.baseVal[0].matrix.f - 3;
             }
 
             pathinfo = [
                 {x: rect.x-offset, y: rect.y },
                 {x: rect.x+offset + rect.width, y: rect.y},
-                {x: rect.x+offset + rect.width, y: rect.y + rect.height },
-                {x: rect.x-offset, y: rect.y + rect.height},
+                {x: rect.x+offset + rect.width, y: rect.y + rect.height - 1 },
+                {x: rect.x-offset, y: rect.y + rect.height - 1 },
                 {x: rect.x-offset, y: rect.y },
             ];
 
@@ -515,6 +627,8 @@ $(document).ready(function() {
             currentSelectedCircleParent = e.target.ownerSVGElement;
             currentSelectedCircleEvent = e;
             showContextMenuCircle(e, contextMenuCircle);
+        } else if (e.target.classList.contains("item")) {
+            e.preventDefault();
         }
     });
 

@@ -2,6 +2,7 @@ import os
 import tarfile
 import time
 import json
+from io import StringIO
 from datetime import datetime
 import glob
 
@@ -213,12 +214,19 @@ def downloadOrderedFasta(request, name, file):
     return response
 
 def buildOrderedFastaFile(name, file):
+    highlighterFastaFile = glob.glob(os.path.join(PROJECT_PATH, name, file + "*_highlighter.fasta"))
+    orderedFasta = ""
+    # check to see if ordered highlighter provided fasta is available
+    if len(highlighterFastaFile) > 0:
+        file = open(highlighterFastaFile[0], "r")
+        orderedFasta = file.read()
+        file.close()
+        return orderedFasta
     fastaFile = glob.glob(os.path.join(PROJECT_PATH, name, file + "*.fasta"))
-    highlighterDataFile = os.path.join(PROJECT_PATH, name, file + "_highlighter.txt")
-    if fastaFile[0] and highlighterDataFile:
-        orderedFasta = ""
+    highlighterDataFile = glob.glob(os.path.join(PROJECT_PATH, name, file + "*_highlighter.txt"))
+    if len(fastaFile) > 0 and len(highlighterDataFile) > 0:
         recordDict = SeqIO.index(fastaFile[0], "fasta")
-        highlighterData = open(highlighterDataFile, 'r')
+        highlighterData = open(highlighterDataFile[0], 'r')
         while True:
             record = readNextHighlighterRecord(highlighterData)
             if record is None:
@@ -242,3 +250,28 @@ def readNextHighlighterRecord(highlighterData):
         else:
             annotations.append(line)
     return {"name": seqName, "annotations": annotations}
+
+def downloadExtractedFasta(request, name, file):
+    project = Project.objects.get(name=name)
+    if request.method == 'POST' and project and (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)):
+        seqsVal = request.POST.get('seqs')
+        seqs = []
+        if seqsVal and "," in seqsVal:
+            seqs = request.POST.get('seqs').split(",")
+        else:
+            seqs.append(seqsVal)
+        suffix = request.POST.get('suffix')
+        orderedFasta = buildOrderedFastaFile(name, file)
+        fastaIO = StringIO(orderedFasta)
+        records = SeqIO.parse(fastaIO, "fasta")
+        extractedsSeqs = ""
+        for rec in records:
+            if rec.id in seqs:
+                extractedsSeqs = extractedsSeqs + rec.id + suffix + "\n" + rec.seq + "\n"
+        fastaIO.close()
+
+        response = HttpResponse(extractedsSeqs, content_type='text/plain')
+        return response
+    else:
+        response = HttpResponseForbidden("Permission Denied.")
+        return response

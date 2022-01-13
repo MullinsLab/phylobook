@@ -150,6 +150,7 @@
             <div id="boxorange"  class="item"><span class="rectangle Orange"></span>&nbsp;&nbsp;Orange</div>
             <div id="boxneonblue"  class="item"><span class="rectangle Neonblue"></span>&nbsp;&nbsp;Neon Blue</div>
             <div id="boxgreen"  class="item"><span class="rectangle Green"></span>&nbsp;&nbsp;Green</div>
+            <div id="boxextract"  class="item">Extract</div>
             <div id="boxremove"  class="item">Remove</div>
         </div>
         <div id="context-menu-circle">
@@ -162,6 +163,107 @@
             <div id="circlegreen"  class="item"><span class="dot Green"></span>&nbsp;&nbsp;Green</div>
             <div id="circleremove"  class="item">Remove</div>
         </div>
+        <!-- Modal -->
+        <div class="modal fade" id="myModal" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Extract Sequences</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/" method="POST" id="sequenceform">
+                            <input type="hidden" id="seqsid" value="" />
+                            <div class="custom-radio-button">
+                              <div>
+                                <input type="radio" id="extractred" name="color" value="extractred">
+                                <label for="extractred">
+                                  <span>
+                                  </span>
+                                </label>
+                                <input type="hidden" id="seqsred" value="" />
+                              </div>
+
+                              <div>
+                                <input type="radio" id="extractyellow" name="color" value="extractyellow">
+                                <label for="extractyellow">
+                                  <span>
+                                  </span>
+                                </label>
+                                  <input type="hidden" id="seqsyellow" value="" />
+                              </div>
+
+                              <div>
+                                <input type="radio" id="extractpink" name="color" value="extractpink">
+                                <label for="extractpink">
+                                  <span>
+                                  </span>
+                                </label>
+                                  <input type="hidden" id="seqspink" value="" />
+                              </div>
+
+                              <div>
+                                <input type="radio" id="extractlightblue" name="color" value="extractlightblue">
+                                <label for="extractlightblue">
+                                  <span>
+                                  </span>
+                                </label>
+                                  <input type="hidden" id="seqslightblue" value="" />
+                              </div>
+
+                              <div>
+                                <input type="radio" id="extractorange" name="color" value="extractorange">
+                                <label for="extractorange">
+                                  <span>
+                                  </span>
+                                </label>
+                                  <input type="hidden" id="seqsorange" value="" />
+                              </div>
+
+                              <div>
+                                <input type="radio" id="extractneonblue" name="color" value="extractneonblue">
+                                <label for="extractneonblue">
+                                  <span>
+                                  </span>
+                                </label>
+                                  <input type="hidden" id="seqsneonblue" value="" />
+                              </div>
+
+                              <div>
+                                <input type="radio" id="extractgreen" name="color" value="extractgreen">
+                                <label for="extractgreen">
+                                  <span>
+                                  </span>
+                                </label>
+                                  <input type="hidden" id="seqsgreen" value="" />
+                              </div>
+                              <div>
+                                <label for="suffix">
+                                  <span>
+                                      Add suffix:
+                                  </span>
+                                </label>
+                                <input type="text" id="suffix" name="color" value="" />
+                              </div>
+
+                            </div>
+                            <div id="seqdownloadbutton">
+                                <button id="sequencedownloadbutton" type="submit" class="btn btn-primary">
+                                    Extract
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <textarea id="seqbox" readonly></textarea>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end Modal -->
+
         <div class="container-fluid app-container">
             <div class="row">
                 <div class="col-auto align-self-center"><a href="/projects">Projects</a> &gt; <b>{{ project }}</b>&nbsp;({{ entries | length }} trees)</div>
