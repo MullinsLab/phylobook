@@ -351,82 +351,6 @@ $(document).ready(function() {
         });
     }
 
-    ///////
-    const contextMenu = document.getElementById("context-menu");
-    const contextMenuCircle = document.getElementById("context-menu-circle");
-    const scope = document.querySelector("body");
-    var currentSelectedText = "";
-    var currentSelectedCircleParent = "";
-    var currentSelectedCircleEvent = "";
-    var isCircleSelected = false;
-    var currentSelectedCircle = "";
-
-    const normalizePozition = (mouseX, mouseY, menu) => {
-        menuWidth = menu.offsetWidth + 4;
-        menuHeight = menu.offsetHeight + 4;
-
-        windowWidth = window.innerWidth;
-        windowHeight = window.innerHeight;
-
-        if ( (windowWidth - mouseX) < menuWidth ) {
-          menu.style.left = windowWidth - menuWidth + "px";
-        } else {
-          menu.style.left = mouseX + "px";
-        }
-
-        if ( (windowHeight - mouseY) < menuHeight ) {
-          menu.style.top = windowHeight - menuHeight + "px";
-        } else {
-          menu.style.top = mouseY + "px";
-        }
-
-
-
-        /*
-        // ? compute what is the mouse position relative to the container element (scope)
-        const {
-          left: scopeOffsetX,
-          top: scopeOffsetY,
-        } = scope.getBoundingClientRect();
-
-        const scopeX = mouseX - scopeOffsetX;
-        const scopeY = mouseY - scopeOffsetY;
-
-        // ? check if the element will go out of bounds
-        const outOfBoundsOnX =
-          scopeX + menu.clientWidth > scope.clientWidth;
-
-        const outOfBoundsOnY =
-          scopeY + menu.clientHeight > scope.clientHeight;
-
-        let normalizedX = mouseX;
-        let normalizedY = mouseY;
-
-        // ? normalzie on X
-        if (outOfBoundsOnX) {
-          normalizedX =
-            scopeOffsetX + scope.clientWidth - menu.clientWidth;
-        }
-
-        // ? normalize on Y
-        if (outOfBoundsOnY) {
-          normalizedY =
-            scopeOffsetY + scope.clientHeight - menu.clientHeight;
-        }
-
-        return { normalizedX, normalizedY };
-        */
-    };
-    function hideContextMenu() {
-         contextMenu.classList.remove("visible");
-         contextMenuCircle.classList.remove("visible");
-         currentSelectedText = "";
-         currentSelectedCircleParent = "";
-         currentSelectedCircleEvent = "";
-         isCircleSelected = false;
-         currentSelectedCircle = "";
-    }
-
     function getColorTextLabels(svg, colorClass) {
         var colorLabels = [];
         svg.selectAll("." + colorClass)
@@ -538,66 +462,27 @@ $(document).ready(function() {
             }
             hideContextMenu();
         } else if (e.target.offsetParent == contextMenu)  {
-            var currentSelectedTextNode = currentSelectedText.node();
-            var svgcanvas = d3.select(currentSelectedTextNode.parentNode);
-            var rect = currentSelectedTextNode.getBBox();
-            var offset = 2; // enlarge rect box 2 px on left & right side
-            currentSelectedText.classed("mute", (currentSelectedText.classed("mute") ? false : true));
-            var labelText = currentSelectedText.text();
+            var selectedTexts = d3.select(currentSVG).selectAll(".selectedtext");
             var colorText = $(e.target).attr("id");
-            var existingColoredBox = d3.select("#" + labelText);
-            if (colorText == "boxremove") {
-                existingColoredBox.remove();
-                // remove the class of currentSelectedText
-                currentSelectedText.attr("class", null);
-                hideContextMenu();
-                setDirtyUnsaved("notes-" + $(currentSelectedText.node()).closest(".imgparent").attr("id"));
-                return;
-            }
-            if (colorText == "boxextract") {
-                showExtractDialog(d3.select(currentSelectedTextNode.ownerSVGElement));
-                hideContextMenu();
-                return;
-            }
 
-            // set the class of currentSelectedText to be colorText
-            currentSelectedText.attr("class", colorText);
-
-            var color = getColor(colorText.replace("box", ""));
-
-            // if there is a transform, grab the x, y
-            if (currentSelectedText.attr("transform") != null) {
-                rect.x = currentSelectedText.node().transform.baseVal[0].matrix.e;
-                rect.y = currentSelectedText.node().transform.baseVal[0].matrix.f - 3;
-            }
-
-            pathinfo = [
-                {x: rect.x-offset, y: rect.y },
-                {x: rect.x+offset + rect.width, y: rect.y},
-                {x: rect.x+offset + rect.width, y: rect.y + rect.height - 1 },
-                {x: rect.x-offset, y: rect.y + rect.height - 1 },
-                {x: rect.x-offset, y: rect.y },
-            ];
-
-            if (existingColoredBox.node()) {
-                existingColoredBox.style("stroke", color);
+            if (selectedTexts.size() > 0) {
+                selectedTexts.each(function() {
+                    if (colorText == "boxextract") {
+                        showExtractDialog(d3.select(this.ownerSVGElement));
+                        hideContextMenu();
+                        return;
+                    }
+                    processContextMenuClick(e, this, d3.select(this), colorText);
+                });
             } else {
-                // Specify the function for generating path data
-                var d3line = d3.line()
-                    .x(function(d){return d.x;})
-                    .y(function(d){return d.y;})
-                    .curve(d3.curveLinear);
-
-                // Draw the line
-                svgcanvas.append("path")
-                    .attr("id", labelText)
-                    .attr("d", d3line(pathinfo))
-                    .style("stroke-width", 1)
-                    .style("stroke", color)
-                    .style("fill", "none");
+                var currentSelectedTextNode = currentSelectedText.node();
+                if (colorText == "boxextract") {
+                    showExtractDialog(d3.select(currentSelectedTextNode.ownerSVGElement));
+                    hideContextMenu();
+                    return;
+                }
+                processContextMenuClick(e, currentSelectedTextNode, currentSelectedText, colorText);
             }
-            setDirtyUnsaved("notes-" + $(currentSelectedText.node()).closest(".imgparent").attr("id"));
-            hideContextMenu();
         }
     });
 
@@ -660,24 +545,172 @@ $(document).ready(function() {
         d3.select(this).attr("cx", event.x).attr("cy", event.y);
     }
 
-    function getColor(name) {
-        if (name == "red") {
-            return "red";
-        } else if (name == "yellow") {
-            return "#efe645";
-        } else if (name == "pink") {
-            return "#e935a1";
-        } else if (name == "lightblue") {
-            return "#00e3ff";
-        } else if (name == "orange") {
-            return "orange";
-        } else if (name == "neonblue") {
-            return "#537eff";
-        } else if (name == "green") {
-            return "#00cb85";
-        }
-    }
+    contextMenu = document.getElementById("context-menu");
+    contextMenuCircle = document.getElementById("context-menu-circle");
+    scope = document.querySelector("body");
 });
+///////
+var contextMenu;
+var contextMenuCircle;
+var scope;
+var currentSVG;
+var currentSelectedText = "";
+var currentSelectedCircleParent = "";
+var currentSelectedCircleEvent = "";
+var isCircleSelected = false;
+var currentSelectedCircle = "";
+
+const normalizePozition = (mouseX, mouseY, menu) => {
+    menuWidth = menu.offsetWidth + 4;
+    menuHeight = menu.offsetHeight + 4;
+
+    windowWidth = window.innerWidth;
+    windowHeight = window.innerHeight;
+
+    if ( (windowWidth - mouseX) < menuWidth ) {
+      menu.style.left = windowWidth - menuWidth + "px";
+    } else {
+      menu.style.left = mouseX + "px";
+    }
+
+    if ( (windowHeight - mouseY) < menuHeight ) {
+      menu.style.top = windowHeight - menuHeight + "px";
+    } else {
+      menu.style.top = mouseY + "px";
+    }
+
+
+
+    /*
+    // ? compute what is the mouse position relative to the container element (scope)
+    const {
+      left: scopeOffsetX,
+      top: scopeOffsetY,
+    } = scope.getBoundingClientRect();
+
+    const scopeX = mouseX - scopeOffsetX;
+    const scopeY = mouseY - scopeOffsetY;
+
+    // ? check if the element will go out of bounds
+    const outOfBoundsOnX =
+      scopeX + menu.clientWidth > scope.clientWidth;
+
+    const outOfBoundsOnY =
+      scopeY + menu.clientHeight > scope.clientHeight;
+
+    let normalizedX = mouseX;
+    let normalizedY = mouseY;
+
+    // ? normalzie on X
+    if (outOfBoundsOnX) {
+      normalizedX =
+        scopeOffsetX + scope.clientWidth - menu.clientWidth;
+    }
+
+    // ? normalize on Y
+    if (outOfBoundsOnY) {
+      normalizedY =
+        scopeOffsetY + scope.clientHeight - menu.clientHeight;
+    }
+
+    return { normalizedX, normalizedY };
+    */
+};
+
+function showContextMenu(x, y) {
+    normalizePozition(x, y, contextMenu);
+    setTimeout(() => {
+      contextMenu.classList.add("visible");
+    });
+}
+
+function hideContextMenu() {
+    if (currentSVG) {
+        d3.select(currentSVG).selectAll(".selectedtext").classed("selectedtext", false);
+    }
+    contextMenu.classList.remove("visible");
+    contextMenuCircle.classList.remove("visible");
+    currentSelectedText = "";
+    currentSelectedCircleParent = "";
+    currentSelectedCircleEvent = "";
+    isCircleSelected = false;
+    currentSelectedCircle = "";
+}
+
+function processContextMenuClick(e, selectedTextNode, selectedText, colorText) {
+    var svgcanvas = d3.select(selectedTextNode.parentNode);
+    var rect = selectedTextNode.getBBox();
+    var offset = 2; // enlarge rect box 2 px on left & right side
+    selectedText.classed("mute", (selectedText.classed("mute") ? false : true));
+    var labelText = selectedText.text();
+
+    var existingColoredBox = d3.select("#" + labelText);
+    if (colorText == "boxremove") {
+        existingColoredBox.remove();
+        // remove the class of currentSelectedText
+        selectedText.attr("class", null);
+        hideContextMenu();
+        setDirtyUnsaved("notes-" + $(selectedText.node()).closest(".imgparent").attr("id"));
+        return;
+    }
+
+    // set the class of currentSelectedText to be colorText
+    selectedText.attr("class", colorText);
+
+    var color = getColor(colorText.replace("box", ""));
+
+    // if there is a transform, grab the x, y
+    if (selectedText.attr("transform") != null) {
+        rect.x = selectedText.node().transform.baseVal[0].matrix.e;
+        rect.y = selectedText.node().transform.baseVal[0].matrix.f - 3;
+    }
+
+    pathinfo = [
+        {x: rect.x-offset, y: rect.y },
+        {x: rect.x+offset + rect.width, y: rect.y},
+        {x: rect.x+offset + rect.width, y: rect.y + rect.height - 1 },
+        {x: rect.x-offset, y: rect.y + rect.height - 1 },
+        {x: rect.x-offset, y: rect.y },
+    ];
+
+    if (existingColoredBox.node()) {
+        existingColoredBox.style("stroke", color);
+    } else {
+        // Specify the function for generating path data
+        var d3line = d3.line()
+            .x(function(d){return d.x;})
+            .y(function(d){return d.y;})
+            .curve(d3.curveLinear);
+
+        // Draw the line
+        svgcanvas.append("path")
+            .attr("id", labelText)
+            .attr("d", d3line(pathinfo))
+            .style("stroke-width", 1)
+            .style("stroke", color)
+            .style("fill", "none");
+    }
+    setDirtyUnsaved("notes-" + $(selectedText.node()).closest(".imgparent").attr("id"));
+    hideContextMenu();
+}
+
+function getColor(name) {
+    if (name == "red") {
+        return "red";
+    } else if (name == "yellow") {
+        return "#efe645";
+    } else if (name == "pink") {
+        return "#e935a1";
+    } else if (name == "lightblue") {
+        return "#00e3ff";
+    } else if (name == "orange") {
+        return "orange";
+    } else if (name == "neonblue") {
+        return "#537eff";
+    } else if (name == "green") {
+        return "#00cb85";
+    }
+}
 
 // Slider/colorization functions
 $( function() {

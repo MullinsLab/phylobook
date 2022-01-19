@@ -141,6 +141,7 @@
         });
 
         function getMultiSelectedTexts(svg, rect) {
+            hideContextMenu();
             var labels = [];
             var rectbbox = rect.node().getBoundingClientRect();
             var rbx2 = rectbbox.x + rectbbox.width;
@@ -150,8 +151,6 @@
                 var textbbox = this.getBoundingClientRect();
                 var tbx2 = textbbox.x + textbbox.width;
                 var tby2 = textbbox.y + textbbox.height;
-                if (d3.select(this).text() == "FSH_036_002_GP_NT_102_1")
-                    debugger;
                 if (textbbox.x >= rectbbox.x && tbx2 <= rbx2 &&
                     textbbox.y >= rectbbox.y && tby2 <= rby2) {
                         labels.push(this);
@@ -161,6 +160,9 @@
             return labels;
         }
 
+        function showMultiSelectContextMenu(x, y) {
+            showContextMenu(x, y);
+        }
 
     </script>
 
@@ -323,7 +325,7 @@
                             <a target="_blank" class="highlighterdoc" href="/projects/files/download/fasta/{{ project }}/{{ entry.uniquesvg }}">Download ordered fasta</a>
                         </div>
                     </div>
-                    {% if 'change_project' in context_perms %}
+
                     <div class="col-auto">
                         {% if entry.clusterfiles|length > 0 %}
 
@@ -344,7 +346,7 @@
                         {% endif %}
 
                     </div>
-                    {% endif %}
+
                 </div>
                 <div class="row {% if 'change_project' in context_perms %} hide {% endif %}"  id="color-{{ entry.uniquesvg }}">
                     <div class="col-auto mr-auto text-nowrap">
@@ -424,26 +426,17 @@
                                         .attr("height", Math.max(0, (event.y * yScale)- +rect.attr("y")));
                                     console.log('drag');
                                     })
-                                .on("end",  (sourceElement,index,svgItems) => {
+                                .on("end",  function (event, d) {
                                     var selectedTexts = getMultiSelectedTexts(this, rect);
                                     d3.selectAll(".selectrect").remove();
-                                    console.log('end drag with mouseover: ' + this.mouseover_node);
+                                    if (selectedTexts.length > 0) {
+                                        currentSVG = this;
+                                        showMultiSelectContextMenu(event.sourceEvent.clientX, event.sourceEvent.clientY);
+                                    }
+                                    console.log('end drag');
                                     })
                             );
 
-                            /*
-                             .call(d3.brush()
-                                // Use the brush.on() function
-                                // to set the given event listener
-                                .on("brush", function() {
-                                    var e = brush.extent();
-                                    console.log(e);
-                                })
-                                .extent([[0, 0],
-                                [d3.select($("#{{ entry.uniquesvg }}").find("svg")[0]).attr("width"), d3.select($("#{{ entry.uniquesvg }}").find("svg")[0]).attr("height")]]
-                                )
-                            );
-                            */
                     });
                     $('#notes-' + "{{ entry.uniquesvg }}").load('/projects/note/read/{{ project }}/' + "{{ entry.uniquesvg }}");
 
