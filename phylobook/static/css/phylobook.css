@@ -281,3 +281,20 @@ img {
     resize: none; /* Remove this if you want the user to resize the textarea */
 }
 /* end extract dialog */
+.hidden {
+    opacity: 0.3;
+}
+
+.extent {
+    fill: #000;
+    fill-opacity: .125;
+    stroke: #fff;
+}
+
+.selectrect {
+    opacity: 0.2;
+}
+
+.selectedtext {
+    fill: lightgray;
+}

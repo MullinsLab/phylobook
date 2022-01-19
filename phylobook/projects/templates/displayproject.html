@@ -119,6 +119,7 @@
                     return "key not found";
             }
         }
+
         // add listener for cluster select
         $(function(){
             $('.cluster-select').on('change', function() {
@@ -138,6 +139,29 @@
                 }
             });
         });
+
+        function getMultiSelectedTexts(svg, rect) {
+            var labels = [];
+            var rectbbox = rect.node().getBoundingClientRect();
+            var rbx2 = rectbbox.x + rectbbox.width;
+            var rby2 = rectbbox.y + rectbbox.height;
+            d3.select(svg).selectAll("text")
+            .each(function() {
+                var textbbox = this.getBoundingClientRect();
+                var tbx2 = textbbox.x + textbbox.width;
+                var tby2 = textbbox.y + textbbox.height;
+                if (d3.select(this).text() == "FSH_036_002_GP_NT_102_1")
+                    debugger;
+                if (textbbox.x >= rectbbox.x && tbx2 <= rbx2 &&
+                    textbbox.y >= rectbbox.y && tby2 <= rby2) {
+                        labels.push(this);
+                        d3.select(this).classed("selectedtext", true);
+                    }
+            });
+            return labels;
+        }
+
+
     </script>
 
     {% if user.is_authenticated %}
@@ -377,8 +401,52 @@
                     </div>
                 </div>
                 <script type="text/javascript">
-                   $('#{{ entry.uniquesvg }}').find(".svgimage").load('{{ entry.svg }}');
-                   $('#notes-' + "{{ entry.uniquesvg }}").load('/projects/note/read/{{ project }}/' + "{{ entry.uniquesvg }}");
+                    var rect;
+                    $('#{{ entry.uniquesvg }}').find(".svgimage").load('{{ entry.svg }}', function() {
+                        d3.select($("#{{ entry.uniquesvg }}").find("svg")[0])
+                            .call(d3.drag()
+                                .on("start", function (event, d) {
+                                    console.log('start', "x=" + event.x, "y=" + event.y);
+                                    var xScale = this.width.baseVal.value/this.clientWidth;
+                                    var yScale = this.height.baseVal.value/this.clientHeight;
+                                    rect = d3.select(this).append("rect")
+                                        .attr("x", event.x * xScale)
+                                        .attr("y", event.y * yScale)
+                                        .attr("height", 0)
+                                        .attr("width", 0)
+                                        .attr("class", "selectrect");
+                                    return false;
+                                    })
+                                .on("drag", function (event, d) {
+                                    var xScale = this.width.baseVal.value/this.clientWidth;
+                                    var yScale = this.height.baseVal.value/this.clientHeight;
+                                    rect.attr("width", Math.max(0, (event.x * xScale) - +rect.attr("x")))
+                                        .attr("height", Math.max(0, (event.y * yScale)- +rect.attr("y")));
+                                    console.log('drag');
+                                    })
+                                .on("end",  (sourceElement,index,svgItems) => {
+                                    var selectedTexts = getMultiSelectedTexts(this, rect);
+                                    d3.selectAll(".selectrect").remove();
+                                    console.log('end drag with mouseover: ' + this.mouseover_node);
+                                    })
+                            );
+
+                            /*
+                             .call(d3.brush()
+                                // Use the brush.on() function
+                                // to set the given event listener
+                                .on("brush", function() {
+                                    var e = brush.extent();
+                                    console.log(e);
+                                })
+                                .extent([[0, 0],
+                                [d3.select($("#{{ entry.uniquesvg }}").find("svg")[0]).attr("width"), d3.select($("#{{ entry.uniquesvg }}").find("svg")[0]).attr("height")]]
+                                )
+                            );
+                            */
+                    });
+                    $('#notes-' + "{{ entry.uniquesvg }}").load('/projects/note/read/{{ project }}/' + "{{ entry.uniquesvg }}");
+
                 </script>
             </div>
         {% endfor %}

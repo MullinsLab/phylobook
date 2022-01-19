@@ -513,6 +513,7 @@ $(document).ready(function() {
     window.onscroll = function() {
         hideContextMenu();
     };
+
     window.addEventListener("click", (e) => {
         // ? close the menu if the user clicks outside of it
         if (e.target.offsetParent != contextMenu && e.target.offsetParent != contextMenuCircle) {
