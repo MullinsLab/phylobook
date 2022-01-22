@@ -661,8 +661,8 @@ function processContextMenuClick(e, selectedTextNode, selectedText, colorText) {
 
     // if there is a transform, grab the x, y
     if (selectedText.attr("transform") != null) {
-        rect.x = selectedText.node().transform.baseVal[0].matrix.e;
-        rect.y = selectedText.node().transform.baseVal[0].matrix.f - 3;
+        rect.x = selectedText.node().transform.baseVal[0].matrix.e - 1;
+        rect.y = selectedText.node().transform.baseVal[0].matrix.f + 2;
     }
 
     pathinfo = [

@@ -296,5 +296,5 @@ img {
 }
 
 .selectedtext {
-    fill: lightgray;
+    fill: lightgray !important;
 }

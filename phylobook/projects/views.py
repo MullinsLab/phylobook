@@ -267,7 +267,7 @@ def downloadExtractedFasta(request, name, file):
         extractedsSeqs = ""
         for rec in records:
             if rec.id in seqs:
-                extractedsSeqs = extractedsSeqs + rec.id + suffix + "\n" + rec.seq + "\n"
+                extractedsSeqs = extractedsSeqs + ">" + rec.id + suffix + "\n" + rec.seq + "\n"
         fastaIO.close()
 
         response = HttpResponse(extractedsSeqs, content_type='text/plain')

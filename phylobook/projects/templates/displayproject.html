@@ -6,8 +6,8 @@
 {% get_obj_perms request.user for project_obj as "context_perms" %}
 {% if "change_project" in context_perms %}
     <script src="{% static 'script/phylobook.js' %}"></script>
-    <script src="{% static 'script/csvToArray.v2.1.js' %}"></script>
 {% endif %}
+    <script src="{% static 'script/csvToArray.v2.1.js' %}"></script>
     <script src="{% static 'script/phylobookview.js' %}"></script>
     <script>
         var token = '{{csrf_token}}';
@@ -149,6 +149,12 @@
             d3.select(svg).selectAll("text")
             .each(function() {
                 var textbbox = this.getBoundingClientRect();
+                // if there is a transform, grab the x, y
+                var selectedItem = d3.select(this);
+                if (selectedItem.attr("transform") != null) {
+                    textbbox.x = this.getScreenCTM().e;
+                    textbbox.y = this.getScreenCTM().f;
+                }
                 var tbx2 = textbbox.x + textbbox.width;
                 var tby2 = textbbox.y + textbbox.height;
                 if (textbbox.x >= rectbbox.x && tbx2 <= rbx2 &&
@@ -408,7 +414,7 @@
                         d3.select($("#{{ entry.uniquesvg }}").find("svg")[0])
                             .call(d3.drag()
                                 .on("start", function (event, d) {
-                                    console.log('start', "x=" + event.x, "y=" + event.y);
+                                    //console.log('start', "x=" + event.x, "y=" + event.y);
                                     var xScale = this.width.baseVal.value/this.clientWidth;
                                     var yScale = this.height.baseVal.value/this.clientHeight;
                                     rect = d3.select(this).append("rect")
@@ -424,7 +430,7 @@
                                     var yScale = this.height.baseVal.value/this.clientHeight;
                                     rect.attr("width", Math.max(0, (event.x * xScale) - +rect.attr("x")))
                                         .attr("height", Math.max(0, (event.y * yScale)- +rect.attr("y")));
-                                    console.log('drag');
+                                    //console.log('drag');
                                     })
                                 .on("end",  function (event, d) {
                                     var selectedTexts = getMultiSelectedTexts(this, rect);
@@ -433,7 +439,7 @@
                                         currentSVG = this;
                                         showMultiSelectContextMenu(event.sourceEvent.clientX, event.sourceEvent.clientY);
                                     }
-                                    console.log('end drag');
+                                    //console.log('end drag');
                                     })
                             );
 
