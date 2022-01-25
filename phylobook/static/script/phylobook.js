@@ -15,14 +15,16 @@ tinymce.init({
     'autolink',
     ],
     color_map: [
-        "000000", "Black",
-        "FF0000", "Red",
         "EFE645", "Yellow",
-        "E935A1", "Pink",
-        "00E3FF", "Light Blue",
-        "FFA500", "Orange",
+        "FF0000", "Red",
         "537EFF", "Neon Blue",
         "00CB85", "Green",
+        "FFA500", "Orange",
+        "E935A1", "Pink",
+        "00E3FF", "Light Blue",
+        "000000", "Black",
+        "808080", "Gray",
+        "800080", "Purple",
     ],
     toolbar: [
     'save undo redo | bold italic underline | fontselect fontsizeselect',
@@ -376,6 +378,9 @@ $(document).ready(function() {
         var extractorange = getColorTextLabels(svg, "boxorange");
         var extractneonblue = getColorTextLabels(svg, "boxneonblue");
         var extractgreen = getColorTextLabels(svg, "boxgreen");
+        var extractblack = getColorTextLabels(svg, "boxblack");
+        var extractgray = getColorTextLabels(svg, "boxgray");
+        var extractpurple = getColorTextLabels(svg, "boxpurple");
 
         $("#seqsid").val(id);
         if (extractred.length === 0) {
@@ -426,6 +431,27 @@ $(document).ready(function() {
         } else {
             $("#extractgreen").attr("disabled", false);
             $("#seqsgreen").val(extractgreen.join());
+        }
+        if (extractblack.length === 0) {
+            $("#extractblack").prop("checked", false);
+            $("#extractblack").attr("disabled", true);
+        } else {
+            $("#extractblack").attr("disabled", false);
+            $("#seqsblack").val(extractblack.join());
+        }
+        if (extractgray.length === 0) {
+            $("#extractgray").prop("checked", false);
+            $("#extractgray").attr("disabled", true);
+        } else {
+            $("#extractgray").attr("disabled", false);
+            $("#seqsgray").val(extractgray.join());
+        }
+        if (extractpurple.length === 0) {
+            $("#extractpurple").prop("checked", false);
+            $("#extractpurple").attr("disabled", true);
+        } else {
+            $("#extractpurple").attr("disabled", false);
+            $("#seqspurple").val(extractpurple.join());
         }
 
         $('#myModal').modal({show:true});
@@ -709,6 +735,12 @@ function getColor(name) {
         return "#537eff";
     } else if (name == "green") {
         return "#00cb85";
+    } else if (name == "black") {
+        return "black";
+    } else if (name == "gray") {
+        return "gray";
+    } else if (name == "purple") {
+        return "purple";
     }
 }
 

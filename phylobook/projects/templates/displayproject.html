@@ -175,24 +175,30 @@
     {% if user.is_authenticated %}
         <input type="hidden" id="project" value="{{ project }}" />
         <div id="context-menu">
-            <div id="boxred" class="item"><span class="rectangle Red"></span>&nbsp;&nbsp;Red</div>
             <div id="boxyellow"  class="item"><span class="rectangle Yellow"></span>&nbsp;&nbsp;Yellow</div>
-            <div id="boxpink"  class="item"><span class="rectangle Pink"></span>&nbsp;&nbsp;Pink</div>
-            <div id="boxlightblue"  class="item"><span class="rectangle Lightblue"></span>&nbsp;&nbsp;Light Blue</div>
-            <div id="boxorange"  class="item"><span class="rectangle Orange"></span>&nbsp;&nbsp;Orange</div>
+            <div id="boxred" class="item"><span class="rectangle Red"></span>&nbsp;&nbsp;Red</div>
             <div id="boxneonblue"  class="item"><span class="rectangle Neonblue"></span>&nbsp;&nbsp;Neon Blue</div>
             <div id="boxgreen"  class="item"><span class="rectangle Green"></span>&nbsp;&nbsp;Green</div>
+            <div id="boxorange"  class="item"><span class="rectangle Orange"></span>&nbsp;&nbsp;Orange</div>
+            <div id="boxpink"  class="item"><span class="rectangle Pink"></span>&nbsp;&nbsp;Pink</div>
+            <div id="boxlightblue"  class="item"><span class="rectangle Lightblue"></span>&nbsp;&nbsp;Light Blue</div>
+            <div id="boxblack"  class="item"><span class="rectangle Black"></span>&nbsp;&nbsp;Black</div>
+            <div id="boxgray"  class="item"><span class="rectangle Gray"></span>&nbsp;&nbsp;Gray</div>
+            <div id="boxpurple"  class="item"><span class="rectangle Purple"></span>&nbsp;&nbsp;Purple</div>
             <div id="boxextract"  class="item">Extract</div>
             <div id="boxremove"  class="item">Remove</div>
         </div>
         <div id="context-menu-circle">
-            <div id="circlered" class="item"><span class="dot Red"></span>&nbsp;&nbsp;Red</div>
             <div id="circleyellow"  class="item"><span class="dot Yellow"></span>&nbsp;&nbsp;Yellow</div>
-            <div id="circlepink"  class="item"><span class="dot Pink"></span>&nbsp;&nbsp;Pink</div>
-            <div id="circlelightblue"  class="item"><span class="dot Lightblue"></span>&nbsp;&nbsp;Light Blue</div>
-            <div id="circleorange"  class="item"><span class="dot Orange"></span>&nbsp;&nbsp;Orange</div>
+            <div id="circlered" class="item"><span class="dot Red"></span>&nbsp;&nbsp;Red</div>
             <div id="circleneonblue"  class="item"><span class="dot Neonblue"></span>&nbsp;&nbsp;Neon Blue</div>
             <div id="circlegreen"  class="item"><span class="dot Green"></span>&nbsp;&nbsp;Green</div>
+            <div id="circleorange"  class="item"><span class="dot Orange"></span>&nbsp;&nbsp;Orange</div>
+            <div id="circlepink"  class="item"><span class="dot Pink"></span>&nbsp;&nbsp;Pink</div>
+            <div id="circlelightblue"  class="item"><span class="dot Lightblue"></span>&nbsp;&nbsp;Light Blue</div>
+            <div id="circleblack"  class="item"><span class="dot Black"></span>&nbsp;&nbsp;Black</div>
+            <div id="circlegray"  class="item"><span class="dot Gray"></span>&nbsp;&nbsp;Gray</div>
+            <div id="circlepurple"  class="item"><span class="dot Purple"></span>&nbsp;&nbsp;Purple</div>
             <div id="circleremove"  class="item">Remove</div>
         </div>
         <!-- Modal -->
@@ -209,6 +215,15 @@
                             <input type="hidden" id="seqsid" value="" />
                             <div class="custom-radio-button">
                               <div>
+                                <input type="radio" id="extractyellow" name="color" value="extractyellow">
+                                <label for="extractyellow">
+                                  <span>
+                                  </span>
+                                </label>
+                                  <input type="hidden" id="seqsyellow" value="" />
+                              </div>
+
+                              <div>
                                 <input type="radio" id="extractred" name="color" value="extractred">
                                 <label for="extractred">
                                   <span>
@@ -218,12 +233,30 @@
                               </div>
 
                               <div>
-                                <input type="radio" id="extractyellow" name="color" value="extractyellow">
-                                <label for="extractyellow">
+                                <input type="radio" id="extractneonblue" name="color" value="extractneonblue">
+                                <label for="extractneonblue">
                                   <span>
                                   </span>
                                 </label>
-                                  <input type="hidden" id="seqsyellow" value="" />
+                                  <input type="hidden" id="seqsneonblue" value="" />
+                              </div>
+
+                              <div>
+                                <input type="radio" id="extractgreen" name="color" value="extractgreen">
+                                <label for="extractgreen">
+                                  <span>
+                                  </span>
+                                </label>
+                                  <input type="hidden" id="seqsgreen" value="" />
+                              </div>
+
+                              <div>
+                                <input type="radio" id="extractorange" name="color" value="extractorange">
+                                <label for="extractorange">
+                                  <span>
+                                  </span>
+                                </label>
+                                  <input type="hidden" id="seqsorange" value="" />
                               </div>
 
                               <div>
@@ -245,31 +278,32 @@
                               </div>
 
                               <div>
-                                <input type="radio" id="extractorange" name="color" value="extractorange">
-                                <label for="extractorange">
+                                <input type="radio" id="extractblack" name="color" value="extractblack">
+                                <label for="extractblack">
                                   <span>
                                   </span>
                                 </label>
-                                  <input type="hidden" id="seqsorange" value="" />
+                                  <input type="hidden" id="seqsblack" value="" />
                               </div>
 
                               <div>
-                                <input type="radio" id="extractneonblue" name="color" value="extractneonblue">
-                                <label for="extractneonblue">
+                                <input type="radio" id="extractgray" name="color" value="extractgray">
+                                <label for="extractgray">
                                   <span>
                                   </span>
                                 </label>
-                                  <input type="hidden" id="seqsneonblue" value="" />
+                                  <input type="hidden" id="seqsgray" value="" />
                               </div>
 
                               <div>
-                                <input type="radio" id="extractgreen" name="color" value="extractgreen">
-                                <label for="extractgreen">
+                                <input type="radio" id="extractpurple" name="color" value="extractpurple">
+                                <label for="extractpurple">
                                   <span>
                                   </span>
                                 </label>
-                                  <input type="hidden" id="seqsgreen" value="" />
+                                  <input type="hidden" id="seqspurple" value="" />
                               </div>
+
                               <div>
                                 <label for="suffix">
                                   <span>
@@ -417,7 +451,9 @@
                                     //console.log('start', "x=" + event.x, "y=" + event.y);
                                     var xScale = this.width.baseVal.value/this.clientWidth;
                                     var yScale = this.height.baseVal.value/this.clientHeight;
+                                    var datum = {x: event.x * xScale, y: event.y * yScale};
                                     rect = d3.select(this).append("rect")
+                                        .datum(datum)
                                         .attr("x", event.x * xScale)
                                         .attr("y", event.y * yScale)
                                         .attr("height", 0)
@@ -428,9 +464,20 @@
                                 .on("drag", function (event, d) {
                                     var xScale = this.width.baseVal.value/this.clientWidth;
                                     var yScale = this.height.baseVal.value/this.clientHeight;
-                                    rect.attr("width", Math.max(0, (event.x * xScale) - +rect.attr("x")))
-                                        .attr("height", Math.max(0, (event.y * yScale)- +rect.attr("y")));
-                                    //console.log('drag');
+                                    var x = rect.datum().x;
+                                    var y = rect.datum().y;
+                                    var newx = event.x * xScale;
+                                    var newy = event.y * yScale;
+                                    var startx = Math.min(x, newx);
+                                    var starty = Math.min(y, newy);
+                                    var width = Math.abs(x - newx);
+                                    var height = Math.abs(y - newy);
+                                    rect.attr("x", startx)
+                                        .attr("y", starty)
+                                        .attr("width", width)
+                                        .attr("height", height);
+
+                                    //console.log('drag', "x=" + x, "y=" + y, "newx=" + newx, "newy=" + newy, "startx=" + startx, "starty=" + starty, "width=" + width, "height=" + height);
                                     })
                                 .on("end",  function (event, d) {
                                     var selectedTexts = getMultiSelectedTexts(this, rect);
@@ -444,7 +491,13 @@
                             );
 
                     });
-                    $('#notes-' + "{{ entry.uniquesvg }}").load('/projects/note/read/{{ project }}/' + "{{ entry.uniquesvg }}");
+                    $('#notes-' + "{{ entry.uniquesvg }}").load('/projects/note/read/{{ project }}/' + "{{ entry.uniquesvg }}", function() {
+                        var content = tinymce.get("notes-" + "{{ entry.uniquesvg }}").getContent();
+                        if (content.length > 0) {
+                            $('#notes-' + "{{ entry.uniquesvg }}").attr("data-mce-placeholder", "");
+                            $('#notes-' + "{{ entry.uniquesvg }}").attr("aria-placeholder", "");
+                        }
+                    });
 
                 </script>
             </div>

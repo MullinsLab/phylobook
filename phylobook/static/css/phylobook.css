@@ -145,25 +145,13 @@ img {
     background-color: transparent !important;
 }
 
-.Red {
-    background-color: Red;
-    border: 1px solid Red;
-}
 .Yellow {
     background-color: #efe645;
     border: 1px solid #efe645;
 }
-.Pink {
-    background-color: #e935a1;
-    border: 1px solid #e935a1;
-}
-.Lightblue {
-    background-color: #00e3ff;
-    border: 1px solid #00e3ff;
-}
-.Orange {
-    background-color: orange;
-    border: 1px solid orange;
+.Red {
+    background-color: Red;
+    border: 1px solid Red;
 }
 .Neonblue {
     background-color: #537eff;
@@ -173,6 +161,31 @@ img {
     background-color: #00cb85;
     border: 1px solid #00cb85;
 }
+.Orange {
+    background-color: orange;
+    border: 1px solid orange;
+}
+.Pink {
+    background-color: #e935a1;
+    border: 1px solid #e935a1;
+}
+.Lightblue {
+    background-color: #00e3ff;
+    border: 1px solid #00e3ff;
+}
+.Black {
+    background-color: black;
+    border: 1px solid black;
+}
+.Gray {
+    background-color: gray;
+    border: 1px solid gray;
+}
+.Purple {
+    background-color: purple;
+    border: 1px solid purple;
+}
+
 .slider-range {
     background-image: linear-gradient(to right, yellow , red);
     width: 300px;
@@ -244,6 +257,18 @@ img {
 .custom-radio-button input[type="radio"]#extractgreen + label span {
     border-color: #00cb85;
     border: 1px solid #00cb85;
+}
+.custom-radio-button input[type="radio"]#extractblack + label span {
+    border-color: black;
+    border: 1px solid black;
+}
+.custom-radio-button input[type="radio"]#extractgray + label span {
+    border-color: gray;
+    border: 1px solid gray;
+}
+.custom-radio-button input[type="radio"]#extractpurple + label span {
+    border-color: purple;
+    border: 1px solid purple;
 }
 .custom-radio-button input[type="radio"][disabled] + label span::before {
   content: '\2715';
