@@ -97,27 +97,9 @@
         }
 
         function getClassficationColor(key) {
-            switch(key) {
-                case 1:
-                    return "#8931ef"; //Blue-Violet
-                case 2:
-                    return "#f2ca19"; //Jonquil
-                case 3:
-                    return "#ff00bd"; //Shocking Pink
-                case 4:
-                    return "#000000"; //black
-                case 5:
-                    return "#87e911"; //Alien Armpit
-                case 6:
-                    return "#0057e9"; //RYB Blue
-                case 7:
-                    return "#d3d3d3"; //light gray
-                case 8:
-                    return "#e11845"; //Spanish Crimson
-                default:
-                    alert("No color found for classification #: " + key);
-                    return "key not found";
-            }
+            // https://stackoverflow.com/questions/10014271/generate-random-color-distinguishable-to-humans#answer-20129594
+            const goldenAngle = 180 * (3 - Math.sqrt(5));
+            return `hsl(${key * goldenAngle + 60}, 100%, 75%)`
         }
 
         // add listener for cluster select
@@ -358,7 +340,7 @@
         <form method="post">
         {% for entry in entries %}
             <div class="tree">
-                <div class="row" style="height: 32px">
+                <div class="row" style="height: auto;">
                     <div class="col-auto mr-auto text-nowrap ">
                         <div class="d-flex justify-content-start">
                             <h6>{{ entry.uniquesvg }}</h6>&nbsp;
@@ -376,12 +358,12 @@
                                     {% for cluster in entry.clusterfiles %}
                                         <option value="{{ cluster.file }}">{{ cluster.name }}</option>
                                     {% endfor %}
-                                </select>&nbsp;<div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex justify-content-start" style="font-size: 14px;"></div>&nbsp;|&nbsp;
-                                <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button>
+                                </select>&nbsp;<div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex align-content-stretch flex-wrap" style="font-size: 14px; max-width: 270px;"></div>&nbsp;|&nbsp;
+                                <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
                             </div>
                         {% else %}
                             <div class="d-flex justify-content-start">
-                                <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button>
+                                <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
                             </div>
                         {% endif %}
 
