@@ -72,7 +72,7 @@
                                 .append("path")
                                 .attr("d", triangle)
                                 .attr('class', 'cluster')
-                                .attr("transform", "translate(" + (rect.x  + rect.width + 3) + "," + (rect.y + 4) + ")")
+                                .attr("transform", "translate(" + (rect.x  + rect.width + 5) + "," + (rect.y + 4) + ")")
                                 .style('fill', color)
                                 .style("stroke", color);
 
@@ -152,6 +152,56 @@
             showContextMenu(x, y);
         }
 
+        function dragElement(elmnt) {
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            if (document.getElementById(elmnt.id)) {
+                /* if present, the header is where you move the DIV from:*/
+                document.getElementById(elmnt.id).onmousedown = dragMouseDown;
+            } else {
+                /* otherwise, move the DIV from anywhere inside the DIV:*/
+                elmnt.onmousedown = dragMouseDown;
+            }
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                
+                if ($(e.target).parent() && $(e.target).parent().find(".highlighterimg")[0]) {
+                    var parentRect = $(e.target).parent().find(".highlighterimg")[0].getBoundingClientRect();
+                    var parentX = parentRect.left;
+
+                    // calculate the new cursor position:
+                    pos1 = pos3 - e.clientX;
+                    pos2 = pos4 - e.clientY;
+                    pos3 = e.clientX;
+                    pos4 = e.clientY;
+                    // set the element's new position:
+                    // move only horizontal
+                    // elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                    var newX = elmnt.offsetLeft - pos1;
+                    if ((e.clientX >= parentX - 4) && (e.clientX <= parentRect.width + parentX + 4)) {
+                        elmnt.style.left = newX + "px";
+                    }
+                }
+            }
+
+            function closeDragElement() {
+                /* stop moving when mouse button is released:*/
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
     </script>
 
     {% if user.is_authenticated %}
@@ -358,7 +408,7 @@
                                     {% for cluster in entry.clusterfiles %}
                                         <option value="{{ cluster.file }}">{{ cluster.name }}</option>
                                     {% endfor %}
-                                </select>&nbsp;<div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex align-content-stretch flex-wrap" style="font-size: 14px; max-width: 270px;"></div>&nbsp;|&nbsp;
+                                </select>&nbsp;<div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex align-content-stretch flex-wrap" style="font-size: 14px; max-width: 270px; min-width: 220px;"></div>&nbsp;|&nbsp;
                                 <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
                             </div>
                         {% else %}
@@ -421,7 +471,10 @@
                 <div class="images">
                     <div class='imgparent' id='{{ entry.uniquesvg }}'>
                        <div class='svgimage'></div>
-                       <div class='highlighter'><img src="{{ entry.highlighter }}" /></div>
+                       <div class='highlighter'>
+                           <div id="{{ entry.uniquesvg }}-straightedge" class="straightedge"></div>
+                           <img src="{{ entry.highlighter }}" class="highlighterimg" />
+                       </div>
                     </div>
                 </div>
                 <script type="text/javascript">
@@ -472,6 +525,26 @@
                                     })
                             );
 
+                            // draggable vertical bar on svg tree
+                            /*
+                            d3.select($("#{{ entry.uniquesvg }}").find("svg")[0]).append('rect')
+                              .attr('x', 0)
+                              .attr('y', 0)
+                              .attr('width', 3)
+                              .attr('height', "100%")
+                              .attr('stroke', 'gray')
+                              .attr('fill', 'gray')
+                              .style("opacity", 0.2)
+                              .style('cursor', 'pointer')
+                              .call(d3.drag()
+                                .on("drag", function (event, d) {
+                                    var maxX = parseInt(d3.select($("#{{ entry.uniquesvg }}").find("svg")[0]).attr("width")) - 3;
+                                    var x = event.x;
+                                    if (x >= 0 && x <= maxX) {
+                                        d3.select(this).attr("x", event.x);
+                                    }
+                                }));
+                            */
                     });
                     $('#notes-' + "{{ entry.uniquesvg }}").load('/projects/note/read/{{ project }}/' + "{{ entry.uniquesvg }}", function() {
                         var content = tinymce.get("notes-" + "{{ entry.uniquesvg }}").getContent();
@@ -480,6 +553,8 @@
                             $('#notes-' + "{{ entry.uniquesvg }}").attr("aria-placeholder", "");
                         }
                     });
+
+                    dragElement(document.getElementById("{{ entry.uniquesvg }}-straightedge"));
 
                 </script>
             </div>

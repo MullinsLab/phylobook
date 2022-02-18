@@ -84,6 +84,7 @@ svg {
 .highlighter {
     display: inline-block;
     height: 100%;
+    position: relative;
 }
 img {
     width: 100%;
@@ -322,4 +323,17 @@ img {
 
 .selectedtext {
     fill: lightgray !important;
+}
+
+.straightedge {
+    height: 100%;
+    float: left;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    background-color: gray;
+    opacity: 0.2;
+    width: 3px;
+    z-index: 1000;
+    cursor: pointer;
 }
