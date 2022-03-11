@@ -31,3 +31,13 @@ Build and deploy the containers
 
 `docker-compose up -d --build`
 
+Perform initial database migrations
+
+`docker exec -it phylobook python manage.py migrate --settings=phylobook.settings.prod`
+
+Create super user
+
+`docker exec -it phylobook python manage.py createsuperuser --settings=phylobook.settings.prod`
+
+
+

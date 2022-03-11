@@ -167,6 +167,8 @@ SERVER_EMAIL = EMAIL_HOST_USER
 
 LOGIN_TYPE = os.environ.get('LOGIN_TYPE')
 LOGIN_URL = os.environ.get('LOGIN_URL')
+LOGIN_SSO_TITLE = ''
+LOGIN_SSO_COLLABORATOR_TITLE = ''
 
 if LOGIN_TYPE == "dual" or LOGIN_TYPE == 'sso':
     LOGIN_REDIRECT_URL = "/projects"
