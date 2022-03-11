@@ -18,7 +18,8 @@ from django.views.generic.base import RedirectView
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 import phylobook.views as views
-import phylobook.settings as settings
+#import phylobook.settings as settings
+from django.conf import settings
 
 admin.site.site_header  =  "Phylobook Admin"
 admin.site.site_title  =  "Phylobook Admin Site"

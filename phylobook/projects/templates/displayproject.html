@@ -176,7 +176,7 @@
             function elementDrag(e) {
                 e = e || window.event;
                 e.preventDefault();
-                
+
                 if ($(e.target).parent() && $(e.target).parent().find(".highlighterimg")[0]) {
                     var parentRect = $(e.target).parent().find(".highlighterimg")[0].getBoundingClientRect();
                     var parentX = parentRect.left;

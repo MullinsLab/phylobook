@@ -333,7 +333,7 @@ img {
     top: 0px;
     background-color: gray;
     opacity: 0.2;
-    width: 3px;
+    width: 2px;
     z-index: 1000;
     cursor: pointer;
 }

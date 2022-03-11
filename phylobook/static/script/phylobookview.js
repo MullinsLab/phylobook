@@ -12,9 +12,16 @@ function showhideColorRange(id, tag) {
 function resizeHighlighterWidth(imgparentid, adjustment) {
     var imgheight = $('#' + imgparentid).find('img').prop("naturalHeight");
     var imgwidth = $('#' + imgparentid).find('img').prop("naturalWidth");
+    var curwidth = $('#' + imgparentid).find('img').prop("width");
     var imgratio = imgwidth/imgheight;
     var imgimagewidth = adjustment * imgratio;
     $('#' + imgparentid).find('.highlighter').width(imgimagewidth);
+
+    // adjust highlighter straightedge
+    var newOffsetFactor = imgimagewidth/curwidth;
+    var elmnt = $('#' + imgparentid).find(".straightedge")[0];
+    var newX = elmnt.offsetLeft * newOffsetFactor;
+    elmnt.style.left = newX + "px";
 }
 
 function resizeSVGWidth(imgparentid, adjustment) {
