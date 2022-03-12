@@ -113,4 +113,4 @@ GitHub.sublime-settings
 /phylobook/settings.py
 /phylobook/settings.py.dev
 /phylobook/settings/saml.py
-/config.env
+/.env

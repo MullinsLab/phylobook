@@ -11,13 +11,13 @@ https://docs.docker.com/get-docker/
 
 `cd phylobook`
 
-Create config.env by copying config.env.TEMPLATE
+Create .env by copying .env.TEMPLATE
 
-`cp config.env.TEMPLATE config.env`
+`cp .env.TEMPLATE .env`
 
 Edit config.env and add your specific settings
 
-`nano config.env`
+`nano .env`
 
 If you chose LOGIN_TYPE=sso or LOGIN_TYPE=dual in config.env, then you must create settings/saml.py by copying settings/saml.py.TEMPLATE
 

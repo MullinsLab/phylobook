@@ -8,19 +8,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - config.env
+      - .env
 
   web:
     build: .
     container_name: phylobook
     volumes:
-      - /Users/jfurlong/dev/FigTree-command-line/phylobook_fixed:/data
+      - ${PROJECT_PATH}:/data
     ports:
       - 80:80
     depends_on:
       - db
     env_file:
-      - config.env
+      - .env
 
 volumes:
   postgres_data:
