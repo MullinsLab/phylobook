@@ -23,5 +23,5 @@ RUN ln /usr/bin/python3 /usr/bin/python
 RUN ln -s /usr/local/lib/python3.9 /usr/local/lib/python3
 RUN python manage.py collectstatic --settings=phylobook.settings.static --noinput
 ADD ./phylobook.conf /etc/apache2/sites-available/000-default.conf
-EXPOSE 80
+EXPOSE 8000
 CMD ["apache2ctl", "-D", "FOREGROUND"]

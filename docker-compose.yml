@@ -16,7 +16,7 @@ services:
     volumes:
       - ${PROJECT_PATH}:${PROJECT_PATH}
     ports:
-      - 80:80
+      - 127.0.0.1:8000:8000
     depends_on:
       - db
     env_file:
