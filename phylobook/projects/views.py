@@ -29,7 +29,7 @@ def projects(request):
 
 def displayProject(request, name):
     project = Project.objects.get(name=name)
-    if project and (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)):
+    if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
         entries = []
         projectPath = os.path.join(PROJECT_PATH, name)
         for file in sorted(os.listdir(projectPath)):
@@ -78,14 +78,14 @@ def getUserProjects(user):
     availableProjects = []
     for project in query_set:
         # check permissions and add to available if user has permission
-        if user.has_perm('phylobook.change_project', project) or user.has_perm('phylobook.view_project', project):
+        if user.has_perm('projects.change_project', project) or user.has_perm('projects.view_project', project):
             availableProjects.append(project.name)
 
     return sorted(availableProjects)
 
 def getFile(request, name, file):
     project = Project.objects.get(name=name)
-    if project and (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)):
+    if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
         filePath = os.path.join(PROJECT_PATH, name, file)
         try:
             if file.endswith(".svg"):
@@ -118,7 +118,7 @@ def cleanClusterRow(row):
 def readNote(request, name, file):
     project = Project.objects.get(name=name)
     if project and \
-            (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)) \
+            (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)) \
             and request.is_ajax():
         filePath = Path(os.path.join(PROJECT_PATH, name, file + ".json"))
         notes = ""
@@ -135,7 +135,7 @@ def readNote(request, name, file):
 
 def updateNote(request, name, file):
     project = Project.objects.get(name=name)
-    if project and request.user.has_perm('phylobook.change_project', project) and request.is_ajax():
+    if project and request.user.has_perm('projects.change_project', project) and request.is_ajax():
         if request.method == 'POST':
             filePath = Path(os.path.join(PROJECT_PATH, name, file + ".json"))
             notes = request.POST.get('notes')
@@ -171,7 +171,7 @@ def updateNote(request, name, file):
 
 def updateSVG(request, name, file):
     project = Project.objects.get(name=name)
-    if project and request.user.has_perm('phylobook.change_project', project) and request.is_ajax():
+    if project and request.user.has_perm('projects.change_project', project) and request.is_ajax():
         if request.method == 'POST':
             projectPath = os.path.join(PROJECT_PATH, name)
             for f in sorted(os.listdir(projectPath)):
@@ -188,7 +188,7 @@ def updateSVG(request, name, file):
 
 def downloadProjectFiles(request, name):
     project = Project.objects.get(name=name)
-    if project and (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)):
+    if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
         response = HttpResponse(content_type='application/x-gzip')
         response['Content-Disposition'] = 'attachment; filename=' + name + '-' + time.strftime("%Y%m%d-%H%M%S") + '.tar.gz'
         tarred = tarfile.open(fileobj=response, mode='w:gz')
@@ -202,7 +202,7 @@ def downloadProjectFiles(request, name):
 
 def downloadOrderedFasta(request, name, file):
     project = Project.objects.get(name=name)
-    if project and (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)):
+    if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
         orderedFasta = buildOrderedFastaFile(name, file)
         response = HttpResponse(orderedFasta, content_type='application/x-fasta')
         response['Content-Disposition'] = 'attachment; filename=' + file + '-ordered.fasta'
@@ -253,7 +253,7 @@ def readNextHighlighterRecord(highlighterData):
 
 def downloadExtractedFasta(request, name, file):
     project = Project.objects.get(name=name)
-    if request.method == 'POST' and project and (request.user.has_perm('phylobook.change_project', project) or request.user.has_perm('phylobook.view_project', project)):
+    if request.method == 'POST' and project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
         seqsVal = request.POST.get('seqs')
         seqs = []
         if seqsVal and "," in seqsVal:

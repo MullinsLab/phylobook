@@ -14,7 +14,7 @@ services:
     build: .
     container_name: phylobook
     volumes:
-      - ${PROJECT_PATH}:/data
+      - ${PROJECT_PATH}:${PROJECT_PATH}
     ports:
       - 80:80
     depends_on:

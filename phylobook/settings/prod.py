@@ -165,14 +165,15 @@ SERVER_EMAIL = EMAIL_HOST_USER
 #      fail_silently=False,
 # )
 
+LOGIN_REDIRECT_URL = "/projects"
+LOGOUT_REDIRECT_URL = "/projects"
+
 LOGIN_TYPE = os.environ.get('LOGIN_TYPE')
 LOGIN_URL = os.environ.get('LOGIN_URL')
 LOGIN_SSO_TITLE = ''
 LOGIN_SSO_COLLABORATOR_TITLE = ''
 
 if LOGIN_TYPE == "dual" or LOGIN_TYPE == 'sso':
-    LOGIN_REDIRECT_URL = "/projects"
-    LOGOUT_REDIRECT_URL = "/projects"
     from phylobook.settings.saml import UW_SAML as UW_SAML_CONF
     UW_SAML = UW_SAML_CONF
 

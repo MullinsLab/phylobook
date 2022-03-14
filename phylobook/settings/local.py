@@ -187,6 +187,9 @@ LOGIN_URL = '/login'
 # end local login config
 # ######################################
 
+LOGIN_REDIRECT_URL = "/projects"
+LOGOUT_REDIRECT_URL = "/projects"
+
 SETTINGS_EXPORT = [
     'LOGIN_TYPE',
     'LOGIN_SSO_TITLE',
