@@ -39,5 +39,19 @@ Create super user
 
 `docker exec -it phylobook python manage.py createsuperuser --settings=phylobook.settings.prod`
 
+---------
+
+## For Developers
+
+Install PyCharm
+
+
+`git clone https://github.com/MullinsLab/phylobook.git`
+
+Create a project from the source
+
+Run the server from the terminal
+
+`python3 manage.py runserver 0.0.0.0:3030 --settings=phylobook.settings.local`
 
 
