@@ -48,10 +48,44 @@ Install PyCharm
 
 `git clone https://github.com/MullinsLab/phylobook.git`
 
-Create a project from the source
+Create a project from the source.  Add a virtual environment to the project and install the requirements.txt.
+
+`pip3 install -r requirements.txt`
+
+*Note to  Mac users:  xmlsec, lxml, psycopg2 may require you to install or update Xcode Command Line Tools. 
+
+Edit settings/local.py and fill in PROJECT_PATH (location of project/data files) EMAIL settings for you environment.
+
+Perform initial database migrations
+
+`python3 manage.py migrate --settings=phylobook.settings.prod`
+
+Create super user
+
+`python3 manage.py createsuperuser --settings=phylobook.settings.prod`
+
 
 Run the server from the terminal
 
 `python3 manage.py runserver 0.0.0.0:3030 --settings=phylobook.settings.local`
 
+----
+
+*Notes for SSO users:  Creating a user, at this point, has to be done at the manage.py shell.  Here is example code for adding externally authenticated users.
+
+`python3 manage.py shell`
+
+
+`from django.contrib.auth.models import User`				
+
+`user = User(username='user_name')`
+
+`user.set_unusable_password()`
+
+`user.is_staff = False`
+
+`user.is_superuser = False`
+
+`user.save()`
+`
 
