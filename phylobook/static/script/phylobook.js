@@ -49,7 +49,7 @@ tinymce.init({
         var proj = $("#project").val();
         var edId = ed.id;
         // check to see if SVG image exists, so it doesn't get overwritten with 0 bytes
-        if ($("#" + id).find(".svgimage").html().length > 0) {
+        if ($("#" + id).find(".svgimage").html() && $("#" + id).find(".svgimage").html().length > 0) {
             $.ajax({
             type: "POST",
             headers: { "X-CSRFToken": token },
@@ -149,7 +149,7 @@ function saveAll() {
         var svg = $("#" + id).find(".svgimage").html();
         var proj = $("#project").val();
         // check to see if SVG image exists, so it doesn't get overwritten with 0 bytes
-        if ($("#" + id).find(".svgimage").html().length > 0) {
+        if ($("#" + id).find(".svgimage").html() && $("#" + id).find(".svgimage").html().length > 0) {
             $.ajax({
                 type: "POST",
                 headers: { "X-CSRFToken": token },
