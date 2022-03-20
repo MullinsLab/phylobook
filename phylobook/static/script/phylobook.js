@@ -48,7 +48,9 @@ tinymce.init({
         var svg = $("#" + id).find(".svgimage").html();
         var proj = $("#project").val();
         var edId = ed.id;
-        $.ajax({
+        // check to see if SVG image exists, so it doesn't get overwritten with 0 bytes
+        if ($("#" + id).find(".svgimage").html().length > 0) {
+            $.ajax({
             type: "POST",
             headers: { "X-CSRFToken": token },
             url: '/projects/note/update/' + proj + "/" + id,
@@ -79,6 +81,10 @@ tinymce.init({
                 alert( id + " Failed to save!!!  Contact dev team." );
             }
         });
+        } else {
+            alert(id + " is missing an SVG image.  It will not be saved.");
+            setDirtyUnsaved(ed.id);
+        }
     }
 });
 
@@ -142,45 +148,56 @@ function saveAll() {
         var id = noteId.replace("notes-", "");
         var svg = $("#" + id).find(".svgimage").html();
         var proj = $("#project").val();
-        $.ajax({
-            type: "POST",
-            headers: { "X-CSRFToken": token },
-            url: '/projects/note/update/' + proj + "/" + id,
-            data: {
-                "notes": content,
-                "minval": $("#minval-" + id).val(),
-                "maxval": $("#maxval-" + id).val(),
-                "colorlowval": $("#colorlowval-" + id).val(),
-                "colorhighval": $("#colorhighval-" + id).val(),
-                "iscolored": $("#iscolored-" + id).val()
-            },
-            success: function() {
-                $.ajax({
-                    type: "POST",
-                    headers: { "X-CSRFToken": token },
-                    url: '/projects/svg/update/' + proj + "/" + id,
-                    data: { "svg": svg },
-                    success: function() {
-                        setDirtySaved(noteId);
-                        treesdone++;
-                        updateProgress(Math.round((treesdone/treescount)*100));
-                        if (treesdone == treescount) {
-                            setTimeout(function() {
-                              $("#saveallprog").addClass("hide");
-                            }, 2000);
+        // check to see if SVG image exists, so it doesn't get overwritten with 0 bytes
+        if ($("#" + id).find(".svgimage").html().length > 0) {
+            $.ajax({
+                type: "POST",
+                headers: { "X-CSRFToken": token },
+                url: '/projects/note/update/' + proj + "/" + id,
+                data: {
+                    "notes": content,
+                    "minval": $("#minval-" + id).val(),
+                    "maxval": $("#maxval-" + id).val(),
+                    "colorlowval": $("#colorlowval-" + id).val(),
+                    "colorhighval": $("#colorhighval-" + id).val(),
+                    "iscolored": $("#iscolored-" + id).val()
+                },
+                success: function() {
+                    $.ajax({
+                        type: "POST",
+                        headers: { "X-CSRFToken": token },
+                        url: '/projects/svg/update/' + proj + "/" + id,
+                        data: { "svg": svg },
+                        success: function() {
+                            setDirtySaved(noteId);
+                            treesdone++;
+                            updateProgress(Math.round((treesdone/treescount)*100));
+                            if (treesdone == treescount) {
+                                setTimeout(function() {
+                                  $("#saveallprog").addClass("hide");
+                                }, 2000);
 
+                            }
+                        },
+                        error: function (err) {
+                            alert( id + " Failed to save!!!  Contact dev team." );
                         }
-                    },
-                    error: function (err) {
-                        alert( id + " Failed to save!!!  Contact dev team." );
-                    }
-                });
-            },
-            error: function (err) {
-                alert( id + " Failed to save!!!  Contact dev team." );
+                    });
+                },
+                error: function (err) {
+                    alert( id + " Failed to save!!!  Contact dev team." );
+                }
+            });
+        } else {
+            alert(id + " is missing an SVG image.  It will not be saved.");
+            treesdone++;
+            updateProgress(Math.round((treesdone/treescount)*100));
+            if (treesdone == treescount) {
+                setTimeout(function() {
+                  $("#saveallprog").addClass("hide");
+                }, 2000);
             }
-        });
-
+        }
     });
 
 }
