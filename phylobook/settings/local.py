@@ -163,8 +163,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'outlook.office365.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'adminpb@uw.edu'
-EMAIL_HOST_PASSWORD = 'dzogchen9vehicles!!!'
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
 SERVER_EMAIL = EMAIL_HOST_USER
 
 # use the Django shell for testing email
