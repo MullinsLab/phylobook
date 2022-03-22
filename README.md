@@ -85,7 +85,7 @@ These are the settings that are set in the .env file.  They are settings that ar
     #LOGIN_SSO_COLLABORATOR_TITLE=Collaborator account:
 
 
-Notes for specifically for LOGIN_TYPE "sso" or "dual".  LOGIN_TYPE "local" should skip this block:
+Notes specifically for LOGIN_TYPE "sso" or "dual".  LOGIN_TYPE "local" should skip this block:
 
 ---
 If you chose LOGIN_TYPE=sso or LOGIN_TYPE=dual in config.env, then you must create settings/saml.py by copying settings/saml.py.TEMPLATE
@@ -151,6 +151,8 @@ Select the user or group to assign permissions to, and click the "Manage user" o
 Set the permissions for a user or group.  Phylobook uses the default permissions provided by a custom permission object in Django.  Of these permissions, only two matter to Phylobook:  "Can change project" and "Can view project".  If a user or group has "Can change project" permission, then they are able to have access to the full set of annotation tools and can edit and save changes.  Users or groups with "Can view project" permission are only able to view the projects contents and have no ability to save any new information.
 
 <img src="md_images/set_permissions.png">
+
+Save any permission changes and then click "VIEW SITE" in the upper right corner to return to the main Phylobook site project list.
 
 
 ---------
