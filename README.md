@@ -39,6 +39,15 @@ Create super user
 
 `docker exec -it phylobook python manage.py createsuperuser --settings=phylobook.settings.prod`
 
+Login to the server http://localhost:8000/ using the super user account credentials that you have created.
+
+In the upper right corner of the browser window, there is an "Admin" link.  Click the link and you will enter the Administrator module.  
+
+Add a new "Project"
+
+<img src="md_images/admin.png">
+
+
 ---------
 
 ## For Developers
@@ -71,7 +80,7 @@ Run the server from the terminal
 
 ----
 
-*Notes for SSO users:  Creating a user, at this point, has to be done at the manage.py shell.  Here is example code for adding externally authenticated users.
+*Notes for SSO users:  Creating a user, at this point, has to be done at the manage.py shell.  Here is example code for adding externally authenticated users.  Once the externally authenticated user is created in  the shell, the user will appear in the admin module where permissions can be assigned.
 
 `python3 manage.py shell`
 
@@ -87,5 +96,6 @@ Run the server from the terminal
 `user.is_superuser = False`
 
 `user.save()`
-`
+
+`quit()`
 
