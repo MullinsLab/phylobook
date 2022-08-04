@@ -1,0 +1,1 @@
+/home/wdeng/phyml3.0/phyml3.0 -i ./RV217_20337_v05_REN_NT-ordered.phy -d nt -q -b 0 -m GTR -v e -c 4 -o tlr -a e -f m -s BEST >./RV217_20337_v05_REN_NT-ordered.phy_phyml.txt
