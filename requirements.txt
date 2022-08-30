@@ -10,7 +10,7 @@ django-settings-export==1.2.1
 idna==3.3
 isodate==0.6.0
 Jinja2==2.11.3
-lxml~>4.9.1
+lxml~=4.9.1
 MarkupSafe==2.0.1
 mock==4.0.3
 onelogin==2.0.2
