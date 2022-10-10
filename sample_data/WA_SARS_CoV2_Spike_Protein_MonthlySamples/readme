@@ -1,1 +1,11 @@
-
+This folder contains a sample data set of SARS-CoV2 DNA sequences from the spike protein region of the genome of sequences obtained in the state of Washington 
+between the months of March 2020 and July 2022.  SARS-CoV2 sequences were obtained from the NCBI SARS-CoV-2 Data Hub at 
+https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/virus?SeqType_s=Nucleotide&VirusLineage_ss=SARS-CoV-2,%20taxid:2697049.
+Sequences were filtered to obtain full length viral genomes from the state of Washington over the time between 3/1/2020 and 7/31/2022.  To sub sample the 
+data, 10 sequences were selected from the list for each month.  E.g. the first 10 sequences in the months of 3/2020, 4/2020...7/2022 were sub-selected from the 
+downloaded data.  This results in a data set that is small enough to visually display in phylobook and which reasonably samples SARS-CoV2 sequences within
+the state of Washinton across this time frame.  All sequences were mapped to the original WuHan reference sequence and the spike region was extracted. For each
+sequence, the name was modified to include the month from which it was extracted - e.g. sequence_name_yyyy_mm. The data were further processed using the data 
+processing pipline found at https://github.com/MullinsLab/phylobook/tree/master/dataprocessing_software.  Processing collapses identical sequences into one sequence
+for display in Phylobook.  In order to retain some data information on the collapsed sequences, after processing, the names of the collapsed sequeces
+were manually edited to end in the median date of the collapsed sequences.
