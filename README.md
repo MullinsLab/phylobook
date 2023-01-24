@@ -154,6 +154,7 @@ Set the permissions for a user or group.  Phylobook uses the default permissions
 
 Save any permission changes and then click "VIEW SITE" in the upper right corner to return to the main Phylobook site project list.
 
+Note: Phylobook can have fairly large POST requests when dealing with large samples.  If you are using a reverse proxy server it should be configured to accept POST requests of at least 2M
 
 ---------
 
