@@ -116,3 +116,9 @@ GitHub.sublime-settings
 /.env
 .unotes/templates/title_date.hbs
 .unotes/unotes_meta.json
+
+# static files collected with "python manage.py collectstatic --settings=phylobook.settings.static --noinput"
+# and other files to be ignored when using git on a running container
+/phylobook/staticfiles
+phylobook_access_log
+phylobook_error_log
