@@ -114,3 +114,5 @@ GitHub.sublime-settings
 /phylobook/settings.py.dev
 /phylobook/settings/saml.py
 /.env
+.unotes/templates/title_date.hbs
+.unotes/unotes_meta.json
