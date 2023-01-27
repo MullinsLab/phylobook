@@ -88,6 +88,183 @@ tinymce.init({
     }
 });
 
+///////
+function showCluster(project, file, id, drawboxes) {
+    $.ajax({
+        type: "GET",
+        headers: { "X-CSRFToken": token },
+        url: '/projects/' + project + '/' + file,
+        cache: false,
+        success: function(csvAsString) {
+            clusterArray=csvAsString.csvToArray({ rSep:'\n' });
+            var svg = $("#" + id).find("svg")[0];
+            //var max = 0;
+            var set = new Set();
+            for (let i = 0; i < clusterArray.length; i++) {
+                var key = clusterArray[i][1];
+                set.add(key);
+            }
+            var uniqueClusters = Array.from(set);
+            uniqueClusters.sort();
+            var clusterColorKeys = {};
+            for (let i = 0; i < uniqueClusters.length; i++) {
+                clusterColorKeys[uniqueClusters[i]] = i+1;
+            }
+            for (let i = 0; i < clusterArray.length; i++) {
+                var key = clusterArray[i][1];
+                //if (key > max) max = key;
+                var classificationColor = getClassficationColor(clusterColorKeys[key]);
+                var color = classificationColor["color"];
+                var colorText = "box" + classificationColor["name"];
+                if (color != "key not found") {
+                    var label = d3.select(svg).selectAll("text")
+                          .filter(function(){
+                            return d3.select(this).text() == clusterArray[i][0];
+                          });
+                    var currentSelectedTextNode = label.node();
+                    var svgcanvas = d3.select(currentSelectedTextNode.parentNode);
+                    var rect = currentSelectedTextNode.getBBox();
+                    var triangle = d3.symbol().size(12).type(d3.symbolTriangle);
+
+                    // if there is a transform, grab the x, y
+                    if (label.attr("transform") != null) {
+                        rect.x = label.node().transform.baseVal[0].matrix.e - 2;
+                        rect.y = label.node().transform.baseVal[0].matrix.f + 2;
+                    }
+
+                    svgcanvas
+                        .append("path")
+                        .attr("d", triangle)
+                        .attr('class', 'cluster')
+                        .attr("transform", "translate(" + (rect.x  + rect.width + 5) + "," + (rect.y + 4) + ")")
+                        .style('fill', color)
+                        .style("stroke", color);
+
+                    if (drawboxes) {
+                        var offset = 2; // enlarge rect box 2 px on left & right side
+                        var labelText = label.text();
+                        var selectedText = label;
+
+                        var existingColoredBox = d3.select("#" + labelText);
+
+                        // set the class of currentSelectedText to be colorText
+                        selectedText.attr("class", colorText);
+
+                        var color = getColor(colorText.replace("box", ""));
+
+                        // if there is a transform, grab the x, y
+                        if (selectedText.attr("transform") != null) {
+                            rect.x = selectedText.node().transform.baseVal[0].matrix.e - 1;
+                            rect.y = selectedText.node().transform.baseVal[0].matrix.f + 2;
+                        }
+
+                        pathinfo = [
+                            {x: rect.x-offset, y: rect.y },
+                            {x: rect.x+offset + rect.width, y: rect.y},
+                            {x: rect.x+offset + rect.width, y: rect.y + rect.height - 1 },
+                            {x: rect.x-offset, y: rect.y + rect.height - 1 },
+                            {x: rect.x-offset, y: rect.y },
+                        ];
+
+                        if (existingColoredBox.node()) {
+                            existingColoredBox.style("stroke", color);
+                        } else {
+                            // Specify the function for generating path data
+                            var d3line = d3.line()
+                                .x(function(d){return d.x;})
+                                .y(function(d){return d.y;})
+                                .curve(d3.curveLinear);
+
+                            // Draw the line
+                            svgcanvas.append("path")
+                                .attr("id", labelText)
+                                .attr("d", d3line(pathinfo))
+                                .style("stroke-width", 1)
+                                .style("stroke", color)
+                                .style("fill", "none");
+                        }
+                    }
+
+                } else {
+                    alert(`Not color found for classification #(line ${i}): ${clusterArray[i][1]}`);
+                }
+            }
+            $("#clusterlegend-" + id).html(buildClusterLegend(uniqueClusters, clusterColorKeys));
+            setDirtyUnsaved("notes-" + id);
+        },
+        error: function (err) {
+            alert( " Failed to get " + project + "/" + file + ". Contact dev team." );
+        }
+    });
+}
+
+function buildClusterLegend(uniqueClusters, clusterColorKeys) {
+    var div = "";
+    for (let cluster = 0; cluster < uniqueClusters.length; cluster++) {
+        div = div + "<span style='white-space: nowrap;'>" + uniqueClusters[cluster] + "</span>" + "<div class='triangle' + style='border-bottom: 12px solid " + getClassficationColor(clusterColorKeys[uniqueClusters[cluster]])["color"] + " !important;'></div>&nbsp;&nbsp;";
+    }
+    return div;
+}
+
+function getClassficationColor(key) {
+    // https://stackoverflow.com/questions/10014271/generate-random-color-distinguishable-to-humans#answer-20129594
+    //const goldenAngle = 180 * (3 - Math.sqrt(5));
+    //return `hsl(${key * goldenAngle + 60}, 100%, 75%)`
+    if (key == "1") {
+        return {"name": "yellow", "color": "#efe645"};
+    } else if (key == "2") {
+        return {"name": "red", "color": "red"};
+    } else if (key == "3") {
+        return {"name": "neonblue", "color": "#537eff"};
+    } else if (key == "4") {
+        return {"name": "green", "color": "#00cb85"};
+    } else if (key == "5") {
+        return {"name": "orange", "color": "orange"};
+    } else if (key == "6") {
+        return {"name": "pink", "color": "#e935a1"};
+    } else if (key == "7") {
+        return {"name": "lightblue", "color": "#00e3ff"};
+    } else if (key == "8") {
+        return {"name": "black", "color": "black"};
+    } else if (key == "9") {
+        return {"name": "gray", "color": "gray"};
+    } else if (key == "10") {
+        return {"name": "purple", "color": "purple"};
+    }
+}
+
+function getMultiSelectedTexts(svg, rect) {
+    hideContextMenu();
+    var labels = [];
+    var rectbbox = rect.node().getBoundingClientRect();
+    var rbx2 = rectbbox.x + rectbbox.width;
+    var rby2 = rectbbox.y + rectbbox.height;
+    d3.select(svg).selectAll("text")
+    .each(function() {
+        var textbbox = this.getBoundingClientRect();
+        // if there is a transform, grab the x, y
+        var selectedItem = d3.select(this);
+        if (selectedItem.attr("transform") != null) {
+            textbbox.x = this.getScreenCTM().e;
+            textbbox.y = this.getScreenCTM().f;
+        }
+        var tbx2 = textbbox.x + textbbox.width;
+        var tby2 = textbbox.y + textbbox.height;
+        if (textbbox.x >= rectbbox.x && tbx2 <= rbx2 &&
+            textbbox.y >= rectbbox.y && tby2 <= rby2) {
+                labels.push(this);
+                d3.select(this).classed("selectedtext", true);
+            }
+    });
+    return labels;
+}
+
+function showMultiSelectContextMenu(x, y) {
+    showContextMenu(x, y);
+}
+
+///////
+
 function setAllDirtyUnsaved() {
     $('.tree').each(function(i, obj) {
         var noteId = $(this).children(".notes").first().attr("id");
