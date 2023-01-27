@@ -1,3 +1,8 @@
+// Set up a collator so we can sort by numeric value instead of character value
+const collatorNumber = new Intl.Collator(undefined, {  
+    numeric: true,
+    sensitivity: 'base'
+})
 
 // Notes editor, buttons/listeners, contextmenus etc.
 tinymce.init({
@@ -105,7 +110,9 @@ function showCluster(project, file, id, drawboxes) {
                 set.add(key);
             }
             var uniqueClusters = Array.from(set);
-            uniqueClusters.sort();
+            
+            // Sort numerically
+            uniqueClusters.sort(collatorNumber.compare);
             var clusterColorKeys = {};
             for (let i = 0; i < uniqueClusters.length; i++) {
                 clusterColorKeys[uniqueClusters[i]] = i+1;
@@ -211,25 +218,37 @@ function getClassficationColor(key) {
     //const goldenAngle = 180 * (3 - Math.sqrt(5));
     //return `hsl(${key * goldenAngle + 60}, 100%, 75%)`
     if (key == "1") {
-        return {"name": "yellow", "color": "#efe645"};
-    } else if (key == "2") {
         return {"name": "red", "color": "red"};
+    } else if (key == "2") {
+        return {"name": "olive", "color": "olive"};
     } else if (key == "3") {
         return {"name": "neonblue", "color": "#537eff"};
     } else if (key == "4") {
         return {"name": "green", "color": "#00cb85"};
     } else if (key == "5") {
-        return {"name": "orange", "color": "orange"};
+        return {"name": "lavender", "color": "#DCBEFF"};
     } else if (key == "6") {
-        return {"name": "pink", "color": "#e935a1"};
+        return {"name": "maroon", "color": "#800000"};
     } else if (key == "7") {
-        return {"name": "lightblue", "color": "#00e3ff"};
+        return {"name": "orange", "color": "orange"};
     } else if (key == "8") {
-        return {"name": "black", "color": "black"};
+        return {"name": "navy", "color": "#000075"};
     } else if (key == "9") {
-        return {"name": "gray", "color": "gray"};
+        return {"name": "lightblue", "color": "#00e3ff"};
     } else if (key == "10") {
+        return {"name": "black", "color": "black"};
+    } else if (key == "11") {
+        return {"name": "lime", "color": "#BFEF45"};
+    } else if (key == "12") {
+        return {"name": "gray", "color": "gray"};
+    } else if (key == "13") {
+        return {"name": "apricot", "color": "#FFD8B1"};
+    } else if (key == "14") {
         return {"name": "purple", "color": "purple"};
+    } else if (key == "15") {
+        return {"name": "yellow", "color": "#efe645"};
+    } else if (key == "16") {
+        return {"name": "pink", "color": "#e935a1"};
     }
 }
 
@@ -575,6 +594,12 @@ $(document).ready(function() {
         var extractblack = getColorTextLabels(svg, "boxblack");
         var extractgray = getColorTextLabels(svg, "boxgray");
         var extractpurple = getColorTextLabels(svg, "boxpurple");
+        var extractapricot = getColorTextLabels(svg, "boxapricot");
+        var extractlime = getColorTextLabels(svg, "boxlime");
+        var extractolive = getColorTextLabels(svg, "boxolive");
+        var extractnavy = getColorTextLabels(svg, "boxnavy");
+        var extractlavender = getColorTextLabels(svg, "boxlavender");
+        var extractmaroon = getColorTextLabels(svg, "boxmaroon");
 
         $("#seqsid").val(id);
         if (extractred.length === 0) {
@@ -646,6 +671,48 @@ $(document).ready(function() {
         } else {
             $("#extractpurple").attr("disabled", false);
             $("#seqspurple").val(extractpurple.join());
+        }
+        if (extractapricot.length === 0) {
+            $("#extractapricot").prop("checked", false);
+            $("#extractapricot").attr("disabled", true);
+        } else {
+            $("#extractapricot").attr("disabled", false);
+            $("#seqsapricot").val(extractapricot.join());
+        }
+        if (extractlime.length === 0) {
+            $("#extractlime").prop("checked", false);
+            $("#extractlime").attr("disabled", true);
+        } else {
+            $("#extractlime").attr("disabled", false);
+            $("#seqslime").val(extractlime.join());
+        }
+        if (extractolive.length === 0) {
+            $("#extractolive").prop("checked", false);
+            $("#extractolive").attr("disabled", true);
+        } else {
+            $("#extractolive").attr("disabled", false);
+            $("#seqsolive").val(extractolive.join());
+        }
+        if (extractnavy.length === 0) {
+            $("#extractnavy").prop("checked", false);
+            $("#extractnavy").attr("disabled", true);
+        } else {
+            $("#extractnavy").attr("disabled", false);
+            $("#seqsnavy").val(extractnavy.join());
+        }
+        if (extractlavender.length === 0) {
+            $("#extractlavender").prop("checked", false);
+            $("#extractlavender").attr("disabled", true);
+        } else {
+            $("#extractlavender").attr("disabled", false);
+            $("#seqslavender").val(extractlavender.join());
+        }
+        if (extractmaroon.length === 0) {
+            $("#extractmaroon").prop("checked", false);
+            $("#extractmaroon").attr("disabled", true);
+        } else {
+            $("#extractmaroon").attr("disabled", false);
+            $("#seqsmaroon").val(extractmaroon.join());
         }
 
         $('#myModal').modal({show:true});
@@ -935,6 +1002,18 @@ function getColor(name) {
         return "gray";
     } else if (name == "purple") {
         return "purple";
+    } else if (name == "apricot") {
+        return "#FFD8B1";
+    } else if (name == "lime") {
+        return "#BFEF45";
+    } else if (name == "olive") {
+        return "#808000";
+    } else if (name == "navy") {
+        return "#000075";
+    } else if (name == "lavender") {
+        return "#DCBEFF";
+    } else if (name == "maroon") {
+        return "#800000";
     }
 }
 

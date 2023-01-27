@@ -187,6 +187,31 @@ img {
     border: 1px solid purple;
 }
 
+.Apricot {
+    background-color: #FFD8B1;
+    border: 1px solid #FFD8B1;
+}
+.Lime {
+    background-color: #BFEF45;
+    border: 1px solid #BFEF45;
+}
+.Olive {
+    background-color: #808000;
+    border: 1px solid #808000;
+}
+.Navy {
+    background-color: #000075;
+    border: 1px solid #000075;
+}
+.Lavender {
+    background-color: #DCBEFF;
+    border: 1px solid #DCBEFF;
+}
+.Maroon {
+    background-color: #800000;
+    border: 1px solid #800000;
+}
+
 .slider-range {
     background-image: linear-gradient(to right, yellow , red);
     width: 300px;
@@ -270,6 +295,30 @@ img {
 .custom-radio-button input[type="radio"]#extractpurple + label span {
     border-color: purple;
     border: 1px solid purple;
+}
+.custom-radio-button input[type="radio"]#extractapricot + label span {
+    border-color: #FFD8B1;
+    border: 1px solid #FFD8B1;
+}
+.custom-radio-button input[type="radio"]#extractlime + label span {
+    border-color: #BFEF45;
+    border: 1px solid #BFEF45;
+}
+.custom-radio-button input[type="radio"]#extractolive + label span {
+    border-color: #808000;
+    border: 1px solid #808000;
+}
+.custom-radio-button input[type="radio"]#extractnavy + label span {
+    border-color: #000075;
+    border: 1px solid #000075;
+}
+.custom-radio-button input[type="radio"]#extractlavender + label span {
+    border-color: #DCBEFF;
+    border: 1px solid #DCBEFF;
+}
+.custom-radio-button input[type="radio"]#extractmaroon + label span {
+    border-color: #800000;
+    border: 1px solid #800000;
 }
 .custom-radio-button input[type="radio"][disabled] + label span::before {
   content: '\2715';
