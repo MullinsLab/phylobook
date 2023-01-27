@@ -122,3 +122,6 @@ GitHub.sublime-settings
 /phylobook/staticfiles
 phylobook_access_log
 phylobook_error_log
+
+# Exclude special testing data
+/sample_data/Peter_Test_V704
