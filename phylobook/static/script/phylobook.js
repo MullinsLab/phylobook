@@ -30,6 +30,12 @@ tinymce.init({
         "000000", "Black",
         "808080", "Gray",
         "800080", "Purple",
+        "FFD8B1", "Apricot",
+        "BFEF45", "Lime",
+        "808000", "Olive",
+        "000075", "Navy",
+        "DCBEFF", "Lavender",
+        "800000", "Maroon"
     ],
     toolbar: [
     'save undo redo | bold italic underline | fontselect fontsizeselect',
