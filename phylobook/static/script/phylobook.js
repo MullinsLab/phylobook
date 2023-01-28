@@ -30,6 +30,12 @@ tinymce.init({
         "000000", "Black",
         "808080", "Gray",
         "800080", "Purple",
+        "FFD8B1", "Apricot",
+        "BFEF45", "Lime",
+        // "808000", "Olive",
+        // "000075", "Navy",
+        "DCBEFF", "Lavender",
+        // "800000", "Maroon"
     ],
     toolbar: [
     'save undo redo | bold italic underline | fontselect fontsizeselect',
@@ -217,37 +223,39 @@ function getClassficationColor(key) {
     // https://stackoverflow.com/questions/10014271/generate-random-color-distinguishable-to-humans#answer-20129594
     //const goldenAngle = 180 * (3 - Math.sqrt(5));
     //return `hsl(${key * goldenAngle + 60}, 100%, 75%)`
+
+    // Removed unloved colors
     if (key == "1") {
         return {"name": "red", "color": "red"};
+    //} else if (key == "2") {
+    //    return {"name": "olive", "color": "olive"};
     } else if (key == "2") {
-        return {"name": "olive", "color": "olive"};
-    } else if (key == "3") {
         return {"name": "neonblue", "color": "#537eff"};
-    } else if (key == "4") {
+    } else if (key == "3") {
         return {"name": "green", "color": "#00cb85"};
-    } else if (key == "5") {
+    } else if (key == "4") {
         return {"name": "lavender", "color": "#DCBEFF"};
-    } else if (key == "6") {
-        return {"name": "maroon", "color": "#800000"};
-    } else if (key == "7") {
+    //} else if (key == "6") {
+    //    return {"name": "maroon", "color": "#800000"};
+    } else if (key == "5") {
         return {"name": "orange", "color": "orange"};
-    } else if (key == "8") {
-        return {"name": "navy", "color": "#000075"};
-    } else if (key == "9") {
+    //} else if (key == "8") {
+    //    return {"name": "navy", "color": "#000075"};
+    } else if (key == "6") {
         return {"name": "lightblue", "color": "#00e3ff"};
-    } else if (key == "10") {
+    } else if (key == "7") {
         return {"name": "black", "color": "black"};
-    } else if (key == "11") {
+    } else if (key == "8") {
         return {"name": "lime", "color": "#BFEF45"};
-    } else if (key == "12") {
+    } else if (key == "9") {
         return {"name": "gray", "color": "gray"};
-    } else if (key == "13") {
+    } else if (key == "10") {
         return {"name": "apricot", "color": "#FFD8B1"};
-    } else if (key == "14") {
+    } else if (key == "11") {
         return {"name": "purple", "color": "purple"};
-    } else if (key == "15") {
+    } else if (key == "12") {
         return {"name": "yellow", "color": "#efe645"};
-    } else if (key == "16") {
+    } else if (key == "13") {
         return {"name": "pink", "color": "#e935a1"};
     }
 }
@@ -686,20 +694,20 @@ $(document).ready(function() {
             $("#extractlime").attr("disabled", false);
             $("#seqslime").val(extractlime.join());
         }
-        if (extractolive.length === 0) {
-            $("#extractolive").prop("checked", false);
-            $("#extractolive").attr("disabled", true);
-        } else {
-            $("#extractolive").attr("disabled", false);
-            $("#seqsolive").val(extractolive.join());
-        }
-        if (extractnavy.length === 0) {
-            $("#extractnavy").prop("checked", false);
-            $("#extractnavy").attr("disabled", true);
-        } else {
-            $("#extractnavy").attr("disabled", false);
-            $("#seqsnavy").val(extractnavy.join());
-        }
+        // if (extractolive.length === 0) {
+        //     $("#extractolive").prop("checked", false);
+        //     $("#extractolive").attr("disabled", true);
+        // } else {
+        //     $("#extractolive").attr("disabled", false);
+        //     $("#seqsolive").val(extractolive.join());
+        // }
+        // if (extractnavy.length === 0) {
+        //     $("#extractnavy").prop("checked", false);
+        //     $("#extractnavy").attr("disabled", true);
+        // } else {
+        //     $("#extractnavy").attr("disabled", false);
+        //     $("#seqsnavy").val(extractnavy.join());
+        // }
         if (extractlavender.length === 0) {
             $("#extractlavender").prop("checked", false);
             $("#extractlavender").attr("disabled", true);
@@ -707,13 +715,13 @@ $(document).ready(function() {
             $("#extractlavender").attr("disabled", false);
             $("#seqslavender").val(extractlavender.join());
         }
-        if (extractmaroon.length === 0) {
-            $("#extractmaroon").prop("checked", false);
-            $("#extractmaroon").attr("disabled", true);
-        } else {
-            $("#extractmaroon").attr("disabled", false);
-            $("#seqsmaroon").val(extractmaroon.join());
-        }
+        // if (extractmaroon.length === 0) {
+        //     $("#extractmaroon").prop("checked", false);
+        //     $("#extractmaroon").attr("disabled", true);
+        // } else {
+        //     $("#extractmaroon").attr("disabled", false);
+        //     $("#seqsmaroon").val(extractmaroon.join());
+        // }
 
         $('#myModal').modal({show:true});
         //$("#totalSequences").text(sequenceTable.page.info().recordsDisplay.toLocaleString());
