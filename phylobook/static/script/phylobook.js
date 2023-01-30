@@ -20,21 +20,21 @@ tinymce.init({
     'autolink',
     ],
     color_map: [
-        "EFE645", "Yellow",
         "FF0000", "Red",
         "537EFF", "Neon Blue",
         "00CB85", "Green",
-        "FFA500", "Orange",
-        "E935A1", "Pink",
-        "00E3FF", "Light Blue",
         "000000", "Black",
-        "808080", "Gray",
-        "800080", "Purple",
-        "FFD8B1", "Apricot",
+        "FFA500", "Orange",
+        "00E3FF", "Light Blue",
         "BFEF45", "Lime",
+        "808080", "Gray",
+        "FFD8B1", "Apricot",
+        "DCBEFF", "Lavender",
+        "E935A1", "Pink",
+        "800080", "Purple",
+        "EFE645", "Yellow",
         // "808000", "Olive",
         // "000075", "Navy",
-        "DCBEFF", "Lavender",
         // "800000", "Maroon"
     ],
     toolbar: [
@@ -227,37 +227,37 @@ function getClassficationColor(key) {
     // Removed unloved colors
     if (key == "1") {
         return {"name": "red", "color": "red"};
-    //} else if (key == "2") {
-    //    return {"name": "olive", "color": "olive"};
     } else if (key == "2") {
         return {"name": "neonblue", "color": "#537eff"};
     } else if (key == "3") {
         return {"name": "green", "color": "#00cb85"};
     } else if (key == "4") {
-        return {"name": "lavender", "color": "#DCBEFF"};
-    //} else if (key == "6") {
-    //    return {"name": "maroon", "color": "#800000"};
+        return {"name": "black", "color": "black"};
     } else if (key == "5") {
         return {"name": "orange", "color": "orange"};
-    //} else if (key == "8") {
-    //    return {"name": "navy", "color": "#000075"};
     } else if (key == "6") {
         return {"name": "lightblue", "color": "#00e3ff"};
     } else if (key == "7") {
-        return {"name": "black", "color": "black"};
-    } else if (key == "8") {
         return {"name": "lime", "color": "#BFEF45"};
-    } else if (key == "9") {
+    } else if (key == "8") {
         return {"name": "gray", "color": "gray"};
-    } else if (key == "10") {
+    } else if (key == "9") {
         return {"name": "apricot", "color": "#FFD8B1"};
+    } else if (key == "10") {
+        return {"name": "lavender", "color": "#DCBEFF"};
     } else if (key == "11") {
-        return {"name": "purple", "color": "purple"};
-    } else if (key == "12") {
-        return {"name": "yellow", "color": "#efe645"};
-    } else if (key == "13") {
         return {"name": "pink", "color": "#e935a1"};
+    } else if (key == "12") {
+        return {"name": "purple", "color": "purple"};
+    } else if (key == "13") {
+        return {"name": "yellow", "color": "#efe645"};
     }
+    //} else if (key == "2") {
+    //    return {"name": "olive", "color": "olive"};
+    //} else if (key == "6") {
+    //    return {"name": "maroon", "color": "#800000"};
+    //} else if (key == "8") {
+    //    return {"name": "navy", "color": "#000075"};
 }
 
 function getMultiSelectedTexts(svg, rect) {
