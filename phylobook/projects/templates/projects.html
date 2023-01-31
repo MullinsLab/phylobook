@@ -1,6 +1,26 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <br>
+
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/bstreeview.min.css' %}" />
+<script src="{% static 'script/bstreeview.min.js' %}"></script>
+
+<script>
+$( document ).ready(function() {
+    var projects = [{% include "projects_tree_js.html" %}]
+
+    $('#tree').bstreeview({
+    data: projects,
+    expandIcon: 'fa fa-angle-down fa-fw',
+    collapseIcon: 'fa fa-angle-right fa-fw',
+    indent: 1.25,
+    parentsMarginLeft: '1.25rem',
+    openNodeLinkOnNewTab: false
+    });
+});
+</script>            
+    
+<br>
     <div class="container">
         <div class="table-responsive">
             {% if noaccess %}
@@ -8,22 +28,8 @@
                     You don't have permission to access {{ noaccess }}.
                 </div>
             {% endif %}
-            <!-- PROJECT TABLE -->
-            <table class="table colored-header datatable project-list">
-                <thead>
-                    <tr>
-                        <th>Projects</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for entry in projects %}
-                    <tr>
-                        <td><a href="/projects/{{ entry }}">{{ entry }}</a></td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            <!-- END PROJECT TABLE -->
+            <b>Projects</b>
+            <div id="tree"></div>
         </div>
     </div>
 {% endblock %}

@@ -1,14 +1,18 @@
 from django.contrib import admin
-
-from phylobook.projects.models import Project
-
+from treebeard.admin import TreeAdmin
+from treebeard.forms import movenodeform_factory
+from phylobook.projects.models import Project, ProjectCategory
 from guardian.admin import GuardedModelAdmin
 
 
+@admin.register(Project)
 class ProjectAdmin(GuardedModelAdmin):
-    #prepopulated_fields = {"slug": ("title",)}
-    list_display = ('name',)
+    list_display = ('name', 'category')
+    list_editable = ('category',)
     search_fields = ('name',)
-    ordering = ('name',)
+    ordering = ('category', 'name')
 
-admin.site.register(Project, ProjectAdmin)
+
+@admin.register(ProjectCategory)
+class ProjectCategoryAdmin(TreeAdmin):
+    form = movenodeform_factory(ProjectCategory)

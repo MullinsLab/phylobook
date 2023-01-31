@@ -12,7 +12,7 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFoun
 from django.shortcuts import render
 from pathlib import Path
 from django.conf import settings
-from .models import Project
+from .models import Project, ProjectCategory
 from guardian.shortcuts import get_perms
 
 
@@ -22,7 +22,8 @@ PROJECT_PATH = settings.PROJECT_PATH
 def projects(request):
 
     context = {
-        "projects": getUserProjects(request.user)
+        # "projects": getUserProjects(request.user)
+        "project_tree": get_user_project_tree(request.user)
     }
 
     return render(request, "projects.html", context)
@@ -72,7 +73,7 @@ def getClusterFiles(projectPath, prefix):
             clusters.append({ "name": name, "file": file})
     return clusters
 
-def getUserProjects(user):
+def get_user_projects(user):
     # filter the Project model for what the user can "change_project" or "view_project"
     query_set = Project.objects.all()
     availableProjects = []
@@ -80,8 +81,24 @@ def getUserProjects(user):
         # check permissions and add to available if user has permission
         if user.has_perm('projects.change_project', project) or user.has_perm('projects.view_project', project):
             availableProjects.append(project.name)
-
     return sorted(availableProjects)
+
+def get_user_project_tree(user) -> dict:
+    ''' Loads the Projects that a User can see, along with their categories '''
+    projects_tree = []
+
+    # Start by getting projects that don't have a category
+    query_set = Project.objects.filter(category=None)
+
+    for project in query_set:
+        project.tree_node(user=user, list=projects_tree)
+
+    for category in ProjectCategory.get_root_nodes():
+        category.tree_node(user=user, list=projects_tree)
+    
+    print(projects_tree)
+    return projects_tree
+
 
 def getFile(request, name, file):
     project = Project.objects.get(name=name)

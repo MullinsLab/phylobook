@@ -1,0 +1,15 @@
+{% for node in project_tree %}
+    {% for key, thing in node.items %}
+        {text: "{{ key }}",
+        {% if thing.is_project %}
+        href: "/projects/{{ key }}",
+        class: "projectlink",
+        {% endif %}
+        {% if thing.children %}
+            nodes: [
+            {% include "projects_tree_js.html" with project_tree=thing.children %}
+            ]
+        {% endif %}
+        },
+    {% endfor %}
+{% endfor %}

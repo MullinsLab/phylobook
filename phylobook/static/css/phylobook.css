@@ -386,3 +386,7 @@ img {
     z-index: 1000;
     cursor: pointer;
 }
+
+.projectlink {
+    color: #0000ff
+}
