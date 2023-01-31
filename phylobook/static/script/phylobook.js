@@ -463,8 +463,8 @@ $(document).ready(function() {
                 $(".slider-range").slider('values',1, values[1]);
                 $(".colorhighval").val(values[1]);
                 $(".iscolored").val("true");
-                var minColor = pickHex([255, 0, 0], [255, 255, 0], values[ 0 ]/100);
-                var maxColor = pickHex([255, 0, 0], [255, 255, 0], values[ 1 ]/100);
+                var minColor = pickHex([0, 255, 0], [255, 0, 0], values[ 0 ]/100);
+                var maxColor = pickHex([0, 255, 0], [255, 0, 0], values[ 1 ]/100);
                 $( ".slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
                 setAllDirtyUnsaved();
             }
@@ -539,16 +539,16 @@ $(document).ready(function() {
                 return;
             } else if (numseqs >= max) {
                 var values = $( "#slider-range" + dashId).slider( "values");
-                labelcolor = pickHex([255, 0, 0], [255, 255, 0], values[ 1 ]/100);
+                labelcolor = pickHex([0, 255, 0], [255, 0, 0], values[ 1 ]/100);
             } else if (numseqs == min) {
                 var values = $( "#slider-range" + dashId).slider( "values");
-                labelcolor = pickHex([255, 0, 0], [255, 255, 0], values[ 0 ]/100);
+                labelcolor = pickHex([0, 255, 0], [255, 0, 0], values[ 0 ]/100);
             } else if (numseqs >= min) {
                 var incrementweight = 100/(max - min);
                 var weight = ((numseqs - min) * incrementweight)/100;
                 var values = $( "#slider-range" + dashId).slider( "values");
-                var minColor = pickHex([255, 0, 0], [255, 255, 0], values[ 0 ]/100);
-                var maxColor = pickHex([255, 0, 0], [255, 255, 0], values[ 1 ]/100);
+                var minColor = pickHex([0, 255, 0], [255, 0, 0], values[ 0 ]/100);
+                var maxColor = pickHex([0, 255, 0], [255, 0, 0], values[ 1 ]/100);
                 var labelcolor = pickHex(maxColor, minColor, weight);
             }
 
@@ -1035,15 +1035,15 @@ $( function() {
         create: function( event, ui ) {
             // color between rage sliders
             var markers=$(this).slider('values');
-            minColor = pickHex([255, 0, 0], [255, 255, 0], markers[ 0 ]/100);
-            maxColor = pickHex([255, 0, 0], [255, 255, 0], markers[ 1 ]/100);
+            minColor = pickHex([0, 255, 0], [255, 0, 0], markers[ 0 ]/100);
+            maxColor = pickHex([0, 255, 0], [255, 0, 0], markers[ 1 ]/100);
             $( "#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
         },
         slide: function( event, ui ) {
             //$( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
             // color between rage sliders
-            minColor = pickHex([255, 0, 0], [255, 255, 0], ui.values[ 0 ]/100);
-            maxColor = pickHex([255, 0, 0], [255, 255, 0], ui.values[ 1 ]/100);
+            minColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 0 ]/100);
+            maxColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 1 ]/100);
             $( "#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
         }
     });

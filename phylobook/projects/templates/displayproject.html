@@ -442,14 +442,14 @@
                                 create: function( event, ui ) {
                                     // color between rage sliders
                                     var markers=$(this).slider('values');
-                                    minColor = pickHex([255, 0, 0], [255, 255, 0], markers[ 0 ]/100);
-                                    maxColor = pickHex([255, 0, 0], [255, 255, 0], markers[ 1 ]/100);
+                                    minColor = pickHex([0, 255, 0], [255, 0, 0], markers[ 0 ]/100);
+                                    maxColor = pickHex([0, 255, 0], [255, 0, 0], markers[ 1 ]/100);
                                     $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
                                 },
                                 slide: function( event, ui ) {
                                     // color between rage sliders
-                                    minColor = pickHex([255, 0, 0], [255, 255, 0], ui.values[ 0 ]/100);
-                                    maxColor = pickHex([255, 0, 0], [255, 255, 0], ui.values[ 1 ]/100);
+                                    minColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 0 ]/100);
+                                    maxColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 1 ]/100);
                                     $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
                                 }
                             });
