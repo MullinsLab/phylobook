@@ -497,9 +497,9 @@
                 </div>
                 <div class="row hide"  id="color-{{ entry.uniquesvg }}">
                     <div class="col-auto mr-auto text-nowrap">
-                        <label for="min-{{ entry.uniquesvg }}">{% if "change_project" not in context_perms %} Sequence count: {% endif %}Min(cutoff):</label><input type="number" class="min" id="min-{{ entry.uniquesvg }}" name="min" min="1" max="49999" {% if entry.minval %} value="{{ entry.minval }}" {% endif %} style="width: 4em;" {% if "change_project" not in context_perms %} disabled {% endif %}>
+                        <label for="min-{{ entry.uniquesvg }}">{% if "change_project" not in context_perms %} Sequence count: {% endif %}Min(cutoff):</label><input type="number" class="min" id="min-{{ entry.uniquesvg }}" name="min" min="1" max="49999" value={% if entry.minval %} "{{ entry.minval }}" {% else %} "2" {% endif %} style="width: 4em;" {% if "change_project" not in context_perms %} disabled {% endif %}>
                         <div class="slider-range" id="slider-range-{{ entry.uniquesvg }}"></div>
-                        <label for="max-{{ entry.uniquesvg }}">Max(threshold >=):</label><input type="number" class="max" id="max-{{ entry.uniquesvg }}" name="max" min="2" max="50000"  {% if entry.maxval %} value="{{ entry.maxval }}" {% endif %} style="width: 4em;" {% if "change_project" not in context_perms %} disabled {% endif %}>
+                        <label for="max-{{ entry.uniquesvg }}">Max(threshold >=):</label><input type="number" class="max" id="max-{{ entry.uniquesvg }}" name="max" min="2" max="50000"  value={% if entry.maxval %} "{{ entry.maxval }}" {% else %}"50"{% endif %} style="width: 4em;" {% if "change_project" not in context_perms %} disabled {% endif %}>
                         {% if 'change_project' in context_perms %}
                         <button type="button"  class="btn btn-outline-secondary btn-sm sequencecolor" id="sequencecolor-{{ entry.uniquesvg }}">Update</button>
                         <button type="button" class="btn btn-outline-secondary btn-sm removesequencecolor" id="removesequencecolor-{{ entry.uniquesvg }}">Remove</button>
