@@ -507,8 +507,10 @@ $(document).ready(function() {
             $("#iscolored-" + id).val("false");
             $("#slider-range-" + id).slider('values',0, 1);
             $("#slider-range-" + id).slider('values',1, 100);
+            $("#slider-range-" + id + " .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, 1, 100) + ")");
             $("#min-" + id).val("2");
             $("#max-" + id).val("50");
+            
         } else {
             $(".minval").val("");
             $(".maxval").val("");
@@ -517,6 +519,7 @@ $(document).ready(function() {
             $(".iscolored").val("false");
             $(".slider-range").slider('values',0, 1);
             $(".slider-range").slider('values',1, 100);
+            $("#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, 1, 100) + ")");
             $(".min" + id).val("2");
             $(".max" + id).val("50");
         }
@@ -534,21 +537,24 @@ $(document).ready(function() {
             var lastunderscore = label.text().lastIndexOf("_");
             var numseqs = parseInt(label.text().substring(label.text().lastIndexOf("_") + 1));
             var labelcolor = [];
+            var values = $( "#slider-range" + dashId).slider( "values");
+
             if (numseqs < min || lastunderscore == -1) {
                 return;
             } else if (numseqs >= max) {
-                var values = $( "#slider-range" + dashId).slider( "values");
-                labelcolor = pickHex([0, 255, 0], [255, 0, 0], values[ 1 ]/100);
+                // labelcolor = pickHex([0, 255, 0], [255, 0, 0], values[ 1 ]/100);
+                labelcolor = pickColorFromGradient(gradientColorsRGB, values[ 1 ])
             } else if (numseqs == min) {
-                var values = $( "#slider-range" + dashId).slider( "values");
-                labelcolor = pickHex([0, 255, 0], [255, 0, 0], values[ 0 ]/100);
+                // labelcolor = pickHex([0, 255, 0], [255, 0, 0], values[ 0 ]/100);
+                labelcolor = pickColorFromGradient(gradientColorsRGB, values[ 0 ])
             } else if (numseqs >= min) {
                 var incrementweight = 100/(max - min);
-                var weight = ((numseqs - min) * incrementweight)/100;
-                var values = $( "#slider-range" + dashId).slider( "values");
-                var minColor = pickHex([0, 255, 0], [255, 0, 0], values[ 0 ]/100);
-                var maxColor = pickHex([0, 255, 0], [255, 0, 0], values[ 1 ]/100);
-                var labelcolor = pickHex(maxColor, minColor, weight);
+                var weight = ((numseqs - min) * incrementweight);
+                labelcolor = pickColorFromGradient(gradientColorsRGB, weight)
+                // var weight = ((numseqs - min) * incrementweight)/100;
+                // var minColor = pickHex([0, 255, 0], [255, 0, 0], values[ 0 ]/100);
+                // var maxColor = pickHex([0, 255, 0], [255, 0, 0], values[ 1 ]/100);
+                // var labelcolor = pickHex(maxColor, minColor, weight);
             }
 
             var currentSelectedTextNode = label.node();
