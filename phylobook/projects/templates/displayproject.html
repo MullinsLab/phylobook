@@ -12,6 +12,10 @@
     <script>
         var token = '{{csrf_token}}';
         var projectName = '{{ project }}';
+        
+        // Colors used in the gradients
+        const gradientColorsHex = ['#FFA500', '#FFFF00', '#00FF00', '#0000FF', '#EE82EE'];
+        const gradientColorsRGB = [[255, 165, 0], [255, 255, 0], [0, 255, 0], [0, 0, 255], [238, 130, 238]];
 
         function dragElement(elmnt) {
             var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -68,6 +72,11 @@
             return ["rgb(",r,",",g,",",b,")"].join("");
         }
 
+        function rbgFromArray(rgb){
+            // Function to combine an RBG array into a string directly
+            return 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')'
+        }
+
         function pickHex(color1, color2, weight) {
             var p = weight;
             var w = p * 2 - 1;
@@ -77,6 +86,51 @@
                 Math.round(color1[1] * w1 + color2[1] * w2),
                 Math.round(color1[2] * w1 + color2[2] * w2)];
             return rgb;
+        }
+
+        function linearGradient(colors, leftEnd, rightEnd) {
+            // Function to recreate a partial gradient.
+            // colors = array [[r, b, g], [r, b, g] ... ], leftEnd = int (the left end of the gradient) - 1 to 100, rightEnd = int (the right end of the gradient) - 1 to 100
+            let colorSlice = 100 / (colors.length - 1);
+            let gradient = '';
+
+            for (let color = 0; color < colors.length; color++) {
+                
+                // If the leftEnd is to the right of the next color, or rightEnd is to the left of the previous color skip this color
+                if (leftEnd > (color + 1) * colorSlice || rightEnd < 100-((colors.length-color) * colorSlice)) {
+                    continue;
+                }
+                
+                // If the left or right ends are exactly on this color add the color as is with no percentage
+                if (leftEnd-1 == color * colorSlice || rightEnd == color * colorSlice) {
+                    gradient = [gradient, rbgFromArray(colors[color])].join(', ');
+                    console.log("Hit Case 2: " + rbgFromArray(colors[color]))
+                }
+                
+                // If the colorSlice is between the ends add the color as is and figure it's percentage
+                if (leftEnd < color * colorSlice && rightEnd > color * colorSlice){
+                    let newPercentage = ((color * colorSlice) - leftEnd) / (rightEnd - leftEnd)
+                    gradient = [gradient, rbgFromArray(colors[color]) + ' ' + Math.round(newPercentage * 100) + '%'].join(', ')
+                    console.log("Hit Case 3: " + rbgFromArray(colors[color]))
+                }
+
+                // If the left end is between this color and the next add a calculated color with no percentage
+                if (leftEnd > color * colorSlice && leftEnd < (color+1) * colorSlice) {
+                    let newColor = pickHex(colors[color], colors[color+1], (leftEnd - (color * colorSlice)) / colorSlice);
+                    // let newPercentage = ((color * colorSlice) - leftEnd) / (rightEnd - leftEnd)
+                    gradient = [gradient, rbgFromArray(newColor)].join(', ');
+                    console.log("Hit Case 4: " + rbgFromArray(newColor))
+                }
+
+                // If the right end is between this color and the next add a calculated color with no percentage
+                if (rightEnd > color * colorSlice && rightEnd > (color+1) * colorSlice) {
+                    let newColor = pickHex(colors[color], colors[color+1], (rightEnd - (color * colorSlice)) / colorSlice);
+                    gradient = [gradient, rbgFromArray(newColor)].join(', ');
+                    console.log("Hit Case 5: " + rbgFromArray(newColor))
+                }
+            }
+
+            return gradient;
         }
 
         {% if 'change_project' in context_perms %}

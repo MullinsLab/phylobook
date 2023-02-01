@@ -215,7 +215,7 @@ img {
 .slider-range {
     /* background-image: linear-gradient(to right, yellow , red); */
     /* background-image: linear-gradient(to right, yellow , blue); */
-    background-image: linear-gradient(to right, #FF0000 , #00FF00);
+    background-image: linear-gradient(to right, rgb(255, 165, 0), rgb(255, 255, 0), rgb(0, 255, 0), rgb(0, 0, 255), rgb(238, 130, 238));
     width: 300px;
     display: inline-block;
     margin-left: 10px;

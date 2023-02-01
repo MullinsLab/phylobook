@@ -1042,9 +1042,12 @@ $( function() {
         slide: function( event, ui ) {
             //$( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
             // color between rage sliders
+            console.log('Left Slider Value: ' + ui.values[ 0 ] + ', Right Slider Value: ' + ui.values[ 1 ])
             minColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 0 ]/100);
             maxColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 1 ]/100);
             $( "#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+
+            console.log(linearGradient(gradientColorsRGB, ui.values[ 0 ], ui.values[ 1 ]))
         }
     });
 });
