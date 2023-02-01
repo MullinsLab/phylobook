@@ -542,19 +542,13 @@ $(document).ready(function() {
             if (numseqs < min || lastunderscore == -1) {
                 return;
             } else if (numseqs >= max) {
-                // labelcolor = pickHex([0, 255, 0], [255, 0, 0], values[ 1 ]/100);
                 labelcolor = pickColorFromGradient(gradientColorsRGB, values[ 1 ])
             } else if (numseqs == min) {
-                // labelcolor = pickHex([0, 255, 0], [255, 0, 0], values[ 0 ]/100);
                 labelcolor = pickColorFromGradient(gradientColorsRGB, values[ 0 ])
             } else if (numseqs >= min) {
                 var incrementweight = 100/(max - min);
                 var weight = ((numseqs - min) * incrementweight);
                 labelcolor = pickColorFromGradient(gradientColorsRGB, weight)
-                // var weight = ((numseqs - min) * incrementweight)/100;
-                // var minColor = pickHex([0, 255, 0], [255, 0, 0], values[ 0 ]/100);
-                // var maxColor = pickHex([0, 255, 0], [255, 0, 0], values[ 1 ]/100);
-                // var labelcolor = pickHex(maxColor, minColor, weight);
             }
 
             var currentSelectedTextNode = label.node();
