@@ -463,9 +463,8 @@ $(document).ready(function() {
                 $(".slider-range").slider('values',1, values[1]);
                 $(".colorhighval").val(values[1]);
                 $(".iscolored").val("true");
-                var minColor = pickHex([0, 255, 0], [255, 0, 0], values[ 0 ]/100);
-                var maxColor = pickHex([0, 255, 0], [255, 0, 0], values[ 1 ]/100);
-                $( ".slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+                $( ".slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, markers[ 0 ], markers[ 1 ]) + ")");
+
                 setAllDirtyUnsaved();
             }
         } else {
@@ -1035,19 +1034,12 @@ $( function() {
         create: function( event, ui ) {
             // color between rage sliders
             var markers=$(this).slider('values');
-            minColor = pickHex([0, 255, 0], [255, 0, 0], markers[ 0 ]/100);
-            maxColor = pickHex([0, 255, 0], [255, 0, 0], markers[ 1 ]/100);
-            $( "#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+           $( "#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, markers[ 0 ], markers[ 1 ]) + ")");
+            
         },
         slide: function( event, ui ) {
-            //$( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
             // color between rage sliders
-            console.log('Left Slider Value: ' + ui.values[ 0 ] + ', Right Slider Value: ' + ui.values[ 1 ])
-            minColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 0 ]/100);
-            maxColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 1 ]/100);
-            $( "#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
-
-            console.log(linearGradient(gradientColorsRGB, ui.values[ 0 ], ui.values[ 1 ]))
+            $( "#slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, ui.values[ 0 ], ui.values[ 1 ]) + ")");
         }
     });
 });

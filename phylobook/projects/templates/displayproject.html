@@ -93,44 +93,69 @@
             // colors = array [[r, b, g], [r, b, g] ... ], leftEnd = int (the left end of the gradient) - 1 to 100, rightEnd = int (the right end of the gradient) - 1 to 100
             let colorSlice = 100 / (colors.length - 1);
             let gradient = '';
-
-            for (let color = 0; color < colors.length; color++) {
-                
+            leftEnd -= 1;
+            
+            for (let color = 0; color < colors.length; color++) { 
                 // If the leftEnd is to the right of the next color, or rightEnd is to the left of the previous color skip this color
                 if (leftEnd > (color + 1) * colorSlice || rightEnd < 100-((colors.length-color) * colorSlice)) {
                     continue;
                 }
                 
                 // If the left or right ends are exactly on this color add the color as is with no percentage
-                if (leftEnd-1 == color * colorSlice || rightEnd == color * colorSlice) {
-                    gradient = [gradient, rbgFromArray(colors[color])].join(', ');
-                    console.log("Hit Case 2: " + rbgFromArray(colors[color]))
+                if (leftEnd == color * colorSlice || rightEnd == color * colorSlice) {
+                    
+                    if (gradient) {gradient += ', '}
+                    gradient += rbgFromArray(colors[color]);
+
+                    continue;
                 }
                 
                 // If the colorSlice is between the ends add the color as is and figure it's percentage
                 if (leftEnd < color * colorSlice && rightEnd > color * colorSlice){
                     let newPercentage = ((color * colorSlice) - leftEnd) / (rightEnd - leftEnd)
-                    gradient = [gradient, rbgFromArray(colors[color]) + ' ' + Math.round(newPercentage * 100) + '%'].join(', ')
-                    console.log("Hit Case 3: " + rbgFromArray(colors[color]))
+
+                    if (gradient) {gradient += ', '}
+                    gradient += rbgFromArray(colors[color]) + ' ' + Math.round(newPercentage * 100) + '%';
                 }
 
                 // If the left end is between this color and the next add a calculated color with no percentage
                 if (leftEnd > color * colorSlice && leftEnd < (color+1) * colorSlice) {
-                    let newColor = pickHex(colors[color], colors[color+1], (leftEnd - (color * colorSlice)) / colorSlice);
-                    // let newPercentage = ((color * colorSlice) - leftEnd) / (rightEnd - leftEnd)
-                    gradient = [gradient, rbgFromArray(newColor)].join(', ');
-                    console.log("Hit Case 4: " + rbgFromArray(newColor))
+                    let newColor = pickHex(colors[color], colors[color+1], 1 - ((leftEnd - (color * colorSlice)) / colorSlice));
+                    
+                    if (gradient) {gradient += ', '}
+                    gradient += rbgFromArray(newColor);
                 }
 
                 // If the right end is between this color and the next add a calculated color with no percentage
-                if (rightEnd > color * colorSlice && rightEnd > (color+1) * colorSlice) {
-                    let newColor = pickHex(colors[color], colors[color+1], (rightEnd - (color * colorSlice)) / colorSlice);
-                    gradient = [gradient, rbgFromArray(newColor)].join(', ');
-                    console.log("Hit Case 5: " + rbgFromArray(newColor))
+                if (rightEnd > color * colorSlice && rightEnd < (color+1) * colorSlice) {
+                    let newColor = pickHex(colors[color], colors[color+1], (((color + 1) * colorSlice) - rightEnd) / colorSlice);
+
+                    if (gradient) {gradient += ', '}
+                    gradient += rbgFromArray(newColor);
                 }
             }
 
             return gradient;
+        }
+
+        function pickColorFromGradient(colors, location) {
+            // Function to get a specific color at a location along the gradient.  
+            // colors = array [[r, b, g], [r, b, g] ... ], location = int - 1 to 100
+            let colorSlice = 100 / (colors.length - 1);
+            
+            // If the location is exactly at a color return that color
+            if (location % colorSlice == 0){
+                return colors[location/colorSlice];
+            }
+            
+            // Step through the colors to find the slice that the location is in
+            for (let color = 0; color < colors.length; color++) { 
+                // if (color * colorSlice < location  < (color + 1) * colorSlice){
+                if (location > color * colorSlice && location  < (color + 1) * colorSlice){
+                    console.log("Color1: " + color + " Value: " + colors[color] + ", Color2: " + (color+1) + " Value: " + colors[color+1]);
+                    return pickHex(colors[color], colors[color+1], 1 - ((location % colorSlice) / colorSlice));
+                }
+            }
         }
 
         {% if 'change_project' in context_perms %}
@@ -496,15 +521,19 @@
                                 create: function( event, ui ) {
                                     // color between rage sliders
                                     var markers=$(this).slider('values');
-                                    minColor = pickHex([0, 255, 0], [255, 0, 0], markers[ 0 ]/100);
-                                    maxColor = pickHex([0, 255, 0], [255, 0, 0], markers[ 1 ]/100);
-                                    $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+                                    // minColor = pickHex([0, 255, 0], [255, 0, 0], markers[ 0 ]/100);
+                                    // maxColor = pickHex([0, 255, 0], [255, 0, 0], markers[ 1 ]/100);
+                                    // $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+
+                                    $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, markers[ 0 ], markers[ 1 ]) + ")");
                                 },
                                 slide: function( event, ui ) {
                                     // color between rage sliders
-                                    minColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 0 ]/100);
-                                    maxColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 1 ]/100);
-                                    $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+                                    // minColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 0 ]/100);
+                                    // maxColor = pickHex([0, 255, 0], [255, 0, 0], ui.values[ 1 ]/100);
+                                    // $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + rgb(minColor[0],minColor[1],minColor[2]) + ", " + rgb(maxColor[0],maxColor[1],maxColor[2]) + ")");
+
+                                    $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, ui.values[ 0 ], ui.values[ 1 ]) + ")");
                                 }
                             });
                         });
