@@ -42,34 +42,18 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'crispy_forms',
     'guardian',
+    'phylobook.uw_saml',
     'treebeard',
 ]
 
 LOGIN_TYPE = os.environ.get('LOGIN_TYPE')
 
-# Don't add UW_Saml if we're not using it, or it's tests will fail
-if LOGIN_TYPE != 'local':
-    INSTALLED_APPS.append('phylobook.uw_saml')
-    # django-guardian backends
-    AUTHENTICATION_BACKENDS = (
-        'phylobook.uw_saml.backends.VVRemoteUserBackend',
-        'django.contrib.auth.backends.ModelBackend', # this is default
-        'guardian.backends.ObjectPermissionBackend',
-    )
-else:
-    # django-guardian backends
-    AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend', # this is default
-        'guardian.backends.ObjectPermissionBackend',
-    )
-
-
-# django-guardian backends - Moved into above if block
-# AUTHENTICATION_BACKENDS = (
-#     'phylobook.uw_saml.backends.VVRemoteUserBackend',
-#     'django.contrib.auth.backends.ModelBackend', # this is default
-#     'guardian.backends.ObjectPermissionBackend',
-# )
+# django-guardian backends
+AUTHENTICATION_BACKENDS = (
+    'phylobook.uw_saml.backends.VVRemoteUserBackend',
+    'django.contrib.auth.backends.ModelBackend', # this is default
+    'guardian.backends.ObjectPermissionBackend',
+)
 
 # django-guardian - anonymous user object permissions-are disabled.
 ANONYMOUS_USER_NAME = None
