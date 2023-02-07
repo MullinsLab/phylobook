@@ -9,6 +9,8 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - .env
+    #ports:
+    #  - 5432:5432
 
   web:
     build: .
@@ -16,7 +18,7 @@ services:
     volumes:
       - ${PROJECT_PATH}:${PROJECT_PATH}
     ports:
-      - '127.0.0.1:8000:8000'
+      - '127.0.0.1:${WEB_PORT}:8000'
     depends_on:
       - db
     env_file:
