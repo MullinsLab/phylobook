@@ -9,6 +9,8 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - .env
+    #ports:
+    #  - 25432:5432
 
   web:
     build: .
