@@ -547,8 +547,14 @@ $(document).ready(function() {
                 labelcolor = pickColorFromGradient(gradientColorsRGB, values[ 0 ])
             } else if (numseqs >= min) {
                 var incrementweight = 100/(max - min);
-                var weight = ((numseqs - min) * incrementweight);
-                labelcolor = pickColorFromGradient(gradientColorsRGB, weight)
+                var sequencesWeight = ((numseqs - min) * incrementweight);
+                var left = values[0];
+                var right = values[1];
+                var scaleWeight = (right-left)/100;
+                var colorWeight = left+(scaleWeight * sequencesWeight);
+
+                // console.log("numseqs: " + numseqs + ", left: " + values[0] + ", right: " + values[1] + ", scaleWeight: " + scaleWeight + " colorWeight: " + colorWeight + ", incrementweight: " + incrementweight + " sequencesweight: " + sequencesWeight);
+                labelcolor = pickColorFromGradient(gradientColorsRGB, colorWeight)
             }
 
             var currentSelectedTextNode = label.node();
