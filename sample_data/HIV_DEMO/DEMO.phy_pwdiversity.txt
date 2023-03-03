@@ -1,2 +1,0 @@
-Number of sequences	Mean	Standard error	Min	Q1	Median	Q3	Max
-55	0.0146703	0.00023992	0	0.0058481	0.01481365	0.02256926	0.03436494
