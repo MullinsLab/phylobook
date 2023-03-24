@@ -127,4 +127,4 @@ phylobook_error_log
 /sample_data/Peter_Test_V704
 
 # Exclude vscode stuff
-.vscode
+.vscode 
