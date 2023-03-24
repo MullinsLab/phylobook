@@ -152,7 +152,7 @@
             for (let color = 0; color < colors.length; color++) { 
                 // if (color * colorSlice < location  < (color + 1) * colorSlice){
                 if (location > color * colorSlice && location  < (color + 1) * colorSlice){
-                    console.log("Color1: " + color + " Value: " + colors[color] + ", Color2: " + (color+1) + " Value: " + colors[color+1]);
+                    // console.log("Color1: " + color + " Value: " + colors[color] + ", Color2: " + (color+1) + " Value: " + colors[color+1]);
                     return pickHex(colors[color], colors[color+1], 1 - ((location % colorSlice) / colorSlice));
                 }
             }
