@@ -461,10 +461,12 @@
                     });
                     $('#notes-' + "{{ entry.uniquesvg }}").load('/projects/note/read/{{ project }}/' + "{{ entry.uniquesvg }}", function() {
                         {% if 'change_project' in context_perms %}
-                        var content = tinymce.get("notes-" + "{{ entry.uniquesvg }}").getContent();
-                        if (content.length > 0) {
-                            $('#notes-' + "{{ entry.uniquesvg }}").attr("data-mce-placeholder", "");
-                            $('#notes-' + "{{ entry.uniquesvg }}").attr("aria-placeholder", "");
+                        if (tinymce.get("notes-" + "{{ entry.uniquesvg }}")){
+                            var content = tinymce.get("notes-" + "{{ entry.uniquesvg }}").getContent();
+                            if (content.length > 0) {
+                                $('#notes-' + "{{ entry.uniquesvg }}").attr("data-mce-placeholder", "");
+                                $('#notes-' + "{{ entry.uniquesvg }}").attr("aria-placeholder", "");
+                            }
                         }
                         {% endif %}
                     });
