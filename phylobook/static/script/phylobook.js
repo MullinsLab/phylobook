@@ -5,102 +5,94 @@ const collatorNumber = new Intl.Collator(undefined, {
 })
 
 // Notes editor, buttons/listeners, contextmenus etc.
-tinymce.init({
-    selector: '.notes',
-    inline: true,
-    placeholder: "Click here to add notes.",
-    menubar: false,
-    toolbar_location: 'bottom',
-    content_style: "p { margin: 0; }",
-    save_enablewhendirty: true,
-    plugins: [
-    'save',
-    'link',
-    'lists',
-    'autolink',
-    ],
-    color_map: [
-        "FF0000", "Red",
-        "537EFF", "Neon Blue",
-        "00CB85", "Green",
-        "000000", "Black",
-        "FFA500", "Orange",
-        "00E3FF", "Light Blue",
-        "BFEF45", "Lime",
-        "808080", "Gray",
-        "FFD8B1", "Apricot",
-        "DCBEFF", "Lavender",
-        "E935A1", "Pink",
-        "800080", "Purple",
-        "EFE645", "Yellow",
-        // "808000", "Olive",
-        // "000075", "Navy",
-        // "800000", "Maroon"
-    ],
-    toolbar: [
-    'save undo redo | bold italic underline | fontselect fontsizeselect',
-    'forecolor backcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent'
-    ],
-    valid_elements: 'p[style],strong,em,span[style],a[href],ul,ol,li',
-    valid_styles: {
-    '*': 'font-size,font-family,color,text-decoration,text-align,background-color'
-    },
-    powerpaste_word_import: 'clean',
-    powerpaste_html_import: 'clean',
-    setup:function(ed) {
-        ed.on('change', function(e) {
-            setDirtyUnsaved(ed.id);
-       });
-    },
-    //Save button call back function
-    save_onsavecallback: function (ed) {
-        var content = tinymce.activeEditor.getContent();
-        var id = tinymce.activeEditor.id.replace("notes-", "");
-        var svg = $("#" + id).find(".svgimage").html();
-        var proj = $("#project").val();
-        var edId = ed.id;
-        // check to see if SVG image exists, so it doesn't get overwritten with 0 bytes
-        if ($("#" + id).find(".svgimage").html() && $("#" + id).find(".svgimage").html().length > 0) {
-            $.ajax({
-            type: "POST",
-            headers: { "X-CSRFToken": token },
-            url: '/projects/note/update/' + proj + "/" + id,
-            data: {
-                "notes": content,
-                "minval": $("#minval-" + id).val(),
-                "maxval": $("#maxval-" + id).val(),
-                "colorlowval": $("#colorlowval-" + id).val(),
-                "colorhighval": $("#colorhighval-" + id).val(),
-                "iscolored": $("#iscolored-" + id).val(),
-            },
-            success: function() {
-                $.ajax({
-                    type: "POST",
-                    headers: { "X-CSRFToken": token },
-                    url: '/projects/svg/update/' + proj + "/" + id,
-                    data: { "svg": svg },
-                    success: function() {
-                        setDirtySaved(edId);
-                        //alert( id + " saved successfully." );
-                    },
-                    error: function (err) {
-                        alert( id + " Failed to save!!!  Contact dev team." );
-                    }
-                });
-            },
-            error: function (err) {
-                alert( id + " Failed to save!!!  Contact dev team." );
-            }
-        });
-        } else {
-            alert(id + " is missing an SVG image.  It will not be saved.");
-            setDirtyUnsaved(ed.id);
-        }
+$(document).ready(function() {
+    // Make color map for the tinymces
+    let colorMap = []
+    for (let color in annotationColors){
+        colorMap.push(annotationColors[color].value, annotationColors[color].name);
     }
+
+    tinymce.init({
+        selector: '.notes',
+        inline: true,
+        placeholder: "Click here to add notes.",
+        menubar: false,
+        toolbar_location: 'bottom',
+        content_style: "p { margin: 0; }",
+        save_enablewhendirty: true,
+        plugins: [
+        'save',
+        'link',
+        'lists',
+        'autolink',
+        ],
+        color_map: colorMap,
+        toolbar: [
+        'save undo redo | bold italic underline | fontselect fontsizeselect',
+        'forecolor backcolor | alignleft aligncenter alignright alignfull | numlist bullist outdent indent'
+        ],
+        valid_elements: 'p[style],strong,em,span[style],a[href],ul,ol,li',
+        valid_styles: {
+        '*': 'font-size,font-family,color,text-decoration,text-align,background-color'
+        },
+        powerpaste_word_import: 'clean',
+        powerpaste_html_import: 'clean',
+        setup:function(ed) {
+            ed.on('change', function(e) {
+                setDirtyUnsaved(ed.id);
+        });
+        },
+        //Save button call back function
+        save_onsavecallback: function (ed) {
+            var content = tinymce.activeEditor.getContent();
+            var id = tinymce.activeEditor.id.replace("notes-", "");
+            var svg = $("#" + id).find(".svgimage").html();
+            var proj = $("#project").val();
+            var edId = ed.id;
+            // check to see if SVG image exists, so it doesn't get overwritten with 0 bytes
+            if ($("#" + id).find(".svgimage").html() && $("#" + id).find(".svgimage").html().length > 0) {
+                $.ajax({
+                type: "POST",
+                headers: { "X-CSRFToken": token },
+                url: '/projects/note/update/' + proj + "/" + id,
+                data: {
+                    "notes": content,
+                    "minval": $("#minval-" + id).val(),
+                    "maxval": $("#maxval-" + id).val(),
+                    "colorlowval": $("#colorlowval-" + id).val(),
+                    "colorhighval": $("#colorhighval-" + id).val(),
+                    "iscolored": $("#iscolored-" + id).val(),
+                },
+                success: function() {
+                    $.ajax({
+                        type: "POST",
+                        headers: { "X-CSRFToken": token },
+                        url: '/projects/svg/update/' + proj + "/" + id,
+                        data: { "svg": svg },
+                        success: function() {
+                            setDirtySaved(edId);
+                            //alert( id + " saved successfully." );
+                        },
+                        error: function (err) {
+                            alert( id + " Failed to save!!!  Contact dev team." );
+                        }
+                    });
+                },
+                error: function (err) {
+                    alert( id + " Failed to save!!!  Contact dev team." );
+                }
+            });
+            } else {
+                alert(id + " is missing an SVG image.  It will not be saved.");
+                setDirtyUnsaved(ed.id);
+            }
+        }
+    });
 });
 
 ///////
 function showCluster(project, file, id, drawboxes) {
+    // Assign box color per clustering info
     $.ajax({
         type: "GET",
         headers: { "X-CSRFToken": token },
@@ -220,44 +212,13 @@ function buildClusterLegend(uniqueClusters, clusterColorKeys) {
 }
 
 function getClassficationColor(key) {
+    // gets colors for Clustering
+
     // https://stackoverflow.com/questions/10014271/generate-random-color-distinguishable-to-humans#answer-20129594
     //const goldenAngle = 180 * (3 - Math.sqrt(5));
     //return `hsl(${key * goldenAngle + 60}, 100%, 75%)`
-
-    // Removed unloved colors
-    if (key == "1") {
-        return {"name": "red", "color": "red"};
-    } else if (key == "2") {
-        return {"name": "neonblue", "color": "#537eff"};
-    } else if (key == "3") {
-        return {"name": "green", "color": "#00cb85"};
-    } else if (key == "4") {
-        return {"name": "black", "color": "black"};
-    } else if (key == "5") {
-        return {"name": "orange", "color": "orange"};
-    } else if (key == "6") {
-        return {"name": "lightblue", "color": "#00e3ff"};
-    } else if (key == "7") {
-        return {"name": "lime", "color": "#BFEF45"};
-    } else if (key == "8") {
-        return {"name": "gray", "color": "gray"};
-    } else if (key == "9") {
-        return {"name": "apricot", "color": "#FFD8B1"};
-    } else if (key == "10") {
-        return {"name": "lavender", "color": "#DCBEFF"};
-    } else if (key == "11") {
-        return {"name": "pink", "color": "#e935a1"};
-    } else if (key == "12") {
-        return {"name": "purple", "color": "purple"};
-    } else if (key == "13") {
-        return {"name": "yellow", "color": "#efe645"};
-    }
-    //} else if (key == "2") {
-    //    return {"name": "olive", "color": "olive"};
-    //} else if (key == "6") {
-    //    return {"name": "maroon", "color": "#800000"};
-    //} else if (key == "8") {
-    //    return {"name": "navy", "color": "#000075"};
+    
+    return {"name": annotationColors[key-1].short, "color": "#"+annotationColors[key-1].value.toLowerCase()};
 }
 
 function getMultiSelectedTexts(svg, rect) {
@@ -268,6 +229,9 @@ function getMultiSelectedTexts(svg, rect) {
     var rby2 = rectbbox.y + rectbbox.height;
     d3.select(svg).selectAll("text")
     .each(function() {
+        // console.log(this);
+        // console.log(d3.select(this.parentNode))
+
         var textbbox = this.getBoundingClientRect();
         // if there is a transform, grab the x, y
         var selectedItem = d3.select(this);
@@ -445,6 +409,7 @@ $(document).ready(function() {
             resetSlider(id);
         }
     });
+    
     $( ".sequencecolor" ).on( "click", function() {
         var saveid = $(this).attr('id');
         var textitems;
@@ -526,6 +491,7 @@ $(document).ready(function() {
     }
 
     function colorizeSeqnum(textitems, id) {
+        // Create boxes based on sequence numbers
         var dashId = "";
         if (id) {
             dashId = "-" + id;
@@ -597,140 +563,23 @@ $(document).ready(function() {
     function showExtractDialog(svg) {
         $("#seqbox").val("");
         var id = $(svg.node()).closest(".imgparent").attr("id");
-        var extractred = getColorTextLabels(svg, "boxred");
-        var extractyellow = getColorTextLabels(svg, "boxyellow");
-        var extractpink = getColorTextLabels(svg, "boxpink");
-        var extractlightblue = getColorTextLabels(svg, "boxlightblue");
-        var extractorange = getColorTextLabels(svg, "boxorange");
-        var extractneonblue = getColorTextLabels(svg, "boxneonblue");
-        var extractgreen = getColorTextLabels(svg, "boxgreen");
-        var extractblack = getColorTextLabels(svg, "boxblack");
-        var extractgray = getColorTextLabels(svg, "boxgray");
-        var extractpurple = getColorTextLabels(svg, "boxpurple");
-        var extractapricot = getColorTextLabels(svg, "boxapricot");
-        var extractlime = getColorTextLabels(svg, "boxlime");
-        var extractolive = getColorTextLabels(svg, "boxolive");
-        var extractnavy = getColorTextLabels(svg, "boxnavy");
-        var extractlavender = getColorTextLabels(svg, "boxlavender");
-        var extractmaroon = getColorTextLabels(svg, "boxmaroon");
 
-        $("#seqsid").val(id);
-        if (extractred.length === 0) {
-            $("#extractred").prop("checked", false);
-            $("#extractred").attr("disabled", true);
-        } else {
-             $("#extractred").attr("disabled", false);
-            $("#seqsred").val(extractred.join());
+        for (let colorKey in annotationColors){
+            let color = annotationColors[colorKey].short;
+            let extractcolor = getColorTextLabels(svg, "box" + color);
+
+            $("#seqsid").val(id);
+
+            if (extractcolor.length === 0) {
+                $("#extract"+color).prop("checked", false);
+                $("#extract"+color).attr("disabled", true);
+            } else {
+                 $("#extract"+color).attr("disabled", false);
+                $("#seqs"+color).val(extractcolor.join());
+            }
         }
-        if (extractyellow.length === 0) {
-            $("#extractyellow").prop("checked", false);
-            $("#extractyellow").attr("disabled", true);
-        } else {
-            $("#extractyellow").attr("disabled", false);
-            $("#seqsyellow").val(extractyellow.join());
-        }
-        if (extractpink.length === 0) {
-            $("#extractpink").prop("checked", false);
-            $("#extractpink").attr("disabled", true);
-        } else {
-            $("#extractpink").attr("disabled", false);
-            $("#seqspink").val(extractpink.join());
-        }
-        if (extractlightblue.length === 0) {
-            $("#extractlightblue").prop("checked", false);
-            $("#extractlightblue").attr("disabled", true);
-        } else {
-            $("#extractlightblue").attr("disabled", false);
-            $("#seqslightblue").val(extractlightblue.join());
-        }
-        if (extractorange.length === 0) {
-            $("#extractorange").prop("checked", false);
-            $("#extractorange").attr("disabled", true);
-        } else {
-            $("#extractorange").attr("disabled", false);
-            $("#seqsorange").val(extractorange.join());
-        }
-        if (extractneonblue.length === 0) {
-            $("#extractneonblue").prop("checked", false);
-            $("#extractneonblue").attr("disabled", true);
-        } else {
-            $("#extractneonblue").attr("disabled", false);
-            $("#seqsneonblue").val(extractneonblue.join());
-        }
-        if (extractgreen.length === 0) {
-            $("#extractgreen").prop("checked", false);
-            $("#extractgreen").attr("disabled", true);
-        } else {
-            $("#extractgreen").attr("disabled", false);
-            $("#seqsgreen").val(extractgreen.join());
-        }
-        if (extractblack.length === 0) {
-            $("#extractblack").prop("checked", false);
-            $("#extractblack").attr("disabled", true);
-        } else {
-            $("#extractblack").attr("disabled", false);
-            $("#seqsblack").val(extractblack.join());
-        }
-        if (extractgray.length === 0) {
-            $("#extractgray").prop("checked", false);
-            $("#extractgray").attr("disabled", true);
-        } else {
-            $("#extractgray").attr("disabled", false);
-            $("#seqsgray").val(extractgray.join());
-        }
-        if (extractpurple.length === 0) {
-            $("#extractpurple").prop("checked", false);
-            $("#extractpurple").attr("disabled", true);
-        } else {
-            $("#extractpurple").attr("disabled", false);
-            $("#seqspurple").val(extractpurple.join());
-        }
-        if (extractapricot.length === 0) {
-            $("#extractapricot").prop("checked", false);
-            $("#extractapricot").attr("disabled", true);
-        } else {
-            $("#extractapricot").attr("disabled", false);
-            $("#seqsapricot").val(extractapricot.join());
-        }
-        if (extractlime.length === 0) {
-            $("#extractlime").prop("checked", false);
-            $("#extractlime").attr("disabled", true);
-        } else {
-            $("#extractlime").attr("disabled", false);
-            $("#seqslime").val(extractlime.join());
-        }
-        // if (extractolive.length === 0) {
-        //     $("#extractolive").prop("checked", false);
-        //     $("#extractolive").attr("disabled", true);
-        // } else {
-        //     $("#extractolive").attr("disabled", false);
-        //     $("#seqsolive").val(extractolive.join());
-        // }
-        // if (extractnavy.length === 0) {
-        //     $("#extractnavy").prop("checked", false);
-        //     $("#extractnavy").attr("disabled", true);
-        // } else {
-        //     $("#extractnavy").attr("disabled", false);
-        //     $("#seqsnavy").val(extractnavy.join());
-        // }
-        if (extractlavender.length === 0) {
-            $("#extractlavender").prop("checked", false);
-            $("#extractlavender").attr("disabled", true);
-        } else {
-            $("#extractlavender").attr("disabled", false);
-            $("#seqslavender").val(extractlavender.join());
-        }
-        // if (extractmaroon.length === 0) {
-        //     $("#extractmaroon").prop("checked", false);
-        //     $("#extractmaroon").attr("disabled", true);
-        // } else {
-        //     $("#extractmaroon").attr("disabled", false);
-        //     $("#seqsmaroon").val(extractmaroon.join());
-        // }
 
         $('#myModal').modal({show:true});
-        //$("#totalSequences").text(sequenceTable.page.info().recordsDisplay.toLocaleString());
-        //});
     }
 
     // hide contextMenu if scroll happens while displayed

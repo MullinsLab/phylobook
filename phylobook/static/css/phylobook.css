@@ -146,6 +146,7 @@ img {
     background-color: transparent !important;
 }
 
+/* Colors for annotating the SVG */
 .Yellow {
     background-color: #efe645;
     border: 1px solid #efe645;

@@ -9,9 +9,15 @@
 {% endif %}
     <script src="{% static 'script/csvToArray.v2.1.js' %}"></script>
     <script src="{% static 'script/phylobookview.js' %}"></script>
-    <script>
+    <script type="text/javascript">
         var token = '{{csrf_token}}';
         var projectName = '{{ project }}';
+        {% if settings.ANNOTATION_COLORS %}
+        // Annotation Colors Set
+        const annotationColors = [{% for color in settings.ANNOTATION_COLORS %}{{ "{" }}name:"{{ color.name }}", short:"{{ color.short }}", value:"{{ color.value }}"{{ "}" }},
+                                  {% endfor %}
+        ]
+        {% endif %}
         
         // Colors used in the gradients
         const gradientColorsHex = ['#FFA500', '#FFFF00', '#00FF00', '#0000FF', '#EE82EE'];
@@ -206,45 +212,15 @@
     {% if user.is_authenticated %}
         <input type="hidden" id="project" value="{{ project }}" />
         <div id="context-menu">
-            <div id="boxred" class="item"><span class="rectangle Red"></span>&nbsp;&nbsp;Red</div>
-            <div id="boxneonblue"  class="item"><span class="rectangle Neonblue"></span>&nbsp;&nbsp;Neon Blue</div>
-            <div id="boxgreen"  class="item"><span class="rectangle Green"></span>&nbsp;&nbsp;Green</div>
-            <div id="boxblack"  class="item"><span class="rectangle Black"></span>&nbsp;&nbsp;Black</div>
-            <div id="boxorange"  class="item"><span class="rectangle Orange"></span>&nbsp;&nbsp;Orange</div>
-            <div id="boxlightblue"  class="item"><span class="rectangle Lightblue"></span>&nbsp;&nbsp;Light Blue</div>
-            <div id="boxlime"  class="item"><span class="rectangle Lime"></span>&nbsp;&nbsp;Lime</div>
-            <div id="boxgray"  class="item"><span class="rectangle Gray"></span>&nbsp;&nbsp;Gray</div>
-            <div id="boxapricot"  class="item"><span class="rectangle Apricot"></span>&nbsp;&nbsp;Apricot</div>
-            <div id="boxlavender"  class="item"><span class="rectangle Lavender"></span>&nbsp;&nbsp;Lavender</div>
-            <div id="boxpink"  class="item"><span class="rectangle Pink"></span>&nbsp;&nbsp;Pink</div>
-            <div id="boxpurple"  class="item"><span class="rectangle Purple"></span>&nbsp;&nbsp;Purple</div>
-            <div id="boxyellow"  class="item"><span class="rectangle Yellow"></span>&nbsp;&nbsp;Yellow</div>
-            
-            <!-- <div id="boxolive" class="item"><span class="rectangle Olive"></span>&nbsp;&nbsp;Olive</div> -->
-            <!--  <div id="boxmaroon"  class="item"><span class="rectangle Maroon"></span>&nbsp;&nbsp;Maroon</div> -->
-            <!--  <div id="boxnavy"  class="item"><span class="rectangle Navy"></span>&nbsp;&nbsp;Navy</div> -->
+            {% if settings.ANNOTATION_COLORS %}{% for color in settings.ANNOTATION_COLORS %}
+            <div id="box{{ color.short }}" class="item"><span class="rectangle {{ color.short|capfirst }}"></span>&nbsp;&nbsp;{{  color.name }}</div>{% endfor %}{% endif %}
 
             <div id="boxextract"  class="item">Extract</div>
             <div id="boxremove"  class="item">Remove</div>
         </div>
         <div id="context-menu-circle">
-            <div id="circlered" class="item"><span class="dot Red"></span>&nbsp;&nbsp;Red</div>
-            <div id="circleneonblue"  class="item"><span class="dot Neonblue"></span>&nbsp;&nbsp;Neon Blue</div>
-            <div id="circlegreen"  class="item"><span class="dot Green"></span>&nbsp;&nbsp;Green</div>
-            <div id="circleblack"  class="item"><span class="dot Black"></span>&nbsp;&nbsp;Black</div>
-            <div id="circleorange"  class="item"><span class="dot Orange"></span>&nbsp;&nbsp;Orange</div>
-            <div id="circlelightblue"  class="item"><span class="dot Lightblue"></span>&nbsp;&nbsp;Light Blue</div>
-            <div id="circlelime"  class="item"><span class="dot Lime"></span>&nbsp;&nbsp;Lime</div>
-            <div id="circlegray"  class="item"><span class="dot Gray"></span>&nbsp;&nbsp;Gray</div>
-            <div id="circleapricot"  class="item"><span class="dot Apricot"></span>&nbsp;&nbsp;Apricot</div>
-            <div id="circlelavender"  class="item"><span class="dot Lavender"></span>&nbsp;&nbsp;Lavender</div>
-            <div id="circlepink"  class="item"><span class="dot Pink"></span>&nbsp;&nbsp;Pink</div>
-            <div id="circlepurple"  class="item"><span class="dot Purple"></span>&nbsp;&nbsp;Purple</div>
-            <div id="circleyellow"  class="item"><span class="dot Yellow"></span>&nbsp;&nbsp;Yellow</div>
-            
-            <!-- <div id="circleolive" class="item"><span class="dot Olive"></span>&nbsp;&nbsp;Olive</div> -->
-            <!-- <div id="circlemaroon"  class="item"><span class="dot Maroon"></span>&nbsp;&nbsp;Maroon</div> -->
-            <!-- <div id="circlenavy"  class="item"><span class="dot Navy"></span>&nbsp;&nbsp;Navy</div> -->
+            {% if settings.ANNOTATION_COLORS %}{% for color in settings.ANNOTATION_COLORS %}
+            <div id="circle{{ color.short }}" class="item"><span class="dot {{ color.short|capfirst }}"></span>&nbsp;&nbsp;{{  color.name }}</div>{% endfor %}{% endif %}
 
             <div id="circleremove"  class="item">Remove</div>
         </div>
@@ -261,150 +237,17 @@
                         <form action="/" method="POST" id="sequenceform">
                             <input type="hidden" id="seqsid" value="" />
                             <div class="custom-radio-button">
-
-                              <div>
-                                <input type="radio" id="extractred" name="color" value="extractred">
-                                <label for="extractred">
-                                  <span>
-                                  </span>
-                                </label>
-                                <input type="hidden" id="seqsred" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractneonblue" name="color" value="extractneonblue">
-                                <label for="extractneonblue">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqsneonblue" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractgreen" name="color" value="extractgreen">
-                                <label for="extractgreen">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqsgreen" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractblack" name="color" value="extractblack">
-                                <label for="extractblack">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqsblack" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractorange" name="color" value="extractorange">
-                                <label for="extractorange">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqsorange" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractlightblue" name="color" value="extractlightblue">
-                                <label for="extractlightblue">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqslightblue" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractlime" name="color" value="extractlime">
-                                <label for="extractlime">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqslime" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractgray" name="color" value="extractgray">
-                                <label for="extractgray">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqsgray" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractapricot" name="color" value="extractapricot">
-                                <label for="extractapricot">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqsapricot" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractlavender" name="color" value="extractlavender">
-                                <label for="extractlavender">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqslavender" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractpink" name="color" value="extractpink">
-                                <label for="extractpink">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqspink" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractpurple" name="color" value="extractpurple">
-                                <label for="extractpurple">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqspurple" value="" />
-                              </div>
-
-                              <div>
-                                <input type="radio" id="extractyellow" name="color" value="extractyellow">
-                                <label for="extractyellow">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqsyellow" value="" />
-                              </div>
-
-                              <!-- <div>
-                                <input type="radio" id="extractolive" name="color" value="extractolive">
-                                <label for="extractolive">
-                                  <span>
-                                  </span>
-                                </label>
-                                <input type="hidden" id="seqsolive" value="" />
-                              </div> -->
-
-                              <!-- <div>
-                                <input type="radio" id="extractnavy" name="color" value="extractnavy">
-                                <label for="extractnavy">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqsnavy" value="" />
-                              </div> -->
-
-                              <!-- <div>
-                                <input type="radio" id="extractmaroon" name="color" value="extractmaroon">
-                                <label for="extractmaroon">
-                                  <span>
-                                  </span>
-                                </label>
-                                  <input type="hidden" id="seqsmaroon" value="" />
-                              </div> -->
+                                
+                                {% if settings.ANNOTATION_COLORS %}{% for color in settings.ANNOTATION_COLORS %}
+                                <div>
+                                    <input type="radio" id="extract{{ color.short }}" name="color" value="extract{{ color.short }}">
+                                    <label for="extract{{ color.short }}">
+                                      <span>
+                                      </span>
+                                    </label>
+                                      <input type="hidden" id="seqs{{ color.short }}" value="" />
+                                </div>
+                                {% endfor %}{% endif %}
 
                               <div>
                                 <label for="suffix">

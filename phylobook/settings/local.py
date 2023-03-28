@@ -190,8 +190,27 @@ LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = "/projects"
 LOGOUT_REDIRECT_URL = "/projects"
 
+# Settings for the colors used to tag elements in the SVG
+# Any colors added will need to be added to the 
+ANNOTATION_COLORS = (
+        {"name": "Red", "short": "red", "value": "FF0000"},
+        {"name": "Neon Blue", "short": "neonblue", "value": "537EFF"},
+        {"name": "Green", "short": "green", "value": "00CB85"}, 
+        {"name": "Black", "short": "black", "value": "000000"}, 
+        {"name": "Orange", "short": "orange", "value": "FFA500"}, 
+        {"name": "Light Blue", "short": "lightblue", "value": "00E3FF"}, 
+        {"name": "Lime", "short": "lime", "value": "BFEF45"}, 
+        {"name": "Gray", "short": "gray", "value": "808080"}, 
+        {"name": "Apricot", "short": "apricot", "value": "FFD8B1"}, 
+        {"name": "Lavender", "short": "lavender", "value": "DCBEFF"}, 
+        {"name": "Pink", "short": "pink", "value": "E935A1"}, 
+        {"name": "Purple", "short": "purple", "value": "800080"}, 
+        {"name": "Yellow", "short": "yellow", "value": "EFE645"}, 
+)
+
 SETTINGS_EXPORT = [
     'LOGIN_TYPE',
     'LOGIN_SSO_TITLE',
     'LOGIN_SSO_COLLABORATOR_TITLE',
+    'ANOTATION_COLORS',
 ]
