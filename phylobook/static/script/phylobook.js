@@ -844,39 +844,8 @@ function processContextMenuClick(e, selectedTextNode, selectedText, colorText) {
 }
 
 function getColor(name) {
-    if (name == "red") {
-        return "red";
-    } else if (name == "yellow") {
-        return "#efe645";
-    } else if (name == "pink") {
-        return "#e935a1";
-    } else if (name == "lightblue") {
-        return "#00e3ff";
-    } else if (name == "orange") {
-        return "orange";
-    } else if (name == "neonblue") {
-        return "#537eff";
-    } else if (name == "green") {
-        return "#00cb85";
-    } else if (name == "black") {
-        return "black";
-    } else if (name == "gray") {
-        return "gray";
-    } else if (name == "purple") {
-        return "purple";
-    } else if (name == "apricot") {
-        return "#FFD8B1";
-    } else if (name == "lime") {
-        return "#BFEF45";
-    } else if (name == "olive") {
-        return "#808000";
-    } else if (name == "navy") {
-        return "#000075";
-    } else if (name == "lavender") {
-        return "#DCBEFF";
-    } else if (name == "maroon") {
-        return "#800000";
-    }
+    // Look up a color from the annotationColors list and return the value
+    return annotationColors.filter(color => color.short == name)[0].value
 }
 
 // Slider/colorization functions
