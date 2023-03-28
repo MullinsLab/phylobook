@@ -1,0 +1,3 @@
+#!/bin/bash
+./manage.py collectstatic --settings=phylobook.settings.static --noinput
+touch phylobook/wsgi.py
