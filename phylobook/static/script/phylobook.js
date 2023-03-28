@@ -117,10 +117,10 @@ function showCluster(project, file, id, drawboxes) {
             }
             for (let i = 0; i < clusterArray.length; i++) {
                 var key = clusterArray[i][1];
-                //if (key > max) max = key;
                 var classificationColor = getClassficationColor(clusterColorKeys[key]);
                 var color = classificationColor["color"];
                 var colorText = "box" + classificationColor["name"];
+                
                 if (color != "key not found") {
                     var label = d3.select(svg).selectAll("text")
                           .filter(function(){
@@ -229,8 +229,6 @@ function getMultiSelectedTexts(svg, rect) {
     var rby2 = rectbbox.y + rectbbox.height;
     d3.select(svg).selectAll("text")
     .each(function() {
-        // console.log(this);
-        // console.log(d3.select(this.parentNode))
 
         var textbbox = this.getBoundingClientRect();
         // if there is a transform, grab the x, y
@@ -519,7 +517,6 @@ $(document).ready(function() {
                 var scaleWeight = (right-left)/100;
                 var colorWeight = left+(scaleWeight * sequencesWeight);
 
-                // console.log("numseqs: " + numseqs + ", left: " + values[0] + ", right: " + values[1] + ", scaleWeight: " + scaleWeight + " colorWeight: " + colorWeight + ", incrementweight: " + incrementweight + " sequencesweight: " + sequencesWeight);
                 labelcolor = pickColorFromGradient(gradientColorsRGB, colorWeight)
             }
 
@@ -845,7 +842,7 @@ function processContextMenuClick(e, selectedTextNode, selectedText, colorText) {
 
 function getColor(name) {
     // Look up a color from the annotationColors list and return the value
-    return annotationColors.filter(color => color.short == name)[0].value
+    return "#"+annotationColors.filter(color => color.short == name)[0].value
 }
 
 // Slider/colorization functions
@@ -868,4 +865,65 @@ $( function() {
     });
 });
 
-//
+//////
+function getAllSequenceNames(args){
+    // Return a list of all the names of the samples in an SVG
+    // args: svgID = ID of the svg to get the sequence names from
+    let svg = $("#" + args.svgID).find(".svgimage")[0];
+
+    let names = []
+    d3.select(svg).selectAll("text").each(function (d) {
+        names.push(d3.select(this).text())
+    });
+    names.shift();
+
+    return names;
+}
+
+function getFieldValuesAsArray(args){
+    // Returns an array of arrays with the values of fields from the names
+    // args: svgID = ID of the svg to get the sequence names from
+    let names = getAllSequenceNames({svgID: args.svgID});
+    let fieldValues = [];
+
+    for (let field in names[0].split("_")){
+        fieldValues.push([]);
+    }
+
+    for (let name in names){
+        let fields = names[name].split("_");
+
+        for (let field in fields){
+            if (! fieldValues[field].includes(fields[field])){
+                fieldValues[field].push(fields[field]);
+            }
+        }
+    };
+
+    return fieldValues;
+}
+
+function setSequenceColorByName(args){
+    // Set a sequence name to a color in an svg
+    // args: svgID = ID of the svg the sequence is in
+    //       name = text of the sequence name to color
+    //       color = hex color value to set the sequence name to
+
+    let svg = $("#" + args.svgID).find(".svgimage")[0];
+
+    let field = d3.selectAll("text").filter(function(){ 
+        if (d3.select(this).text() == args.name){
+           return this; 
+        }
+    })
+    
+    setSequenceColor({textObject: field, color: args.color})
+}
+
+function setSequenceColor(args){
+    // Set a text object in an svg to a color
+    // args: textObject = object to set the color for
+    //       color = hex color value to set the text to
+
+    args.textObject.attr("fill", args.color)
+}
