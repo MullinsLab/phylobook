@@ -4,6 +4,8 @@ const collatorNumber = new Intl.Collator(undefined, {
     sensitivity: 'base'
 })
 
+let sequenceAnnotators = {}    // A collection of sequenceAnnotator objects, keyed by svgID
+
 // Notes editor, buttons/listeners, contextmenus etc.
 $(document).ready(function() {
     // Make color map for the tinymces
@@ -866,18 +868,131 @@ $( function() {
 });
 
 //////
-function getAllSequenceNames(args){
-    // Return a list of all the names of the samples in an SVG
-    // args: svgID = ID of the svg to get the sequence names from
-    let svg = $("#" + args.svgID).find(".svgimage")[0];
+//  Stuff for setting text colors
+class sequenceAnnotator {
+    svgID;                  // The ID of the SVG
+    svg;                    // The actual SVG object
+    sequenceNames = [];    // An array of names of sequences
+    fieldValues = [];      // An array of values derived from sequence names, in the form of field_values[place][value]
+    
+    constructor(args){
+        // args: svgID = the ID of the svg
+        this.svgID = args.svgID;
+        this.svg = $("#" + args.svgID).find(".svgimage")[0];
+        // let svg = $("#" + args.svgID).find(".svgimage")[0];
 
-    let names = []
-    d3.select(svg).selectAll("text").each(function (d) {
-        names.push(d3.select(this).text())
-    });
-    names.shift();
+        this.getSequenceNames();
+        this.getFieldValues();
 
-    return names;
+        this.initializeForm();
+
+        // Register with sequenceAnnotators so this object can always be found
+        sequenceAnnotators[this.svgID] = this;
+    }
+
+    getSequenceNames(){
+        //  Extract the sequence names from the svg and put them into sequenceNames
+        
+        let caller = this;
+        d3.select(this.svg).selectAll("text").each(function (d) {
+            caller.sequenceNames.push(d3.select(this).text())
+        });
+        this.sequenceNames.shift();
+    };
+
+    getFieldValues(){
+        //  Extract the sequence names from the svg and put them into fieldValues
+        for (let name in this.sequenceNames[0].split("_")){
+            this.fieldValues.push([]);
+        };
+
+        for (let name in this.sequenceNames){
+            let fields = this.sequenceNames[name].split("_");
+
+            for (let field in fields){
+                if (! this.fieldValues[field].includes(fields[field])){
+                    this.fieldValues[field].push(fields[field]);
+                };
+            };
+        };
+    };
+
+    initializeForm(){
+        // Set up the form to select sequence names to color
+        // console.log($("#sequenceAnnotator_"+this.svgID));
+        let form = "";
+        console.log(this.fieldValues);
+
+        // Build a form based on the fields in fieldValues
+        let buttons = [];
+
+        for (let field_counter in this.fieldValues) {
+            let field = this.fieldValues[field_counter];
+
+            if (field.length === 1){
+                form += field[0];
+            } else {
+                // form += "<select id='sequence_Annotator_field_" + field_counter + "_" + this.svgID + "'>";
+                
+                // for (let value in field.sort(collatorNumber.compare)) {
+                //     form += "<option>" + field[value] + "</option>";
+                // }
+
+                // form += "</select>";
+                form += "<button type='button' class='btn btn-outline-primary btn-sm' " + 
+                        "id='sequence_annotator_field_" + this.svgID + "_" + field_counter + "'>" + field[0] + "</button>";
+                buttons.push("#sequence_annotator_field_" + this.svgID + "_" + field_counter);
+            }
+            
+            if (parseInt(field_counter)+1 < this.fieldValues.length){
+                form += "_"
+            }
+        };
+
+        $("#sequenceAnnotator_"+this.svgID).html(form);
+        
+        for (let button in buttons){
+            // Attach the doFormField method to the buttons
+            let caller=this;
+            $(buttons[button]).on("click", function() {
+                caller.doFormField({field: buttons[button].replace("sequence_annotator_field_", "").split("_")[1]});
+            });
+        }
+    }
+
+    doFormField(args){
+        // Show the form to get information about annotating the sequence
+        // Args: field = field index we're working with
+
+        console.log("Field: " + args.field);
+        let modal = $("#annotations_modal");
+        let modalTitle = $("#annotations_modal_title");
+        let modalBody = $("#annotations_modal_body");
+
+        modalTitle.html("Annotate text for: " + this.sequenceFieldName({field: args.field}));
+        modal.modal("show");
+
+    }
+
+    sequenceFieldName(args){
+        // Returns the prototype sequence name with the field specified hilighted
+        // Args: field = field to hilight
+        let sequenceName = "";
+
+        for (let field_counter in this.fieldValues) {
+            if (field_counter == args.field){
+                sequenceName += "<span style='color: red'>" + this.fieldValues[field_counter][0] + "</span>"
+            } else {
+                sequenceName += this.fieldValues[field_counter][0]
+            }
+
+            if (parseInt(field_counter)+1 < this.fieldValues.length){
+                sequenceName += "_"
+            }
+        };
+
+        return sequenceName;
+    }
 }
 
 function getFieldValuesAsArray(args){
@@ -910,6 +1025,7 @@ function setSequenceColorByName(args){
     //       color = hex color value to set the sequence name to
 
     let svg = $("#" + args.svgID).find(".svgimage")[0];
+    console.log(svg);
 
     let field = d3.selectAll("text").filter(function(){ 
         if (d3.select(this).text() == args.name){

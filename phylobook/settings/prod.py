@@ -189,7 +189,7 @@ if LOGIN_TYPE == "sso":
     LOGIN_URL = reverse_lazy('saml_login')
 
 # Settings for the colors used to tag elements in the SVG
-# Any colors added will need to be added to the 
+# Any new colors added will need to be added to /phylobook/static/css/phylobook.css
 ANNOTATION_COLORS = (
         {"name": "Red", "short": "red", "value": "FF0000"},
         {"name": "Neon Blue", "short": "neonblue", "value": "537EFF"},

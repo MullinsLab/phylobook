@@ -169,6 +169,8 @@
         $(function(){
             $('.cluster-select').on('change', function() {
                 var clusterid = $(this).attr("id");
+                console.log(clusterid);
+
                 var id = clusterid.replace("cluster-", "");
                 var svg = $("#" + id).find("svg")[0];
                 //clear any prior results
@@ -211,6 +213,29 @@
 
     {% if user.is_authenticated %}
         <input type="hidden" id="project" value="{{ project }}" />
+
+        <!-- Generic modal for annotations -->
+        <div class="modal fade" id="annotations_modal" tabindex="-1" role="dialog" aria-labelledby="annotations" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="annotations_modal_title">Modal title</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body" id="annotations_modal_body">
+                  Un Testo
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <!-- End annotations modal -->
+
         <div id="context-menu">
             {% if settings.ANNOTATION_COLORS %}{% for color in settings.ANNOTATION_COLORS %}
             <div id="box{{ color.short }}" class="item"><span class="rectangle {{ color.short|capfirst }}"></span>&nbsp;&nbsp;{{  color.name }}</div>{% endfor %}{% endif %}
@@ -312,28 +337,29 @@
                     </div>
 
                     <div class="col-auto">
+                        <div class="d-flex justify-content-start">
+                            <div id="sequenceAnnotator_{{ entry.uniquesvg }}" class="form-group text-nowrap">
+                            </div>&nbsp;&nbsp;
                         {% if entry.clusterfiles|length > 0 and 'change_project' in context_perms %}
-
-                            <div class="d-flex justify-content-start">
-                                <div class="form-group form-check" style="margin-right: 5px;">
-                                    <button type="button" class="btn btn-outline-primary btn-sm addclusterboxes text-nowrap" id="clusterbtn-{{ entry.uniquesvg }}" >Apply to Labels</button>
-                                    <!--<input type="checkbox" class="form-check-input" id="checkclusterboxes">
-                                    <label class="form-check-label" for="checkclusterboxes">Textboxes</label>-->
-                                </div>
-                                <label for="cluster-{{ entry.uniquesvg }}">Cluster:&nbsp;</label>
-                                <select id="cluster-{{ entry.uniquesvg }}" class="cluster-select form-control form-control-sm" autocomplete="off">
-                                        <option value="None" selected="selected">None</option>
-                                    {% for cluster in entry.clusterfiles %}
-                                        <option value="{{ cluster.file }}">{{ cluster.name }}</option>
-                                    {% endfor %}
-                                </select>&nbsp;<div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex align-content-stretch flex-wrap" style="font-size: 14px; max-width: 270px; min-width: 220px;"></div>&nbsp;|&nbsp;
-                                <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
+                            <div class="form-group form-check" style="margin-right: 5px;">
+                                <button type="button" class="btn btn-outline-primary btn-sm addclusterboxes text-nowrap" id="clusterbtn-{{ entry.uniquesvg }}" >Apply to Labels</button>
+                                <!--<input type="checkbox" class="form-check-input" id="checkclusterboxes">
+                                <label class="form-check-label" for="checkclusterboxes">Textboxes</label>-->
                             </div>
-                        {% else %}
-                            <div class="d-flex justify-content-start">
-                                <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
-                            </div>
+                            <label for="cluster-{{ entry.uniquesvg }}">Cluster:&nbsp;</label>
+                            <select id="cluster-{{ entry.uniquesvg }}" class="cluster-select form-control form-control-sm" autocomplete="off">
+                                    <option value="None" selected="selected">None</option>
+                                {% for cluster in entry.clusterfiles %}
+                                    <option value="{{ cluster.file }}">{{ cluster.name }}</option>
+                                {% endfor %}
+                            </select>&nbsp;<div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex align-content-stretch flex-wrap" style="font-size: 14px; max-width: 270px; min-width: 220px;"></div>&nbsp;|&nbsp;
+                            {% comment %} <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
+                            </div> {% endcomment %}
                         {% endif %}
+                            {% comment %} <div class="d-flex justify-content-start"> {% endcomment %}
+                            <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
+                        </div>
+                        
 
                     </div>
 
@@ -393,6 +419,8 @@
                 <script type="text/javascript">
                     var rect;
                     $('#{{ entry.uniquesvg }}').find(".svgimage").load('{{ entry.svg }}', function() {
+                        // Set up the sequenceAnnotator after the svg loads
+                        new sequenceAnnotator({{ "{" }}svgID: "{{ entry.uniquesvg }}"{{ "}" }})
                         d3.select($("#{{ entry.uniquesvg }}").find("svg")[0])
                             .call(d3.drag()
                                 .on("start", function (event, d) {
@@ -472,7 +500,6 @@
                     });
 
                     dragElement(document.getElementById("{{ entry.uniquesvg }}-straightedge"));
-
                 </script>
             </div>
         {% endfor %}
