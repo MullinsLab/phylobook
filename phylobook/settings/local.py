@@ -208,6 +208,15 @@ ANNOTATION_COLORS = (
         {"name": "Yellow", "short": "yellow", "value": "EFE645"}, 
 )
 
+SEQUENCE_ANNOTATION_COLORS = (
+    {"name": "red", "value": "red"},
+    {"name": "blue", "value": "blue"},
+    {"name": "orange", "value": "orange"},
+    {"name": "purple", "value": "purple"},
+    {"name": "grey", "value": "grey"},
+    {"name": "green", "value": "green"},
+)
+
 SETTINGS_EXPORT = [
     'LOGIN_TYPE',
     'LOGIN_SSO_TITLE',
