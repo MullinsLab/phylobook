@@ -844,6 +844,7 @@ function processContextMenuClick(e, selectedTextNode, selectedText, colorText) {
 
 function getColor(name) {
     // Look up a color from the annotationColors list and return the value
+    if (name === "remove") {return};
     return "#"+annotationColors.filter(color => color.short == name)[0].value
 }
 
@@ -1028,6 +1029,7 @@ class sequenceAnnotator {
         let modal = $("#annotations_modal");
         let field = $("#sequence_annotator_field").val();
 
+        let dirty = false;
         let caller = this;
         $("[id^=sequence_annotator_color]").each(function(){
             let value = this.id.split("___")[1];
@@ -1036,8 +1038,10 @@ class sequenceAnnotator {
             if (color === "") {return true};
 
             caller.setSequenceNameColorByField({field: field, value: value, color: color});
+            dirty = true;
         })
 
+        if (dirty) {setDirtyUnsaved("notes-"+caller.svgID)};
         modal.modal("hide");
     }
 
