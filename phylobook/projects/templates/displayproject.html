@@ -346,69 +346,83 @@
 
                     <div class="col-auto">
                         <div class="d-flex justify-content-start">
-                            <div id="sequenceAnnotator_{{ entry.uniquesvg }}" class="form-group text-nowrap">
-                            </div>&nbsp;&nbsp;
-                        {% if entry.clusterfiles|length > 0 and 'change_project' in context_perms %}
-                            <div class="form-group form-check" style="margin-right: 5px;">
-                                <button type="button" class="btn btn-outline-primary btn-sm addclusterboxes text-nowrap" id="clusterbtn-{{ entry.uniquesvg }}" >Apply to Labels</button>
-                                <!--<input type="checkbox" class="form-check-input" id="checkclusterboxes">
-                                <label class="form-check-label" for="checkclusterboxes">Textboxes</label>-->
-                            </div>
-                            <label for="cluster-{{ entry.uniquesvg }}">Cluster:&nbsp;</label>
-                            <select id="cluster-{{ entry.uniquesvg }}" class="cluster-select form-control form-control-sm" autocomplete="off">
-                                    <option value="None" selected="selected">None</option>
-                                {% for cluster in entry.clusterfiles %}
-                                    <option value="{{ cluster.file }}">{{ cluster.name }}</option>
-                                {% endfor %}
-                            </select>&nbsp;<div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex align-content-stretch flex-wrap" style="font-size: 14px; max-width: 270px; min-width: 220px;"></div>&nbsp;|&nbsp;
-                            {% comment %} <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
-                            </div> {% endcomment %}
-                        {% endif %}
-                            {% comment %} <div class="d-flex justify-content-start"> {% endcomment %}
-                            <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show color range</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
+                            <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show annotations</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
                         </div>
-                        
+                    </div>
+                </div>
 
+                <!-- Annotations -->
+                <div class="hide"  id="color-{{ entry.uniquesvg }}">
+
+                    <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap hide" id='sequenceAnnotatorContainer_{{ entry.uniquesvg }}'>
+                        Color sequence names by field:
+                        <div id="sequenceAnnotator_{{ entry.uniquesvg }}"></div>
                     </div>
 
-                </div>
-                <div class="row hide"  id="color-{{ entry.uniquesvg }}">
-                    <div class="col-auto mr-auto text-nowrap">
-                        <label for="min-{{ entry.uniquesvg }}">{% if "change_project" not in context_perms %} Sequence count: {% endif %}Min(cutoff):</label><input type="number" class="min" id="min-{{ entry.uniquesvg }}" name="min" min="1" max="49999" value={% if entry.minval %} "{{ entry.minval }}" {% else %} "2" {% endif %} style="width: 4em;" {% if "change_project" not in context_perms %} disabled {% endif %}>
-                        <div class="slider-range" id="slider-range-{{ entry.uniquesvg }}"></div>
-                        <label for="max-{{ entry.uniquesvg }}">Max(threshold >=):</label><input type="number" class="max" id="max-{{ entry.uniquesvg }}" name="max" min="2" max="50000"  value={% if entry.maxval %} "{{ entry.maxval }}" {% else %}"50"{% endif %} style="width: 4em;" {% if "change_project" not in context_perms %} disabled {% endif %}>
-                        {% if 'change_project' in context_perms %}
-                        <button type="button"  class="btn btn-outline-secondary btn-sm sequencecolor" id="sequencecolor-{{ entry.uniquesvg }}">Update</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm removesequencecolor" id="removesequencecolor-{{ entry.uniquesvg }}">Remove</button>
-                        {% endif %}
-                        <input type="hidden" class="minval" id="minval-{{ entry.uniquesvg }}" value="{{ entry.minval }}"/>
-                        <input type="hidden" class="maxval" id="maxval-{{ entry.uniquesvg }}" value="{{ entry.maxval }}"/>
-                        <input type="hidden" class="colorlowval" id="colorlowval-{{ entry.uniquesvg }}" value="{{ entry.colorlowval }}"/>
-                        <input type="hidden" class="colorhighval" id="colorhighval-{{ entry.uniquesvg }}" value="{{ entry.colorhighval }}"/>
-                        <input type="hidden" class="iscolored" id="iscolored-{{ entry.uniquesvg }}" value="{{ entry.iscolored }}"/>
-                        <script>
-                        // Slider/colorization functions
-                        $( function() {
-                            $( "#slider-range-{{ entry.uniquesvg }}" ).slider({
-                                range: true,
-                                {% if "change_project" not in context_perms %} disabled: true, {% endif %}
-                                min: 1,
-                                max: 100,
-                                values: {% if entry.colorlowval and entry.colorhighval %} [ {{ entry.colorlowval }}, {{ entry.colorhighval }} ] {% else %} [ 1, 100 ] {% endif %},
-                                create: function( event, ui ) {
-                                    // color between rage sliders
-                                    var markers=$(this).slider('values');
-                                    $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, markers[ 0 ], markers[ 1 ]) + ")");
-                                },
-                                slide: function( event, ui ) {
-                                    $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, ui.values[ 0 ], ui.values[ 1 ]) + ")");
-                                }
+                    {% if entry.clusterfiles|length > 0 and 'change_project' in context_perms %}
+                        <div class="container border border-dark rounded mt-2 mb-2 p-2 text-nowrap bg-light">
+                            Annotate sequence boxes by cluster:
+                            <div class="input-group">
+                                <button type="button" class="btn btn-info btn-sm addclusterboxes text-nowrap" id="clusterbtn-{{ entry.uniquesvg }}" >Apply to Labels</button>&nbsp;&nbsp;
+                                <label for="cluster-{{ entry.uniquesvg }}">Cluster:&nbsp;</label>
+                                <select id="cluster-{{ entry.uniquesvg }}" class="cluster-select form-control form-control-sm rounded" autocomplete="off">
+                                        <option value="None" selected="selected">None</option>
+                                    {% for cluster in entry.clusterfiles %}
+                                        <option value="{{ cluster.file }}">{{ cluster.name }}</option>
+                                    {% endfor %}
+                                </select>&nbsp;
+                            <div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex align-content-stretch flex-wrap" style="font-size: 14px; max-width: 300px; min-width: 300px;"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap ">
+                        Mark sequences by count of duplicates:
+                        <div class="text-nowrap">
+                            <label for="min-{{ entry.uniquesvg }}">{% if "change_project" not in context_perms %} Sequence count: {% endif %}Min(cutoff):</label><input type="number" class="min" id="min-{{ entry.uniquesvg }}" name="min" min="1" max="49999" value={% if entry.minval %} "{{ entry.minval }}" {% else %} "2" {% endif %} style="width: 4em;" {% if "change_project" not in context_perms %} disabled {% endif %}>
+                            <div class="slider-range" id="slider-range-{{ entry.uniquesvg }}"></div>
+                            <label for="max-{{ entry.uniquesvg }}">Max(threshold >=):</label><input type="number" class="max" id="max-{{ entry.uniquesvg }}" name="max" min="2" max="50000"  value={% if entry.maxval %} "{{ entry.maxval }}" {% else %}"50"{% endif %} style="width: 4em;" {% if "change_project" not in context_perms %} disabled {% endif %}>
+                            {% if 'change_project' in context_perms %}
+                            <button type="button"  class="btn btn-info btn-sm sequencecolor" id="sequencecolor-{{ entry.uniquesvg }}">Update</button>
+                            <button type="button" class="btn btn-info btn-sm removesequencecolor" id="removesequencecolor-{{ entry.uniquesvg }}">Remove</button>
+                            {% endif %}
+                            <input type="hidden" class="minval" id="minval-{{ entry.uniquesvg }}" value="{{ entry.minval }}"/>
+                            <input type="hidden" class="maxval" id="maxval-{{ entry.uniquesvg }}" value="{{ entry.maxval }}"/>
+                            <input type="hidden" class="colorlowval" id="colorlowval-{{ entry.uniquesvg }}" value="{{ entry.colorlowval }}"/>
+                            <input type="hidden" class="colorhighval" id="colorhighval-{{ entry.uniquesvg }}" value="{{ entry.colorhighval }}"/>
+                            <input type="hidden" class="iscolored" id="iscolored-{{ entry.uniquesvg }}" value="{{ entry.iscolored }}"/>
+                            <script>
+
+                            // Slider/colorization functions
+                            $( function() {
+                                $( "#slider-range-{{ entry.uniquesvg }}" ).slider({
+                                    range: true,
+                                    {% if "change_project" not in context_perms %} disabled: true, {% endif %}
+                                    min: 1,
+                                    max: 100,
+                                    values: {% if entry.colorlowval and entry.colorhighval %} [ {{ entry.colorlowval }}, {{ entry.colorhighval }} ] {% else %} [ 1, 100 ] {% endif %},
+                                    create: function( event, ui ) {
+                                        // color between rage sliders
+                                        var markers=$(this).slider('values');
+                                        $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, markers[ 0 ], markers[ 1 ]) + ")");
+                                    },
+                                    slide: function( event, ui ) {
+                                        $( "#slider-range-{{ entry.uniquesvg }} .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, ui.values[ 0 ], ui.values[ 1 ]) + ")");
+                                    }
+                                });
                             });
-                        });
-                        </script>
+                            </script>
+                        </div>
                     </div>
+
+                    <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap ">
+                        Notes about this tree:
+                        <div style="width: 50%;" {% if 'change_project' in context_perms %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
+                    </div>
+
                 </div>
-                <div style="width: 50%;" {% if 'change_project' in context_perms %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
+                <!-- End Annotations -->
+
                 <div class="magnifybar">
                     <button type="button" class="fullsize btn btn-outline-secondary btn-sm" id="full-{{ entry.uniquesvg }}"> Full</button>
                     <button type="button" class="minsize btn btn-outline-secondary btn-sm"  id="minsize-{{ entry.uniquesvg }}"> Min</button>

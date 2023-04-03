@@ -207,13 +207,16 @@ ANNOTATION_COLORS = (
 )
 
 SEQUENCE_ANNOTATION_COLORS = (
-    {"name": "red", "value": "red"},
     {"name": "black", "value": "black"},
     {"name": "blue", "value": "blue"},
     {"name": "orange", "value": "orange"},
-    {"name": "purple", "value": "purple"},
-    {"name": "grey", "value": "grey"},
+    {"name": "magenta", "value": "magenta"},
     {"name": "green", "value": "green"},
+    {"name": "purple", "value": "purple"},
+    {"name": "red", "value": "red"},
+    {"name": "grey", "value": "grey"},
+    {"name": "light blue", "value": "#00E3FF"},
+    {"name": "brown", "value": "brown"},
 )
 
 SETTINGS_EXPORT = [

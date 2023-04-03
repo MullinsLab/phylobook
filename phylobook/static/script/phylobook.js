@@ -928,10 +928,14 @@ class sequenceAnnotator {
         for (let field_counter in this.fieldValues) {
             let field = this.fieldValues[field_counter];
 
-            if (field.length === 1 || field.length > 10){
+            console.log("Field: " + (parseInt(field_counter)+1) + ", Length: " + this.fieldValues.length);
+
+            if (field.length === 1 || field.length > 10 || (parseInt(field_counter)+1) === this.fieldValues.length){
+                console.log("Skipped field");
                 form += field[0];
             } else {
-                form += "<button type='button' class='btn btn-outline-primary btn-sm' " + 
+                console.log("Created field");
+                form += "<button type='button' class='btn btn-info btn-sm' " + 
                         "id='sequence_annotator_field_" + this.svgID + "___" + field_counter + "'>" + field[0] + "</button>";
                 buttons.push("#sequence_annotator_field_" + this.svgID + "___" + field_counter);
             }
@@ -946,6 +950,8 @@ class sequenceAnnotator {
         for (let button in buttons){
             // Attach the doFormField method to the buttons
             let caller=this;
+            
+            $("#sequenceAnnotatorContainer_"+this.svgID).removeClass("hide");
             $(buttons[button]).on("click", function() {
                 caller.doFormField({field: buttons[button].replace("#sequence_annotator_field_", "").split("___")[1]});
             });
