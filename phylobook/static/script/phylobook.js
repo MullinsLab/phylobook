@@ -465,20 +465,6 @@ $(document).ready(function() {
         }
     });
 
-    function setSequenceCountLegend(id){
-        // Sets the sequence count legend for the particular tree
-
-        let min = $("#min-" + id).val();
-        let max = $("#max-" + id).val();
-        let values = $("#slider-range-" + id).slider("values");
-
-        $( "#slider-range-legend-" + id).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, values[ 0 ], values[ 1 ]) + ")");
-        $( "#slider-range-legend-min-" + id).html(min);
-        $( "#slider-range-legend-max-" + id).html(max);
-
-        $( "#slider-range-legend-container-" + id).removeClass("hide");
-    }
-
     function clearSequenceCountLegend(id){
         //  Remove the sequence count legend for the particular tree
         $( "#slider-range-legend-container-" + id).addClass("hide");
@@ -1108,4 +1094,48 @@ function sequenceColorOptions(){
     }
 
     return options;
+}
+
+function setTreeSetting(args){
+    // Store a setting dictionary on the server
+    // Args: tree = ID of the tree to store the settings for
+    //       setting = name of the setting to store
+    
+    $.ajax({
+        type: "POST",
+        headers: { "X-CSRFToken": token },
+        url: '/projects/settings/update/' + projectName + "/" + args.tree,
+        data: JSON.stringify(args.settings),
+        dataType: 'json',
+        success: function() {
+        },
+        error: function (err) {
+            alert( args.tree + " Failed to save!!!  Contact dev team." );
+        }
+    });
+};
+
+function setSequenceCountLegend(id){
+    // Sets the sequence count legend for the particular tree
+
+    let min = $("#min-" + id).val();
+    let max = $("#max-" + id).val();
+    let values = $("#slider-range-" + id).slider("values");
+
+    $( "#slider-range-legend-" + id).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, values[ 0 ], values[ 1 ]) + ")");
+    $( "#slider-range-legend-min-" + id).html(min);
+    $( "#slider-range-legend-max-" + id).html(max);
+
+    $( "#slider-range-legend-container-" + id).removeClass("hide");
+
+    setTreeSetting({tree: id, 
+                    settings: {
+                        clusterLegend: {
+                            min: values[ 0 ],
+                            max: values[ 1 ],
+                            sliderLeft: min,
+                            sliderRight: max,
+                        }
+                    }
+    })
 }

@@ -177,7 +177,6 @@
         $(function(){
             $('.cluster-select').on('change', function() {
                 var clusterid = $(this).attr("id");
-                console.log(clusterid);
 
                 var id = clusterid.replace("cluster-", "");
                 var svg = $("#" + id).find("svg")[0];
@@ -431,9 +430,11 @@
                     <div class="slider-range-legend rounded border border-dark" id="slider-range-legend-{{ entry.uniquesvg }}"></div>
                     <span id="slider-range-legend-max-{{ entry.uniquesvg }}"></span>
                 </div>
-                {% comment %} <script>
-                $( "#slider-range-legend-{{ entry.uniquesvg }}" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, markers[ 0 ], markers[ 1 ]) + ")");
-                </script> {% endcomment %}
+                <script>
+                    $(document).ready(function() {
+                        setSequenceCountLegend("{{ entry.uniquesvg }}");
+                    });
+                </script>
 
                 <!-- End Legend -->
 

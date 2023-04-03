@@ -44,6 +44,7 @@ class ProjectCategory(MP_Node):
             
         return list
 
+
 class Project(models.Model):
     ''' Projects corrispond with directories in PROJECT_PATH to load lineage data. '''
     name = models.CharField(max_length=256)
@@ -61,3 +62,14 @@ class Project(models.Model):
             list.append({self.name: {'depth': depth+1, 'is_project': True}})
 
         return list
+    
+
+class Tree(models.Model):
+    """ An object that holds information about a specific tree in a project """
+    name = models.CharField(max_length=256, unique=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='trees')
+    settings = models.JSONField(null=True, blank=True)
+
+    def __str__(self):
+        ''' Returns the name of the tree for print() '''
+        return self.name

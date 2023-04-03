@@ -8,14 +8,15 @@ import glob
 
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render
 from pathlib import Path
 from django.conf import settings
-from .models import Project, ProjectCategory
 from guardian.shortcuts import get_perms
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.base import View
 
-
+from .models import Project, ProjectCategory, Tree
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -27,6 +28,7 @@ def projects(request):
     }
 
     return render(request, "projects.html", context)
+
 
 def displayProject(request, name):
     project = Project.objects.get(name=name)
@@ -65,6 +67,7 @@ def displayProject(request, name):
     else:
         return render(request, "projects.html", { "noaccess": name, "projects": getUserProjects(request.user) })
 
+
 def getClusterFiles(projectPath, prefix):
     clusters = []
     for file in sorted(os.listdir(projectPath)):
@@ -72,6 +75,7 @@ def getClusterFiles(projectPath, prefix):
             name = file[file.index(".cluster.") + 9:]
             clusters.append({ "name": name, "file": file})
     return clusters
+
 
 def get_user_projects(user):
     # filter the Project model for what the user can "change_project" or "view_project"
@@ -82,6 +86,7 @@ def get_user_projects(user):
         if user.has_perm('projects.change_project', project) or user.has_perm('projects.view_project', project):
             availableProjects.append(project.name)
     return sorted(availableProjects)
+
 
 def get_user_project_tree(user) -> dict:
     ''' Loads the Projects that a User can see, along with their categories '''
@@ -124,13 +129,15 @@ def getFile(request, name, file):
     else:
         return HttpResponseNotFound("File not found!")
 
-# removes commas that aren't separating fields
+
 def cleanClusterRow(row):
+    """ removes commas that aren't separating fields """
     commaCount = row.count(",")
     while commaCount > 1:
         row = "".join(row.rsplit(",", 1))
         commaCount = row.count(",")
     return row;
+
 
 def readNote(request, name, file):
     project = Project.objects.get(name=name)
@@ -149,6 +156,7 @@ def readNote(request, name, file):
     else:
         response = HttpResponseForbidden("Permission Denied.")
         return response
+
 
 def updateNote(request, name, file):
     project = Project.objects.get(name=name)
@@ -186,6 +194,7 @@ def updateNote(request, name, file):
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
+
 def updateSVG(request, name, file):
     project = Project.objects.get(name=name)
     if project and request.user.has_perm('projects.change_project', project) and request.is_ajax():
@@ -203,6 +212,7 @@ def updateSVG(request, name, file):
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
+
 def downloadProjectFiles(request, name):
     project = Project.objects.get(name=name)
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
@@ -217,6 +227,7 @@ def downloadProjectFiles(request, name):
 
     return response
 
+
 def downloadOrderedFasta(request, name, file):
     project = Project.objects.get(name=name)
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
@@ -229,6 +240,7 @@ def downloadOrderedFasta(request, name, file):
         return response
 
     return response
+
 
 def buildOrderedFastaFile(name, file):
     highlighterFastaFile = glob.glob(os.path.join(PROJECT_PATH, name, file + "*_highlighter.fasta"))
@@ -255,6 +267,7 @@ def buildOrderedFastaFile(name, file):
     else:
         return None
 
+
 def readNextHighlighterRecord(highlighterData):
     seqName = highlighterData.readline()
     if seqName is None or seqName == '':
@@ -267,6 +280,7 @@ def readNextHighlighterRecord(highlighterData):
         else:
             annotations.append(line)
     return {"name": seqName, "annotations": annotations}
+
 
 def downloadExtractedFasta(request, name, file):
     project = Project.objects.get(name=name)
@@ -292,3 +306,36 @@ def downloadExtractedFasta(request, name, file):
     else:
         response = HttpResponseForbidden("Permission Denied.")
         return response
+    
+
+class TreeSettings(LoginRequiredMixin, View):
+    """ Class to get or set settings for a tree """
+
+    def get(self, request, *args, **kwargs):
+        ''' Get a JSON dictionary for a setting, or settings '''
+        pass
+
+    def post(self, request, *args, **kwargs):
+        ''' Save settings recieved as a JSON dictionary '''
+
+        project_name: str = kwargs["project"]
+        project = Project.objects.filter(name=project_name).first()
+
+        tree_name: str = kwargs["tree"]
+        settings = json.load(request)
+
+        tree, created = Tree.objects.get_or_create(project=project, name=tree_name)
+        if tree.settings == None: tree.settings = {}
+        
+        for setting, value in settings.items():
+            print(f"Setting: {setting}, Value: {value}")
+            if value == None:
+                tree.settings.pop(setting)
+            else:
+                tree.settings[setting] = value
+
+        tree.save()
+
+        return_data = {'saved': True}
+        
+        return JsonResponse(return_data)
