@@ -335,7 +335,7 @@
         </div>
         <form method="post">
         {% for entry in entries %}
-            <div class="tree">
+            <div id="tree-{{ entry.uniquesvg }}" class="tree">
                 <div class="row" style="height: auto;">
                     <div class="col-auto mr-auto text-nowrap ">
                         <div class="d-flex justify-content-start">
@@ -422,6 +422,21 @@
 
                 </div>
                 <!-- End Annotations -->
+
+
+                <!-- Legend for Sequences by count of duplicates -->
+                <div id="slider-range-legend-container-{{ entry.uniquesvg }}" class="hide">
+                    Sequences marked by count of duplicates:<br>
+                    <span id="slider-range-legend-min-{{ entry.uniquesvg }}"></span>
+                    <div class="slider-range-legend rounded border border-dark" id="slider-range-legend-{{ entry.uniquesvg }}"></div>
+                    <span id="slider-range-legend-max-{{ entry.uniquesvg }}"></span>
+                </div>
+                {% comment %} <script>
+                $( "#slider-range-legend-{{ entry.uniquesvg }}" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, markers[ 0 ], markers[ 1 ]) + ")");
+                </script> {% endcomment %}
+
+                <!-- End Legend -->
+
 
                 <div class="magnifybar">
                     <button type="button" class="fullsize btn btn-outline-secondary btn-sm" id="full-{{ entry.uniquesvg }}"> Full</button>

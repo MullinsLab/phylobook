@@ -218,12 +218,23 @@ img {
     /* background-image: linear-gradient(to right, yellow , blue); */
     background-image: linear-gradient(to right, rgb(255, 165, 0), rgb(255, 255, 0), rgb(0, 255, 0), rgb(0, 0, 255), rgb(238, 130, 238));
     width: 300px;
+    height: 10px;
     display: inline-block;
     margin-left: 10px;
     margin-right: 10px;
     opacity: 1.0 !important;
-
 }
+
+.slider-range-legend {
+    background-image: linear-gradient(to right, rgb(255, 165, 0), rgb(255, 255, 0), rgb(0, 255, 0), rgb(0, 0, 255), rgb(238, 130, 238));
+    width: 300px;
+    height: 10px;
+    display: inline-block;
+    margin-left: 10px;
+    margin-right: 10px;
+    opacity: 1.0 !important;
+}
+
 .hide {
     display: none;
 }

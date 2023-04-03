@@ -258,7 +258,8 @@ function showMultiSelectContextMenu(x, y) {
 
 function setAllDirtyUnsaved() {
     $('.tree').each(function(i, obj) {
-        var noteId = $(this).children(".notes").first().attr("id");
+        // var noteId = $(this).children(".notes").first().attr("id");
+        let noteId = "notes-"+this.id.replace("tree-", "");
         setDirtyUnsaved(noteId);
     });
 }
@@ -401,12 +402,20 @@ $(document).ready(function() {
     $( ".removesequencecolor" ).on( "click", function() {
         var saveid = $(this).attr('id');
         if (saveid == "removesequencecolor") {
-            removeAllSeqnum();
-            resetSlider();
+            if (confirm("This will remove the sequence number color range for *all* trees.  Do you want to proceed?")) {
+                removeAllSeqnum();
+                resetSlider();
+                
+                $(".slider-range").each(function (){
+                    if (this.id === "slider-range") {return};
+                    clearSequenceCountLegend(this.id.replace("slider-range-", ""));
+                });
+            };
         } else {
             var id = saveid.replace("removesequencecolor-", "");
             removeAllSeqnum(id);
             resetSlider(id);
+            clearSequenceCountLegend(id);
         }
     });
     
@@ -428,8 +437,13 @@ $(document).ready(function() {
                 $(".slider-range").slider('values',1, values[1]);
                 $(".colorhighval").val(values[1]);
                 $(".iscolored").val("true");
-                $( ".slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, markers[ 0 ], markers[ 1 ]) + ")");
+                $( ".slider-range .ui-slider-range" ).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, values[ 0 ], values[ 1 ]) + ")");
 
+                $(".slider-range").each(function (){
+                    if (this.id === "slider-range") {return};
+                    setSequenceCountLegend(this.id.replace("slider-range-", ""));
+                });
+                
                 setAllDirtyUnsaved();
             }
         } else {
@@ -444,9 +458,31 @@ $(document).ready(function() {
             $("#colorlowval-" + id).val(values[0]);
             $("#colorhighval-" + id).val(values[1]);
             $("#iscolored-" + id).val("true");
+
+            setSequenceCountLegend(id)
+            
             setDirtyUnsaved("notes-" + id);
         }
     });
+
+    function setSequenceCountLegend(id){
+        // Sets the sequence count legend for the particular tree
+
+        let min = $("#min-" + id).val();
+        let max = $("#max-" + id).val();
+        let values = $("#slider-range-" + id).slider("values");
+
+        $( "#slider-range-legend-" + id).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, values[ 0 ], values[ 1 ]) + ")");
+        $( "#slider-range-legend-min-" + id).html(min);
+        $( "#slider-range-legend-max-" + id).html(max);
+
+        $( "#slider-range-legend-container-" + id).removeClass("hide");
+    }
+
+    function clearSequenceCountLegend(id){
+        //  Remove the sequence count legend for the particular tree
+        $( "#slider-range-legend-container-" + id).addClass("hide");
+    }
 
     function removeAllSeqnum(id) {
         if (id) {
@@ -928,13 +964,9 @@ class sequenceAnnotator {
         for (let field_counter in this.fieldValues) {
             let field = this.fieldValues[field_counter];
 
-            console.log("Field: " + (parseInt(field_counter)+1) + ", Length: " + this.fieldValues.length);
-
             if (field.length === 1 || field.length > 10 || (parseInt(field_counter)+1) === this.fieldValues.length){
-                console.log("Skipped field");
                 form += field[0];
             } else {
-                console.log("Created field");
                 form += "<button type='button' class='btn btn-info btn-sm' " + 
                         "id='sequence_annotator_field_" + this.svgID + "___" + field_counter + "'>" + field[0] + "</button>";
                 buttons.push("#sequence_annotator_field_" + this.svgID + "___" + field_counter);
@@ -950,7 +982,7 @@ class sequenceAnnotator {
         for (let button in buttons){
             // Attach the doFormField method to the buttons
             let caller=this;
-            
+
             $("#sequenceAnnotatorContainer_"+this.svgID).removeClass("hide");
             $(buttons[button]).on("click", function() {
                 caller.doFormField({field: buttons[button].replace("#sequence_annotator_field_", "").split("___")[1]});
