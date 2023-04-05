@@ -430,12 +430,13 @@
                     <div class="slider-range-legend rounded border border-dark" id="slider-range-legend-{{ entry.uniquesvg }}"></div>
                     <span id="slider-range-legend-max-{{ entry.uniquesvg }}"></span>
                 </div>
-                <script>
-                    $(document).ready(function() {
-                        setSequenceCountLegend("{{ entry.uniquesvg }}");
-                    });
-                </script>
-
+                {% if entry.iscolored == "true" %}
+                    <script>
+                        $(document).ready(function() {
+                            setSequenceCountLegend("{{ entry.uniquesvg }}");
+                        });
+                    </script>
+                {% endif %}
                 <!-- End Legend -->
 
 
