@@ -65,7 +65,7 @@ def displayProject(request, name):
         return render(request, "displayproject.html", context)
 
     else:
-        return render(request, "projects.html", { "noaccess": name, "projects": getUserProjects(request.user) })
+        return render(request, "projects.html", { "noaccess": name, "projects": get_user_project_tree(request.user) })
 
 
 def getClusterFiles(projectPath, prefix):
@@ -313,7 +313,24 @@ class TreeSettings(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
         ''' Get a JSON dictionary for a setting, or settings '''
-        pass
+        
+        return_data: dict = {}
+
+        project_name: str = kwargs["project"]
+        project: Project = Project.objects.filter(name=project_name).first()
+
+        tree_name: str = kwargs["tree"]
+        try:
+            tree: Tree = Tree.objects.get(project=project, name=tree_name)
+        except:
+            return JsonResponse(return_data)
+
+        setting = kwargs["setting"]
+
+        return_data = tree.settings.get(setting, {})
+        print(return_data)
+
+        return JsonResponse(return_data)
 
     def post(self, request, *args, **kwargs):
         ''' Save settings recieved as a JSON dictionary '''

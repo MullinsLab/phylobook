@@ -5,6 +5,7 @@ const collatorNumber = new Intl.Collator(undefined, {
 })
 
 let sequenceAnnotators = {}    // A collection of sequenceAnnotator objects, keyed by svgID
+let sequenceCountLegend = {}   // A collection of sequence count legends used for saving
 
 // Notes editor, buttons/listeners, contextmenus etc.
 $(document).ready(function() {
@@ -17,7 +18,7 @@ $(document).ready(function() {
     tinymce.init({
         selector: '.notes',
         inline: true,
-        placeholder: "Click here to add notes.",
+        placeholder: "Click here to add comments.",
         menubar: false,
         toolbar_location: 'bottom',
         content_style: "p { margin: 0; }",
@@ -66,6 +67,8 @@ $(document).ready(function() {
                     "iscolored": $("#iscolored-" + id).val(),
                 },
                 success: function() {
+                    saveTree(id);
+
                     $.ajax({
                         type: "POST",
                         headers: { "X-CSRFToken": token },
@@ -312,9 +315,12 @@ function saveAll() {
     var treesdone = 0;
     $('.tree').each(function(i, obj) {
         $("#saveallprog").removeClass("hide");
-        var noteId = $(this).children(".notes").first().attr("id");
-        var content = tinymce.get(noteId).getContent();
-        var id = noteId.replace("notes-", "");
+        // var noteId = $(this).children(".notes").first().attr("id");
+        // var content = tinymce.get(noteId).getContent();
+        // var id = noteId.replace("notes-", "");
+        let id = this.id.replace("tree-", "");
+        let noteId = "notes-" + id;
+        let content = tinymce.get(noteId).getContent();
         var svg = $("#" + id).find(".svgimage").html();
         var proj = $("#project").val();
         // check to see if SVG image exists, so it doesn't get overwritten with 0 bytes
@@ -332,6 +338,8 @@ function saveAll() {
                     "iscolored": $("#iscolored-" + id).val()
                 },
                 success: function() {
+                    saveTree(id);
+
                     $.ajax({
                         type: "POST",
                         headers: { "X-CSRFToken": token },
@@ -467,7 +475,10 @@ $(document).ready(function() {
 
     function clearSequenceCountLegend(id){
         //  Remove the sequence count legend for the particular tree
-        $( "#slider-range-legend-container-" + id).addClass("hide");
+        $("#slider-range-legend-container-" + id).addClass("hide");
+        if($("#name_colors_by_field_legend_container-" + id).hasClass("hide")){
+            $("#legends-" + id).addClass("hide");
+        };
     }
 
     function removeAllSeqnum(id) {
@@ -893,11 +904,12 @@ $( function() {
 //////
 //  Stuff for setting text colors
 class sequenceAnnotator {
-    svgID;                  // The ID of the SVG
-    svg;                    // The actual SVG object
+    svgID;                 // The ID of the SVG
+    svg;                   // The actual SVG object
     sequenceNames = [];    // An array of names of sequences
     fieldValues = [];      // An array of values derived from sequence names, in the form of field_values[place][value]
-    
+    legendData = {};       // A dictionary holding information for the sequence names legend
+
     constructor(args){
         // args: svgID = the ID of the svg
         this.svgID = args.svgID;
@@ -906,6 +918,7 @@ class sequenceAnnotator {
 
         this.getSequenceNames();
         this.getFieldValues();
+        this.getSequenceLegendSettings();
 
         this.initializeForm();
 
@@ -1047,23 +1060,34 @@ class sequenceAnnotator {
         return sequenceName;
     }
 
-    setSequenceFields(args){
+    setSequenceFields(){
         // Get the fields from the form and color the sequences
-        // Args: None
         let modal = $("#annotations_modal");
         let field = $("#sequence_annotator_field").val();
 
         let dirty = false;
         let caller = this;
+
+        let settings = {fieldLegend: {
+                            field: field,
+                            values: [],
+                        }
+        };
+
         $("[id^=sequence_annotator_color]").each(function(){
             let value = this.id.split("___")[1];
             let color = $("#sequence_annotator_color___"+value).val();
             
             if (color === "") {return true};
 
+            settings.fieldLegend.values.push({value: value, color: color});
+            
             caller.setSequenceNameColorByField({field: field, value: value, color: color});
             dirty = true;
         })
+
+        this.legendData = settings.fieldLegend;
+        this.createLegend();
 
         if (dirty) {setDirtyUnsaved("notes-"+caller.svgID)};
         modal.modal("hide");
@@ -1074,8 +1098,6 @@ class sequenceAnnotator {
         // Args: field = field to match on
         //       value = value to match
         //       color = color to set
-        let caller = this;
-
         d3.select(this.svg).selectAll("svg text").each(function (d) {
             let fields = d3.select(this).text().split("_");
             if (fields[args.field] == args.value){
@@ -1083,6 +1105,42 @@ class sequenceAnnotator {
             }
         });
     };
+
+    getSequenceLegendSettings(data){
+        // Get the fieldLegend setting from the server.  Calls itself on success
+        if (! data){
+            getTreeSettings({tree: this.svgID, setting: "fieldLegend", func: jQuery.proxy(this.getSequenceLegendSettings, this)})
+        };
+        
+        this.legendData = data;
+        this.createLegend();
+    }
+
+    createLegend(){
+        // Creates the legend for the sequence name annotations
+        if (jQuery.isEmptyObject(this.legendData)){
+            return;
+        };
+
+        let fieldName = this.sequenceFieldName({field: this.legendData.field});
+        $("#name_colors_by_field_legend_field-" + this.svgID).html(fieldName);
+
+        let values = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        for (let value_index in this.legendData.values){
+            let value = this.legendData.values[value_index];
+            values += "<b><span style='color: " + sequenceAnnotationColors[value.color].value + "'>" + value.value + "</span></b> &nbsp;";
+        }
+        $("#name_colors_by_field_legend-" + this.svgID).html(values);
+
+        $("#name_colors_by_field_legend_container-" + this.svgID).removeClass("hide");
+        $("#legends-" + this.svgID).removeClass("hide");
+    }
+
+    saveLegendData(){
+        // Save this.legendData to the db
+        setTreeSetting({tree: this.svgID, settings: {fieldLegend: this.legendData}});
+    }
+    
 };
 
 function sequenceColorOptions(){
@@ -1100,11 +1158,10 @@ function setTreeSetting(args){
     // Store a setting dictionary on the server
     // Args: tree = ID of the tree to store the settings for
     //       setting = name of the setting to store
-    
     $.ajax({
         type: "POST",
         headers: { "X-CSRFToken": token },
-        url: '/projects/settings/update/' + projectName + "/" + args.tree,
+        url: '/projects/settings/' + projectName + "/" + args.tree,
         data: JSON.stringify(args.settings),
         dataType: 'json',
         success: function() {
@@ -1115,27 +1172,72 @@ function setTreeSetting(args){
     });
 };
 
-function setSequenceCountLegend(id){
+function getTreeSettings(args){
+    // Load a setting dictionary from the server
+    // Args: tree = ID of the tree to load settings for
+    //       setting = name of the setting to load
+    //       func = function to call on success
+    $.ajax({
+        type: "GET",
+        headers: { "X-CSRFToken": token },
+        url: '/projects/settings/' + projectName + "/" + args.tree + "/" + args.setting,
+        data: JSON.stringify(args.settings),
+        dataType: 'json',
+        success: args.func,
+        error: function (err) {
+            // alert( args.tree + " Failed to save!!!  Contact dev team." );
+            console.log("Failed to get settings: Tree: " + args.tree + ", Setting: " + args.setting)
+        }
+    });
+}
+
+function setSequenceCountLegend(id, initial){
     // Sets the sequence count legend for the particular tree
 
     let min = $("#min-" + id).val();
     let max = $("#max-" + id).val();
     let values = $("#slider-range-" + id).slider("values");
 
-    $( "#slider-range-legend-" + id).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, values[ 0 ], values[ 1 ]) + ")");
-    $( "#slider-range-legend-min-" + id).html(min);
-    $( "#slider-range-legend-max-" + id).html(max);
+    $("#slider-range-legend-" + id).css("background-image", "linear-gradient(to right, " + linearGradient(gradientColorsRGB, values[ 0 ], values[ 1 ]) + ")");
+    $("#slider-range-legend-min-" + id).html(min);
+    $("#slider-range-legend-max-" + id).html(max);
 
-    $( "#slider-range-legend-container-" + id).removeClass("hide");
+    $("#slider-range-legend-container-" + id).removeClass("hide");
+    $("#legends-" + id).removeClass("hide");
 
-    setTreeSetting({tree: id, 
-                    settings: {
-                        clusterLegend: {
-                            min: values[ 0 ],
-                            max: values[ 1 ],
-                            sliderLeft: min,
-                            sliderRight: max,
+    // $("#name_colors_by_field_legend_field-"+this.svgID).html(fieldName);
+    // $("#name_colors_by_field_legend_container-"+this.svgID).removeClass("hide");
+    
+    sequenceCountLegend[id] = {clusterLegend: {
+                                    min: values[ 0 ],
+                                    max: values[ 1 ],
+                                    sliderLeft: min,
+                                    sliderRight: max,
+                                }   
+    }
+
+    return;
+    if (! initial){
+        setTreeSetting({tree: id, 
+                        settings: {
+                            clusterLegend: {
+                                min: values[ 0 ],
+                                max: values[ 1 ],
+                                sliderLeft: min,
+                                sliderRight: max,
+                            }
                         }
-                    }
-    })
-}
+        });
+    };
+};
+
+// Move all saving into here to dedupe the code
+function saveTree(id){
+    // Save everything for the tree
+    if (id in sequenceAnnotators) {sequenceAnnotators[id].saveLegendData()};
+    if (id in sequenceCountLegend){
+        setTreeSetting({tree: id, 
+                        settings: sequenceCountLegend[id],
+        });     
+    };
+};

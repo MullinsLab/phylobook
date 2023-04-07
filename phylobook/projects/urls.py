@@ -14,6 +14,7 @@ urlpatterns = [
     path("files/download/<str:name>", login_required(views.downloadProjectFiles)),
     path("files/download/fasta/<str:name>/<str:file>", login_required(views.downloadOrderedFasta)),
     path("files/download/extractedfasta/<str:name>/<str:file>", login_required(views.downloadExtractedFasta)),
-    path("settings/update/<str:project>/<str:tree>", views.TreeSettings.as_view(), name='tree_settings')
+    path("settings/<str:project>/<str:tree>", views.TreeSettings.as_view(), name='tree_settings_set'),
+    path("settings/<str:project>/<str:tree>/<str:setting>", views.TreeSettings.as_view(), name='tree_settings_get'),
 ]
 

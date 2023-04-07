@@ -1,10 +1,10 @@
 function showhideColorRange(id, tag) {
     var text = tag.innerHTML;
     if (text.startsWith("Show")) {
-        tag.innerHTML = "Hide annotations";
+        tag.innerHTML = "Hide annotation tools";
         $("#" + id).removeClass("hide");
     } else {
-        tag.innerHTML = "Show annotations";
+        tag.innerHTML = "Show annotation tools";
         $("#" + id).addClass("hide");
     }
 }
