@@ -79,12 +79,12 @@ $(document).ready(function() {
                             //alert( id + " saved successfully." );
                         },
                         error: function (err) {
-                            alert( id + " Failed to save!!!  Contact dev team." );
+                            alert( id + " Failed to save tree!!!  Contact dev team." );
                         }
                     });
                 },
                 error: function (err) {
-                    alert( id + " Failed to save!!!  Contact dev team." );
+                    alert( id + " Failed to save tree!!!  Contact dev team." );
                 }
             });
             } else {
@@ -357,12 +357,12 @@ function saveAll() {
                             }
                         },
                         error: function (err) {
-                            alert( id + " Failed to save!!!  Contact dev team." );
+                            alert( id + " Failed to save tree in saveall!!!  Contact dev team." );
                         }
                     });
                 },
                 error: function (err) {
-                    alert( id + " Failed to save!!!  Contact dev team." );
+                    alert( id + " Failed to save tree in saveall!!!  Contact dev team." );
                 }
             });
         } else {
@@ -1167,7 +1167,7 @@ function setTreeSetting(args){
         success: function() {
         },
         error: function (err) {
-            alert( args.tree + " Failed to save!!!  Contact dev team." );
+            alert( args.tree + " Failed to save tree settings!!!  Contact dev team." );
         }
     });
 };
