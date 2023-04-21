@@ -125,8 +125,10 @@ def getFile(request, name, file):
                         cleaned = cleaned + line
                     return HttpResponse(cleaned, content_type="text/csv")
         except IOError:
+            print(f"Error: File not found: {file}")
             return HttpResponseNotFound("File not found!")
     else:
+        print(f"Error: File not found: {file}")
         return HttpResponseNotFound("File not found!")
 
 
@@ -154,6 +156,7 @@ def readNote(request, name, file):
         else:
             return HttpResponse(notes)
     else:
+        print(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
@@ -191,6 +194,7 @@ def updateNote(request, name, file):
 
             return HttpResponse("Note Saved.")
     else:
+        print(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
@@ -209,6 +213,7 @@ def updateSVG(request, name, file):
                         f.close()
                     return HttpResponse("SVG Saved.")
     else:
+        print(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
@@ -222,6 +227,7 @@ def downloadProjectFiles(request, name):
         tarred.add(os.path.join(PROJECT_PATH, name), arcname=name)
         tarred.close()
     else:
+        print(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
@@ -236,6 +242,7 @@ def downloadOrderedFasta(request, name, file):
         response['Content-Disposition'] = 'attachment; filename=' + file + '-ordered.fasta'
         return response
     else:
+        print(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
@@ -304,6 +311,7 @@ def downloadExtractedFasta(request, name, file):
         response = HttpResponse(extractedsSeqs, content_type='text/plain')
         return response
     else:
+        print(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
     
