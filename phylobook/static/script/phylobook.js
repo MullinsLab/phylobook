@@ -79,16 +79,16 @@ $(document).ready(function() {
                             //alert( id + " saved successfully." );
                         },
                         error: function (err) {
-                            alert( id + " Failed to save tree!!!  Contact dev team." );
+                            alert( id + " Failed to save tree (" + id + ")!!!  Contact dev team." );
                         }
                     });
                 },
                 error: function (err) {
-                    alert( id + " Failed to save tree!!!  Contact dev team." );
+                    alert( id + " Failed to save notes (" + id + ")!!!  Contact dev team." );
                 }
             });
             } else {
-                alert(id + " is missing an SVG image.  It will not be saved.");
+                alert(id + " is missing an SVG image (" + id + ").  It will not be saved.");
                 setDirtyUnsaved(ed.id);
             }
         }
@@ -357,12 +357,12 @@ function saveAll() {
                             }
                         },
                         error: function (err) {
-                            alert( id + " Failed to save tree in saveall!!!  Contact dev team." );
+                            alert( id + " Failed to save tree in saveall (" + id + ")!!!  Contact dev team." );
                         }
                     });
                 },
                 error: function (err) {
-                    alert( id + " Failed to save tree in saveall!!!  Contact dev team." );
+                    alert( id + " Failed to save notes in saveall (" + id + ")!!!  Contact dev team." );
                 }
             });
         } else {
@@ -1167,7 +1167,7 @@ function setTreeSetting(args){
         success: function() {
         },
         error: function (err) {
-            alert( args.tree + " Failed to save tree settings!!!  Contact dev team." );
+            alert( args.tree + " Failed to save settings!!!  Contact dev team." );
         }
     });
 };
