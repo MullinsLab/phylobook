@@ -66,9 +66,13 @@ class Project(models.Model):
 
 class Tree(models.Model):
     """ An object that holds information about a specific tree in a project """
+
+    TYPE_CHOICES: set[tuple] = (("Amino Acids", "Amino Acids"), ("Nucleotides", "Nucleotides"), ("Unknown", "Unknown"))
+
     name = models.CharField(max_length=256, unique=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='trees')
     settings = models.JSONField(null=True, blank=True)
+    type = models.CharField(max_length=256, choices=TYPE_CHOICES, null=True, blank=True)
 
     def __str__(self):
         ''' Returns the name of the tree for print() '''

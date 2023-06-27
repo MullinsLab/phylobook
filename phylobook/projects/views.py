@@ -17,6 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import View
 
 from .models import Project, ProjectCategory, Tree
+from .utils import fasta_type
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -35,6 +36,7 @@ def displayProject(request, name):
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
         entries = []
         projectPath = os.path.join(PROJECT_PATH, name)
+
         for file in sorted(os.listdir(projectPath)):
             if file.endswith("_highlighter.png"):
                 uniquesvg = file[0:file.index("_highlighter.png")]
@@ -43,6 +45,16 @@ def displayProject(request, name):
                         if uniquesvg in svg:
                             filePath = Path(os.path.join(PROJECT_PATH, name, uniquesvg + ".json"))
                             prefix = uniquesvg + ".cluster"
+
+                            try:
+                                tree = project.trees.get(name=uniquesvg)
+                            except Tree.DoesNotExist:
+                                tree = project.trees.create(name=uniquesvg)
+
+                            if not tree.type:
+                                tree.type = fasta_type(tree=tree)
+                                tree.save()
+
                             if filePath.is_file():
                                 with open(filePath, 'r') as json_file:
                                     data = json.load(json_file)
@@ -52,10 +64,10 @@ def displayProject(request, name):
                                     colorhighval = data["colorhighval"] if (data["colorhighval"] != "None" and data["colorhighval"] != None and data["colorhighval"] != "") else ""
                                     iscolored = data["iscolored"] if (data["iscolored"] != "None" and data["iscolored"] != None and data["iscolored"] != "") else "false"
                                     entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": minval, \
-                                                    "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored, "clusterfiles": getClusterFiles(projectPath, prefix)})
+                                                    "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored, "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
                             else:
                                 entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", \
-                                                "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, prefix)})
+                                                "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
 
         context = {
             "entries": entries,
@@ -240,11 +252,9 @@ def downloadOrderedFasta(request, name, file):
         orderedFasta = buildOrderedFastaFile(name, file)
         response = HttpResponse(orderedFasta, content_type='application/x-fasta')
         response['Content-Disposition'] = 'attachment; filename=' + file + '-ordered.fasta'
-        return response
     else:
         print(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
-        return response
 
     return response
 
@@ -335,7 +345,11 @@ class TreeSettings(LoginRequiredMixin, View):
 
         setting = kwargs["setting"]
 
-        return_data = tree.settings.get(setting, {})
+        if tree.settings:
+            return_data = tree.settings.get(setting, {})
+        else:
+            return_data = {}
+            
         print(return_data)
 
         return JsonResponse(return_data)

@@ -353,28 +353,13 @@
                 <!-- Annotations -->
                 <div class="hide"  id="color-{{ entry.uniquesvg }}">
 
-                    <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap hide" id='sequenceAnnotatorContainer_{{ entry.uniquesvg }}'>
-                        Color sequence names by field:
-                        <div id="sequenceAnnotator_{{ entry.uniquesvg }}"></div>
+                    <!-- Comments -->
+                    <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap ">
+                        Comments:
+                        <div style="width: 50%;" {% if 'change_project' in context_perms %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
                     </div>
 
-                    {% if entry.clusterfiles|length > 0 and 'change_project' in context_perms %}
-                        <div class="container border border-dark rounded mt-2 mb-2 p-2 text-nowrap bg-light">
-                            Annotate sequence boxes by cluster:
-                            <div class="input-group">
-                                <button type="button" class="btn btn-info btn-sm addclusterboxes text-nowrap" id="clusterbtn-{{ entry.uniquesvg }}" >Apply to Labels</button>&nbsp;&nbsp;
-                                <label for="cluster-{{ entry.uniquesvg }}">Cluster:&nbsp;</label>
-                                <select id="cluster-{{ entry.uniquesvg }}" class="cluster-select form-control form-control-sm rounded" autocomplete="off">
-                                        <option value="None" selected="selected">None</option>
-                                    {% for cluster in entry.clusterfiles %}
-                                        <option value="{{ cluster.file }}">{{ cluster.name }}</option>
-                                    {% endfor %}
-                                </select>&nbsp;
-                            <div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex align-content-stretch flex-wrap" style="font-size: 14px; max-width: 300px; min-width: 300px;"></div>
-                        </div>
-                    </div>
-                    {% endif %}
-
+                    <!-- Mark sequences by count of duplicates -->
                     <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap ">
                         Mark sequences by count of duplicates:
                         <div class="text-nowrap">
@@ -414,42 +399,92 @@
                         </div>
                     </div>
 
-                    <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap ">
-                        Comments:
-                        <div style="width: 50%;" {% if 'change_project' in context_perms %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
+                    <!-- Color sequence names by field -->
+                    <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap hide" id='sequenceAnnotatorContainer_{{ entry.uniquesvg }}'>
+                        Color sequence names by field:
+                        <div id="sequenceAnnotator_{{ entry.uniquesvg }}"></div>
                     </div>
 
+                    <!-- Color sequence boxes by cluster -->
+                    {% if entry.clusterfiles|length > 0 and 'change_project' in context_perms %}
+                        <div class="container border border-dark rounded mt-2 mb-2 p-2 text-nowrap bg-light">
+                            Annotate sequence boxes by cluster:
+                            <div class="input-group">
+                                <button type="button" class="btn btn-info btn-sm addclusterboxes text-nowrap" id="clusterbtn-{{ entry.uniquesvg }}" >Apply to Labels</button>&nbsp;&nbsp;
+                                <label for="cluster-{{ entry.uniquesvg }}">Cluster:&nbsp;</label>
+                                <select id="cluster-{{ entry.uniquesvg }}" class="cluster-select form-control form-control-sm rounded" autocomplete="off">
+                                        <option value="None" selected="selected">None</option>
+                                    {% for cluster in entry.clusterfiles %}
+                                        <option value="{{ cluster.file }}">{{ cluster.name }}</option>
+                                    {% endfor %}
+                                </select>&nbsp;
+                            <div id="clusterlegend-{{ entry.uniquesvg }}" class="d-flex align-content-stretch flex-wrap" style="font-size: 14px; max-width: 300px; min-width: 300px;"></div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <br>
                 </div>
                 <!-- End Annotations -->
                 
                 <!-- Legend section -->
-                <div class="container rounded border border-primary border-2 bg-light w-100 mb-2 hide" id="legends-{{ entry.uniquesvg }}">
+                <div class="container rounded border border-primary border-2 bg-light w-100 mb-2" id="legends-{{ entry.uniquesvg }}">
+                    <div class="row border"><b>Legend:</b></div>
                     <div class="row">
-                    <!-- Sequence Field Legend -->
-                    <div class="col">
-                        <div class="hide" id="name_colors_by_field_legend_container-{{ entry.uniquesvg }}">
-                            Sequence name colors for <span id="name_colors_by_field_legend_field-{{ entry.uniquesvg }}"></span>
-                            <div id="name_colors_by_field_legend-{{ entry.uniquesvg }}"></div>
+                        <!-- Sequence Field Legend -->
+                        <div class="col">
+                            <div class="hide" id="name_colors_by_field_legend_container-{{ entry.uniquesvg }}">
+                                Sequence name colors for <span id="name_colors_by_field_legend_field-{{ entry.uniquesvg }}"></span>
+                                <div id="name_colors_by_field_legend-{{ entry.uniquesvg }}"></div>
+                            </div>
+                        </div>
+                        <!-- Legend for Duplicates -->
+                        <div class="col">
+                            <div id="slider-range-legend-container-{{ entry.uniquesvg }}" class="hide">
+                                Sequences marked by count of duplicates:<br>
+                                <span id="slider-range-legend-min-{{ entry.uniquesvg }}"></span>
+                                <div class="slider-range-legend rounded border border-dark" id="slider-range-legend-{{ entry.uniquesvg }}"></div>
+                                <span id="slider-range-legend-max-{{ entry.uniquesvg }}"></span>
+                            </div>
+                            {% if entry.iscolored == "true" %}
+                                <script>
+                                    $(document).ready(function() {
+                                        setSequenceCountLegend("{{ entry.uniquesvg }}", true);
+                                    });
+                                </script>
+                            {% endif %}
                         </div>
                     </div>
-                    <!-- Legend for Duplicates -->
-                    <div class="col">
-                        <div id="slider-range-legend-container-{{ entry.uniquesvg }}" class="hide">
-                            Sequences marked by count of duplicates:<br>
-                            <span id="slider-range-legend-min-{{ entry.uniquesvg }}"></span>
-                            <div class="slider-range-legend rounded border border-dark" id="slider-range-legend-{{ entry.uniquesvg }}"></div>
-                            <span id="slider-range-legend-max-{{ entry.uniquesvg }}"></span>
-                        </div>
-                        {% if entry.iscolored == "true" %}
-                            <script>
-                                $(document).ready(function() {
-                                    setSequenceCountLegend("{{ entry.uniquesvg }}", true);
-                                });
-                            </script>
+                    <!-- Hilighter legend -->
+                    <div class="row border align-items-right">
+                        {% if entry.tree.type == "AA" %}
+                            <table><tr>
+                            <td>Highlighter key: &nbsp;&nbsp;</td>
+                            <td bgcolor=#0000FF> &nbsp;</td><td class="highlighter_legend">His(H) </td>
+                            <td bgcolor=#302ECD> &nbsp;</td><td class="highlighter_legend">Asp(D) Glu(E) </td>
+                            <td bgcolor=#23659B> &nbsp;</td><td class="highlighter_legend">Lys(K) Asn(N) Gln(Q) Arg(R) </td>
+                            <td bgcolor=#2F9A2F> &nbsp;</td><td class="highlighter_legend">Met(M) </td>
+                            <td bgcolor=#42FF00> &nbsp;</td><td class="highlighter_legend">Ile(I) Leu(L) Val(V) </td>
+                            <td bgcolor=#F900FF> &nbsp;</td><td class="highlighter_legend">Phe(F) Trp(W) Tyr(Y) </td>
+                            <td bgcolor=#CD2F2E> &nbsp;</td><td class="highlighter_legend">Cys(C) </td>
+                            <td bgcolor=#F9CE2E> &nbsp;</td><td class="highlighter_legend">Ala(A) Gly(G) Ser(S) Thr(T) </td>
+                            <td bgcolor=#FBFF00> &nbsp;</td><td class="highlighter_legend">Pro(P) </td>
+                            <td bgcolor=#000000> &nbsp;</td><td class="highlighter_legend">Other </td>
+                            <td bgcolor=#bebebe> &nbsp;</td><td class="highlighter_legend">Gap </td>
+                            </tr></table>
+                        {% else %}
+                        <table><tr>
+                            <td>Highlighter key: &nbsp;&nbsp;</td>
+                            <td bgcolor=#42FF00> &nbsp;</td><td class="highlighter_legend">A</td>
+                            <td bgcolor=#41B8EE> &nbsp;</td><td class="highlighter_legend">C</td>
+                            <td bgcolor=#FFA500> &nbsp;</td><td class="highlighter_legend">G</td>
+                            <td bgcolor=#EE0B10> &nbsp;</td><td class="highlighter_legend">T</td>
+                            <td bgcolor=#0000FF> &nbsp;</td><td class="highlighter_legend">IUPAC</td>
+                            <td bgcolor=#666666> &nbsp;</td><td class="highlighter_legend">GAP</td>
+                            <td class="highlighter_legend"><font color="#FF00FF" >&#9679;</font> APOBEC</td>
+                            <td class="highlighter_legend">&nbsp;<font color="#FF00FF" >&#9671;</font> G&rarr;A mutation</td>
+                            </tr></table>
                         {% endif %}
                     </div>
-                    <!-- End Duplicates Legend -->
-                </div>
                 </div>
                 <!-- End legends section -->
 
