@@ -404,3 +404,8 @@ img {
 .projectlink {
     color: #0000ff;
 }
+
+.highlighter_legend{
+    font-size: 12px;
+    padding-right: 10px;
+}
