@@ -12,7 +12,7 @@ RUN apt -y install wget software-properties-common
 #RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt update
 RUN apt -y install pkg-config
-RUN apt-get -y install libxml2-dev libxmlsec1-dev=1.2.37 libxmlsec1-openssl=1.2.37
+RUN apt-get -y install libxml2-dev libxmlsec1-dev=1.2.31-1 libxmlsec1-openssl=1.2.31-1
 RUN apt-get install -y apt-utils vim curl apache2 apache2-utils
 RUN apt-get -y install libapache2-mod-wsgi-py3
 RUN apt-get -y install python3-pip
