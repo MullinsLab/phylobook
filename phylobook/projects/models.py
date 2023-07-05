@@ -69,10 +69,13 @@ class Tree(models.Model):
 
     TYPE_CHOICES: set[tuple] = (("Amino Acids", "Amino Acids"), ("Nucleotides", "Nucleotides"), ("Unknown", "Unknown"))
 
-    name = models.CharField(max_length=256, unique=True)
+    name = models.CharField(max_length=256)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='trees')
     settings = models.JSONField(null=True, blank=True)
     type = models.CharField(max_length=256, choices=TYPE_CHOICES, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('project', 'name',)
 
     def __str__(self):
         ''' Returns the name of the tree for print() '''
