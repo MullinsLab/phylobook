@@ -227,3 +227,6 @@ SETTINGS_EXPORT = [
     'SEQUENCE_ANNOTATION_COLORS'
 ]
 
+# Default lineage names by color.
+if os.environ.get('LINEAGE_FILE'):   
+    LINEAGE_FILE = os.path.join("/phylobook/initial_data/", os.environ.get('LINEAGE_FILE'))
