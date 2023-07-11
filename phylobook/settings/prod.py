@@ -9,6 +9,11 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+
+import logging
+import logging.config
+from django.utils.log import DEFAULT_LOGGING
+
 import os
 from pathlib import Path
 
@@ -230,3 +235,119 @@ SETTINGS_EXPORT = [
 # Default lineage names by color.
 if os.environ.get('LINEAGE_FILE'):   
     LINEAGE_FILE = os.path.join("/phylobook/initial_data/", os.environ.get('LINEAGE_FILE'))
+
+# Set up Logging
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+if not os.path.exists(LOG_DIR):
+    os.mkdir(LOG_DIR)
+
+LOGLEVEL = 'DEBUG' if DEBUG else 'INFO'
+
+logging.config.dictConfig({
+    'version': 1,
+    'disable_existing_loggers': False,
+    'root': {
+       'handlers': ['console', 'requests.log'],
+       'level': LOGLEVEL
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} [{asctime}] {pathname}:{lineno} {message}',
+            'datefmt' : '%Y-%m-%d %H:%M:%S',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+        'django.server': DEFAULT_LOGGING['formatters']['django.server'],
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+
+        'phylobook.log': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR,'phylobook.log'),
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'verbose',
+        },
+
+        'test.log': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(LOG_DIR,'test.log'),
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'verbose',
+        },
+
+        'requests.log': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename':  os.path.join(LOG_DIR,'requests.log'),
+            'maxBytes': 1024*1024*5, # 5 MB
+            'backupCount': 5,
+            'formatter':'verbose',
+        },
+
+        # 'django.server': {
+        #     'level':'DEBUG',
+        #     'class':'logging.handlers.RotatingFileHandler',
+        #     'filename':  os.path.join(LOG_DIR,'requests.log'),
+        #     'maxBytes': 1024*1024*5, # 5 MB
+        #     'backupCount': 5,
+        #     'formatter':'verbose',
+        # },
+
+        'django.server': DEFAULT_LOGGING['handlers']['django.server'],
+    },
+    
+    'loggers': {
+
+        # default for all undefined Python modules
+        'default': {
+            'level': 'WARNING',
+            'handlers': ['console', 'phylobook.log'],
+        },
+
+        # Logging for http requests
+        "django.request": {
+            'level': LOGLEVEL,
+            'handlers': ['console', 'requests.log'],
+        },
+
+        # Logging for our apps
+        'app': {
+            'level': LOGLEVEL,
+            'handlers': ['console', 'phylobook.log'],
+        },
+
+        # Logging for tests
+        'test': {
+            'level': LOGLEVEL,
+            'handlers': ['console', 'test.log'],
+        },
+
+        # Default runserver request logging
+        'django.server': DEFAULT_LOGGING['loggers']['django.server'],
+
+        #  Logging SQL for DEBUG Begin
+        'django.db.backends': {
+             'level': 'DEBUG',
+             'handlers': ['console'],
+         }
+    
+    },
+})
