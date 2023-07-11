@@ -129,3 +129,4 @@ phylobook_error_log
 
 # Exclude vscode stuff
 .vscode
+phylobook/logs/
