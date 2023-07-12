@@ -346,7 +346,7 @@
                     <div class="col-auto">
                         <div class="d-flex justify-content-start">
                             <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show annotation tools</a>
-                            &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm mb-2 disabled" id="extract_to_file-{{ entry.uniquesvg }}" disabled>Extract to File</button></div>
+                            &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm mb-2 disabled" id="extract_to_file-{{ entry.uniquesvg }}" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;" disabled>Extract to File</button></div>
                             &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
                         </div>
                     </div>

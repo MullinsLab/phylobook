@@ -278,6 +278,8 @@ function setDirtyUnsaved(edId) {
     var savebtnId = edId.replace("notes", "save");
     $("#" + savebtnId).prop('disabled', false);
     $("#" + savebtnId).removeClass("disabled");
+
+    treeLineagesCounts[edId.replace("notes-", "")].disableSetLineagesButtons();
 }
 
 function setDirtySaved(edId) {
@@ -286,6 +288,8 @@ function setDirtySaved(edId) {
     $("#" + savebtnId).prop('disabled', true);
     $("#" + savebtnId).addClass("disabled");
     $("#" + edId).closest(".tree").removeClass("editedhighlight");
+
+    treeLineagesCounts[edId.replace("notes-", "")].reloadLineageCounts();
 }
 
 window.addEventListener('beforeunload', function (e) {
@@ -1114,7 +1118,7 @@ class sequenceAnnotator {
     getSequenceLegendSettings(data){
         // Get the fieldLegend setting from the server.  Calls itself on success
         if (! data){
-            getTreeSettings({tree: this.svgID, setting: "fieldLegend", func: jQuery.proxy(this.getSequenceLegendSettings, this)})
+            getTreeSettings({tree: this.svgID, setting: "fieldLegend", callback: jQuery.proxy(this.getSequenceLegendSettings, this)})
         };
         
         this.legendData = data;
@@ -1164,6 +1168,7 @@ class treeLineagesCount {
 
     getLineageCounts(data){
         // Get the lineage counts from the server.  Calls itself on success
+
         if (! data){
             getLineageCounts({tree: this.svgID, func: jQuery.proxy(this.getLineageCounts, this)});
             return;
@@ -1172,6 +1177,12 @@ class treeLineagesCount {
         this.lineageCounts = data;
         this.enableSetLineagesButtons();
     }
+
+    reloadLineageCounts(){
+        // Reload the lineage counts from the server
+
+        this.getLineageCounts();
+    };
 
     enableSetLineagesButtons(){
         // Enable the set lineage names button
@@ -1188,9 +1199,18 @@ class treeLineagesCount {
         }
     }
 
+    disableSetLineagesButtons(){
+        // Disable the set lineage names button
+        $("#set_lineage_names-" + this.svgID).prop("disabled", true);
+        $("#set_lineage_names-" + this.svgID).addClass("disabled");
+
+        $("#extract_to_file-" + this.svgID).prop("disabled", true);
+        $("#extract_to_file-" + this.svgID).addClass("disabled");
+    };
+
     showModalForm(args){
         // Show the form to get information about lineage names
-        // Args: field = field index we're working with
+        // Args: download = true if we're downloading the data
         let modal = $("#annotations_modal");
         let modalTitle = $("#annotations_modal_title");
         let modalBody = $("#annotations_modal_body");
@@ -1207,7 +1227,7 @@ class treeLineagesCount {
 
             let count_info = {};
 
-            if (color["short"] in this.lineageCounts){
+            if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["count"]){
                 count_info = this.lineageCounts[color["short"]];
 
                 form += "<br><span class='lineage_info'>" + count_info["count"] + " sequence(s)";
@@ -1249,11 +1269,17 @@ class treeLineagesCount {
 
         modalTitle.html("Assign lineage names by color for: " + this.svgID);
         modalBody.html(form);
-        modalButton.html("Assign lineage names");
+
+        if (args.download){
+            modalButton.html("Download lineages");
+        }
+        else {
+            modalButton.html("Assign lineage names");
+        }
         
         let caller = this;
         modalButton.off().on("click", function() {
-            caller.saveLineageNames();
+            caller.saveLineageNames({download: args.download});
         });
 
         $("[id^=lineage___]").selectpicker();
@@ -1261,8 +1287,9 @@ class treeLineagesCount {
         modal.modal("show");
     }
 
-    saveLineageNames(){
+    saveLineageNames(args){
         // Get the fields from the form and save it to the db
+        // args: download = true if we're downloading the data
         let modal = $("#annotations_modal");
 
         let my_lineages = {};
@@ -1294,15 +1321,14 @@ class treeLineagesCount {
         };
 
         // Send the data to the server
-        setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}})
-
-        console.log(my_lineages)
-        console.log(this.lineageCounts)
+        if (args.download) {
+            setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}, callback: jQuery.proxy(this.downloadLineagesCallback, this)})
+        }
+        else {
+            setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}})
+        }
 
         for (let color in my_lineages){
-
-            console.log(color);
-
             if (! (color  in this.lineageCounts)){
                 this.lineageCounts[color] = {};
             };
@@ -1310,8 +1336,13 @@ class treeLineagesCount {
             this.lineageCounts[color]["name"] = my_lineages[color];
         };
 
-        modal.data('modal', null);
         modal.modal("hide");
+    };
+
+    downloadLineagesCallback(){
+        // Download the lineage as a zip
+
+        window.open("/projects/extract_to_zip/" + projectName + "/" + this.svgID,"_self")
     };
 };
 
@@ -1331,14 +1362,20 @@ function setTreeSetting(args){
     // Store a setting dictionary on the server
     // Args: tree = ID of the tree to store the settings for
     //       setting = name of the setting to store
+
+    let callback = function() {}
+
+    if (args.callback) {
+        callback = args.callback;
+    };
+
     $.ajax({
         type: "POST",
         headers: { "X-CSRFToken": token },
         url: '/projects/settings/' + projectName + "/" + args.tree,
         data: JSON.stringify(args.settings),
         dataType: 'json',
-        success: function() {
-        },
+        success: callback,
         error: function (err) {
             alert( args.tree + " Failed to save settings!!!  Contact dev team." + err.statusText + "(" + err.status + ")");
         }
@@ -1356,7 +1393,7 @@ function getTreeSettings(args){
         url: '/projects/settings/' + projectName + "/" + args.tree + "/" + args.setting,
         data: JSON.stringify(args.settings),
         dataType: 'json',
-        success: args.func,
+        success: args.callback,
         error: function (err) {
             // alert( args.tree + " Failed to save!!!  Contact dev team." );
             console.log("Failed to get settings: Tree: " + args.tree + ", Setting: " + args.setting)
@@ -1377,9 +1414,6 @@ function setSequenceCountLegend(id, initial){
 
     $("#slider-range-legend-container-" + id).removeClass("hide");
     $("#legends-" + id).removeClass("hide");
-
-    // $("#name_colors_by_field_legend_field-"+this.svgID).html(fieldName);
-    // $("#name_colors_by_field_legend_container-"+this.svgID).removeClass("hide");
     
     sequenceCountLegend[id] = {clusterLegend: {
                                     min: values[ 0 ],
@@ -1390,18 +1424,6 @@ function setSequenceCountLegend(id, initial){
     }
 
     return;
-    if (! initial){
-        setTreeSetting({tree: id, 
-                        settings: {
-                            clusterLegend: {
-                                min: values[ 0 ],
-                                max: values[ 1 ],
-                                sliderLeft: min,
-                                sliderRight: max,
-                            }
-                        }
-        });
-    };
 };
 
 // Move all saving into here to dedupe the code
@@ -1454,4 +1476,8 @@ function getLineageCounts(args){
 
 function setLineagesByColor(id) {
     treeLineagesCounts[id].showModalForm();
+};
+
+function downloadLineagesByColor(id) {
+    treeLineagesCounts[id].showModalForm({download: true});
 };

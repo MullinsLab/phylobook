@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger('app')
 
-import os, tarfile, time, json, mimetypes, glob
+import os, tarfile, time, json, glob
 from io import StringIO
 from datetime import datetime
 
@@ -408,7 +408,11 @@ class TreeLineages(LoginRequiredMixin, View):
         tree_file: str = svg_file_name(project=project, tree=tree)
         
         tree_lineage: dict = tree_lineage_counts(tree_file)
-        tree_settings_lineages: dict = tree.settings.get("lineages", {})
+        
+        if not tree.settings:
+            tree_settings_lineages: dict = {}
+        else:
+            tree_settings_lineages: dict = tree.settings.get("lineages", {})
 
         for color in [color for color in tree_lineage if color in tree_settings_lineages]:
             tree_lineage[color]["name"] = tree.settings["lineages"][color]
@@ -433,4 +437,6 @@ class ExtractToZip(LoginRequiredMixin, View):
         tree_name: str = kwargs["tree"]
         tree: Tree = Tree.objects.get(project=project, name=tree_name)
 
-        return FileResponse(tree.extract_all_lineages_to_zip(), as_attachment=True, filename=f"{project.name}.zip")
+        response = HttpResponse(tree.extract_all_lineages_to_zip(), content_type="application/force-download")
+        response['Content-Disposition'] = f'attachment; filename="{project.name}.zip"'
+        return response

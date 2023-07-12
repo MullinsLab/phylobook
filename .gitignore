@@ -129,4 +129,7 @@ phylobook_error_log
 
 # Exclude vscode stuff
 .vscode
+
+# Exclude working files
 phylobook/logs/
+seed_data/

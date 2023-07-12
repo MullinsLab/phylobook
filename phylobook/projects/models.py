@@ -166,7 +166,6 @@ class Tree(models.Model):
             sequences = SeqIO.index(self.fasta_file_name, "fasta")
 
         sequence_names: list = self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)
-        log.debug(sequence_names)
 
         for sequence_name in sequence_names:
             lineage.append({"name": sequence_name, "sequence": sequences.get_raw(sequence_name).decode()})
@@ -192,23 +191,27 @@ class Tree(models.Model):
     def extract_all_lineages_to_fasta(self) -> dict:
 
         fastas: dict = {}
+
         all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
         sequences = SeqIO.index(self.fasta_file_name, "fasta")
 
         lineage_counts = self.lineage_counts()
+
         for lineage_name in lineage_counts:
             color = lineage_counts[lineage_name]["color"]
             fastas[lineage_name] = self.extract_lineage_to_fasta(color=color, name=lineage_name, sequences=sequences, all_sequence_names=all_sequence_names)
+
+        return fastas
 
     def extract_all_lineages_to_zip(self) -> bytes:
         """ Returns a zip file of all the lineages in the tree """
 
         mem_zip = io.BytesIO()
         lineages = self.extract_all_lineages_to_fasta()
-        
+
         with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zipped_lineages:
-            for lineage_name, lineage in lineages:
-                zipped_lineages.writestr(f"{self.project.name}_{lineage_name}", lineage)
+            for lineage_name, lineage in lineages.items():
+                zipped_lineages.writestr(f"{self.name}_{lineage_name}.fasta", lineage)
 
         return mem_zip.getvalue()
     
