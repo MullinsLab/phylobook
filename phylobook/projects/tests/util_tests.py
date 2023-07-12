@@ -115,7 +115,7 @@ class TreeTests(TestCase):
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
         lineage_counts = tree_lineage_counts(svg_file_name)
 
-        self.assertGreater(lineage_counts["red"]["count"], 0)
+        self.assertGreater(lineage_counts["red"]["timepoints"][200], 0)
     
     def test_tree_lineage_counts_should_be_less_than_total_count(self):
         """ tree_lineage_counts should be less than the total count """
@@ -123,7 +123,7 @@ class TreeTests(TestCase):
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
         lineage_counts = tree_lineage_counts(svg_file_name)
 
-        self.assertLess(lineage_counts["red"]["count"], 184)
+        self.assertLess(lineage_counts["red"]["timepoints"][200], 184)
 
     def test_tree_lineage_counts_should_be_178_for_red(self):
         """ tree_lineage_counts should be 178 for red """
@@ -131,7 +131,7 @@ class TreeTests(TestCase):
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
         lineage_counts = tree_lineage_counts(svg_file_name)
 
-        self.assertEqual(lineage_counts["red"]["count"], 178)
+        self.assertEqual(lineage_counts["red"]["timepoints"][200], 178)
 
     # With test_with_timepoints.svg
 
@@ -162,4 +162,4 @@ class TreeTests(TestCase):
         """ lineage_dict should return a dictionary with correct red names """
 
         lineage_dict: dict = get_lineage_dict()
-        self.assertEqual(lineage_dict["Red"], ["SxL", "MxL1"])
+        self.assertEqual(lineage_dict["Red"], ['SxL', 'MxL1', 'MxL2', 'MxL3', 'MxL4', 'MxL5'])

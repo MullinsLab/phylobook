@@ -1268,16 +1268,31 @@ class treeLineagesCount {
 
                     for (let name_index in lineages[color["name"]]){
                         let selected = "";
+                        let selecting_name = lineages[color["name"]][name_index];
+                        let selecting_default = false;
 
-                        if (color["short"] in this.lineageCounts && "name" in this.lineageCounts[color["short"]] && this.lineageCounts[color["short"]]["name"] == lineages[color["name"]][name_index]){
+                        if (selecting_name.startsWith("*")){
+                            selecting_name = selecting_name.replace("*", "");
+                            selecting_default = true;
+                        };
+
+                        let current_name = "";
+
+                        if (color["short"] in this.lineageCounts && "name" in this.lineageCounts[color["short"]]){
+                            current_name = this.lineageCounts[color["short"]]["name"];
+                        };
+
+                        if (current_name == selecting_name){
+                            selected = "selected";
+                        }
+                        else if (selecting_default) {
                             selected = "selected";
                         }
                         else {
                             selected = "";
-                        }
+                        };
 
-                        let name = lineages[color["name"]][name_index];
-                        form += "<option value='" + name + "' " + selected + ">" + name + "</option>";
+                        form += "<option value='" + selecting_name + "' " + selected + ">" + selecting_name + "</option>";
                     };
 
                     form += "</select></td>";

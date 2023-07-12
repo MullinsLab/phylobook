@@ -33,7 +33,6 @@ class TemplateAndViewTests(SimpleTestCase):
         """ The homepage should redirect to the projects page """
 
         response = self.client.get("/")
-        log.debug(response)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/projects")
@@ -42,6 +41,5 @@ class TemplateAndViewTests(SimpleTestCase):
         """ The projects page should load """
 
         response = self.client.get("/projects/")
-        log.debug(response)
 
         self.assertEqual(response.status_code, 200)

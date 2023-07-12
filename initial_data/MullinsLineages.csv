@@ -1,10 +1,30 @@
 color,lineage_name
 Red,SxL
 Red,MxL1
-Neon Blue,MxL2
-Green,MxL3
-Black,MxL4
-Orange,MxL5
+Red,MxL2
+Red,MxL3
+Red,MxL4
+Red,MxL5
+Neon Blue,MxL1
+Neon Blue,*MxL2
+Neon Blue,MxL3
+Neon Blue,MxL4
+Neon Blue,MxL5
+Green,MxL1
+Green,MxL2
+Green,*MxL3
+Green,MxL4
+Green,MxL5
+Black,MxL1
+Black,MxL2
+Black,MxL3
+Black,*MxL4
+Black,MxL5
+Orange,MxL1
+Orange,MxL2
+Orange,MxL3
+Orange,MxL4
+Orange,*MxL5
 Light Blue,SxL.1
 Light Blue,MxL1.1
 Lime,SxL.2
@@ -97,26 +117,5 @@ Pink,MxL1.4
 Pink,MxL2.4
 Pink,MxL3.4
 Pink,MxL4.4
-Purple,MxL6
-Purple,MxL7
-Purple,MxL8
-Purple,MxL9
-Purple,MxL10
-Purple,MxL11
-Purple,SxL.3
-Purple,SxL.4
-Purple,MxL2.1
-Purple,MxL3.1
-Purple,MxL4.1
-Purple,MxL2.2
-Purple,MxL3.2
-Purple,MxL4.2
-Purple,MxL1.3
-Purple,MxL2.3
-Purple,MxL3.3
-Purple,MxL4.3
-Purple,MxL1.4
-Purple,MxL2.4
-Purple,MxL3.4
-Purple,MxL4.4
-Yellow,Rec
+Purple,Rec
+Yellow,HM
