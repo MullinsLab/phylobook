@@ -6,8 +6,6 @@ from . import views
 
 urlpatterns = [
     path("", login_required(views.projects)),
-    path("<str:name>", login_required(views.displayProject)),
-    path("<str:name>/<str:file>", login_required(views.getFile)),
     path("note/update/<str:name>/<str:file>", login_required(views.updateNote)),
     path("note/read/<str:name>/<str:file>", login_required(views.readNote)),
     path("svg/update/<str:name>/<str:file>", login_required(views.updateSVG)),
@@ -16,5 +14,9 @@ urlpatterns = [
     path("files/download/extractedfasta/<str:name>/<str:file>", login_required(views.downloadExtractedFasta)),
     path("settings/<str:project>/<str:tree>", views.TreeSettings.as_view(), name='tree_settings_set'),
     path("settings/<str:project>/<str:tree>/<str:setting>", views.TreeSettings.as_view(), name='tree_settings_get'),
+    path("lineages", views.Lineages.as_view(), name='lineages'),
+    path("lineages/<str:project>/<str:tree>", views.TreeLineages.as_view(), name='tree_lineages'),
+    path("<str:name>", login_required(views.displayProject)),
+    path("<str:name>/<str:file>", login_required(views.getFile)),
 ]
 

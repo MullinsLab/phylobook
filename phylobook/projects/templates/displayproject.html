@@ -345,7 +345,9 @@
 
                     <div class="col-auto">
                         <div class="d-flex justify-content-start">
-                            <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show annotation tools</a>&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
+                            <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show annotation tools</a>
+                            &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm mb-2 disabled" id="extract_to_file-{{ entry.uniquesvg }}" disabled>Extract to File</button></div>
+                            &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
                         </div>
                     </div>
                 </div>
@@ -422,6 +424,12 @@
                         </div>
                     </div>
                     {% endif %}
+
+                    <!-- Assign lineage names by color -->
+                    <div class="container border border-dark rounded mt-2 mb-2 p-2 text-nowrap bg-light">
+                        <button type="button" class="btn btn-info btn-sm text-nowrap disabled" id="set_lineage_names-{{ entry.uniquesvg }}"  onclick="setLineagesByColor('{{ entry.uniquesvg }}'); return false;" disabled>Assign lineage names by color</button>
+                    </div>
+                        
                     <br>
                 </div>
                 <!-- End Annotations -->
@@ -506,8 +514,10 @@
                 <script type="text/javascript">
                     var rect;
                     $('#{{ entry.uniquesvg }}').find(".svgimage").load('{{ entry.svg }}', function() {
-                        // Set up the sequenceAnnotator after the svg loads
+                        // Set up the sequenceAnnotator and the treeLineagesCount after the svg loads
                         new sequenceAnnotator({{ "{" }}svgID: "{{ entry.uniquesvg }}"{{ "}" }})
+                        new treeLineagesCount({{ "{" }}svgID: "{{ entry.uniquesvg }}"{{ "}" }})
+
                         d3.select($("#{{ entry.uniquesvg }}").find("svg")[0])
                             .call(d3.drag()
                                 .on("start", function (event, d) {

@@ -1,7 +1,7 @@
-import os
-import tarfile
-import time
-import json
+import logging
+log = logging.getLogger('app')
+
+import os, tarfile, time, json
 from io import StringIO
 from datetime import datetime
 import glob
@@ -16,10 +16,11 @@ from guardian.shortcuts import get_perms
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import View
 
-from .models import Project, ProjectCategory, Tree
-from .utils import fasta_type
+from phylobook.projects.models import Project, ProjectCategory, Tree
+from phylobook.projects.utils import fasta_type, tree_lineage_counts, tree_file_name, get_lineage_dict
 
 PROJECT_PATH = settings.PROJECT_PATH
+
 
 def projects(request):
 
@@ -101,7 +102,7 @@ def get_user_projects(user):
 
 
 def get_user_project_tree(user) -> dict:
-    ''' Loads the Projects that a User can see, along with their categories '''
+    """ Loads the Projects that a User can see, along with their categories """
     projects_tree = []
 
     # Start by getting projects that don't have a category
@@ -113,7 +114,6 @@ def get_user_project_tree(user) -> dict:
     for category in ProjectCategory.get_root_nodes():
         category.tree_node(user=user, list=projects_tree)
     
-    print(projects_tree)
     return projects_tree
 
 
@@ -137,10 +137,10 @@ def getFile(request, name, file):
                         cleaned = cleaned + line
                     return HttpResponse(cleaned, content_type="text/csv")
         except IOError:
-            print(f"Error: File not found: {file}")
+            log.warn(f"Error: File not found: {file}")
             return HttpResponseNotFound("File not found!")
     else:
-        print(f"Error: File not found: {file}")
+        log.warn(f"Error: File not found: {file}")
         return HttpResponseNotFound("File not found!")
 
 
@@ -168,7 +168,7 @@ def readNote(request, name, file):
         else:
             return HttpResponse(notes)
     else:
-        print(f"Error: Permission denied: {file}")
+        log.warn(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
@@ -187,7 +187,7 @@ def updateNote(request, name, file):
             dateTimeObj = datetime.now()
             data = {}
             data['notes'] = []
-            #print("minval=" + minval + " maxval=" + maxval + " colorlowval=" + colorlowval + " colorhighval=" + colorhighval + " iscolored=" + iscolored)
+            #log.warn("minval=" + minval + " maxval=" + maxval + " colorlowval=" + colorlowval + " colorhighval=" + colorhighval + " iscolored=" + iscolored)
             if filePath.is_file():
                 with open(filePath, 'r+') as json_file:
                     data = json.load(json_file)
@@ -206,7 +206,7 @@ def updateNote(request, name, file):
 
             return HttpResponse("Note Saved.")
     else:
-        print(f"Error: Permission denied: {file}")
+        log.warn(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
@@ -225,7 +225,7 @@ def updateSVG(request, name, file):
                         f.close()
                     return HttpResponse("SVG Saved.")
     else:
-        print(f"Error: Permission denied: {file}")
+        log.warn(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
@@ -239,7 +239,7 @@ def downloadProjectFiles(request, name):
         tarred.add(os.path.join(PROJECT_PATH, name), arcname=name)
         tarred.close()
     else:
-        print(f"Error: Permission denied: {file}")
+        log.warn(f"Error: Permission denied: {name}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
@@ -253,7 +253,7 @@ def downloadOrderedFasta(request, name, file):
         response = HttpResponse(orderedFasta, content_type='application/x-fasta')
         response['Content-Disposition'] = 'attachment; filename=' + file + '-ordered.fasta'
     else:
-        print(f"Error: Permission denied: {file}")
+        log.warn(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
 
     return response
@@ -321,7 +321,7 @@ def downloadExtractedFasta(request, name, file):
         response = HttpResponse(extractedsSeqs, content_type='text/plain')
         return response
     else:
-        print(f"Error: Permission denied: {file}")
+        log.warn(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
     
@@ -330,7 +330,7 @@ class TreeSettings(LoginRequiredMixin, View):
     """ Class to get or set settings for a tree """
 
     def get(self, request, *args, **kwargs):
-        ''' Get a JSON dictionary for a setting, or settings '''
+        """ Get a JSON dictionary for a setting, or settings """
         
         return_data: dict = {}
 
@@ -349,13 +349,11 @@ class TreeSettings(LoginRequiredMixin, View):
             return_data = tree.settings.get(setting, {})
         else:
             return_data = {}
-            
-        print(return_data)
 
         return JsonResponse(return_data)
 
     def post(self, request, *args, **kwargs):
-        ''' Save settings recieved as a JSON dictionary '''
+        """ Save settings recieved as a JSON dictionary """
 
         project_name: str = kwargs["project"]
         project = Project.objects.filter(name=project_name).first()
@@ -367,7 +365,6 @@ class TreeSettings(LoginRequiredMixin, View):
         if tree.settings == None: tree.settings = {}
         
         for setting, value in settings.items():
-            print(f"Setting: {setting}, Value: {value}")
             if value == None:
                 tree.settings.pop(setting)
             else:
@@ -378,3 +375,43 @@ class TreeSettings(LoginRequiredMixin, View):
         return_data = {'saved': True}
         
         return JsonResponse(return_data)
+    
+
+class Lineages(LoginRequiredMixin, View):
+    """ Get the full list of lineages """
+
+    def get(self, request, *args, **kwargs):
+        """ Return the list of lineages """
+
+        return JsonResponse(get_lineage_dict())
+        #return {}
+    
+
+class TreeLineages(LoginRequiredMixin, View):
+    """ Get and set the lineages for a tree """
+
+    def get(self, request, *args, **kwargs):
+        """ Return information about the tree lineages to the client """
+
+        project_name: str = kwargs["project"]
+        project: Project = Project.objects.get(name=project_name)
+
+        if not project or not (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
+            return render(request, "projects.html", {"noaccess": project_name, "projects": get_user_project_tree(request.user)})
+
+        tree_name: str = kwargs["tree"]
+        tree: Tree = Tree.objects.get(project=project, name=tree_name)
+        tree_file: str = tree_file_name(project=project, tree=tree)
+        
+        tree_lineage: dict = tree_lineage_counts(tree_file)
+        tree_settings_lineages: dict = tree.settings.get("lineages", {})
+
+        for color in [color for color in tree_lineage if color in tree_settings_lineages]:
+            tree_lineage[color]["name"] = tree.settings["lineages"][color]
+
+        for color in [color for color in tree_settings_lineages if color not in tree_lineage]:
+            tree_lineage[color] = {"name": tree_settings_lineages[color]}
+
+        log.debug(f"Tree lineages: {tree_lineage}") 
+
+        return JsonResponse(tree_lineage)

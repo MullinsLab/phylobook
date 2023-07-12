@@ -6,9 +6,14 @@ const collatorNumber = new Intl.Collator(undefined, {
 
 let sequenceAnnotators = {}    // A collection of sequenceAnnotator objects, keyed by svgID
 let sequenceCountLegend = {}   // A collection of sequence count legends used for saving
+let lineages = {}              // Lineage names used for extractions
+let treeLineagesCounts = {}    // Get count of lineages used for trees
 
 // Notes editor, buttons/listeners, contextmenus etc.
 $(document).ready(function() {
+    // Get lineages for extractions
+    getLineages();
+
     // Make color map for the tinymces
     let colorMap = []
     for (let color in annotationColors){
@@ -1017,7 +1022,7 @@ class sequenceAnnotator {
         modalButton.html("Color Sequences");
         
         let caller = this;
-        modalButton.on("click", function() {
+        modalButton.off().on("click", function() {
             caller.setSequenceFields();
         });
 
@@ -1140,8 +1145,176 @@ class sequenceAnnotator {
         // Save this.legendData to the db
         setTreeSetting({tree: this.svgID, settings: {fieldLegend: this.legendData}});
     }
-    
 };
+
+
+class treeLineagesCount {
+    svgID = "";             // ID of the SVG we're working with
+    lineageCounts = {};    // A dictionary holding information for the lineage counts
+
+    constructor(args){
+        // args: svgID = the ID of the svg
+        this.svgID = args.svgID;
+
+        this.getLineageCounts();
+
+        // Register with treeLineagesCounts so this object can always be found
+        treeLineagesCounts[this.svgID] = this;
+    }
+
+    getLineageCounts(data){
+        // Get the lineage counts from the server.  Calls itself on success
+        if (! data){
+            getLineageCounts({tree: this.svgID, func: jQuery.proxy(this.getLineageCounts, this)});
+            return;
+        };
+
+        this.lineageCounts = data;
+        this.enableSetLineagesButtons();
+    }
+
+    enableSetLineagesButtons(){
+        // Enable the set lineage names button
+
+        if (Object.keys(lineages).length == 0){
+            setTimeout(this.enableSetLineagesButtons.bind(this), 100);
+        }
+        else {
+            $("#set_lineage_names-" + this.svgID).prop("disabled", false);
+            $("#set_lineage_names-" + this.svgID).removeClass("disabled");
+
+            $("#extract_to_file-" + this.svgID).prop("disabled", false);
+            $("#extract_to_file-" + this.svgID).removeClass("disabled");
+        }
+    }
+
+    showModalForm(args){
+        // Show the form to get information about lineage names
+        // Args: field = field index we're working with
+        let modal = $("#annotations_modal");
+        let modalTitle = $("#annotations_modal_title");
+        let modalBody = $("#annotations_modal_body");
+        let modalButton = $("#annotations_modal_button");
+
+        let form = "";
+
+        form += "<table class='table'><thead><tr><th scope='col'>Color</th><th scope='col'>Lineage Name</th></tr><tbody>"
+
+        for (let color_index in annotationColors ){
+            let color = annotationColors[color_index]
+            
+            form += "<tr><th scope='row'><span  class='" + color["short"] + "_text'>" + color["name"] + "</span>";
+
+            let count_info = {};
+
+            if (color["short"] in this.lineageCounts){
+                count_info = this.lineageCounts[color["short"]];
+
+                form += "<br><span class='lineage_info'>" + count_info["count"] + " sequence(s)";
+                if (count_info["timepoint"]){
+                    form += " at timepoint " + count_info["timepoint"];
+                }
+                form += "</span>";
+            }
+
+            form += "</th>";
+            
+            if (lineages[color["name"]].length > 1){
+                form += "<td><select id='lineage___" + color["short"] + "' class='selectpicker' data-width='100px'>";
+                
+                form += "<option value=''>unused</option>";
+
+                for (let name_index in lineages[color["name"]]){
+                    let selected = "";
+
+                    if (count_info["name"] == lineages[color["name"]][name_index]){
+                        selected = "selected";
+                    }
+                    else {
+                        selected = "";
+                    }
+
+                    let name = lineages[color["name"]][name_index];
+                    form += "<option value='" + name + "' " + selected + ">" + name + "</option>";
+                };
+
+                form += "</select></td>";
+            }
+            else {
+                form += "<td>" + lineages[color["name"]][0] + "</td>";
+            };
+        };
+
+        form += "</tbody></table>";
+
+        modalTitle.html("Assign lineage names by color for: " + this.svgID);
+        modalBody.html(form);
+        modalButton.html("Assign lineage names");
+        
+        let caller = this;
+        modalButton.off().on("click", function() {
+            caller.saveLineageNames();
+        });
+
+        $("[id^=lineage___]").selectpicker();
+        
+        modal.modal("show");
+    }
+
+    saveLineageNames(){
+        // Get the fields from the form and save it to the db
+        let modal = $("#annotations_modal");
+
+        let my_lineages = {};
+
+        for (let color_index in annotationColors){
+            let color = annotationColors[color_index]
+            let name = $("#lineage___" + color["short"]).find(":selected").val(); // || "";
+
+            if (name === undefined){
+                name = lineages[color["name"]][0];
+            };
+
+            if (name && Object.values(my_lineages).includes(name)){
+                alert("More than one color is assigned to the same lineage name.  Please fix this and try again.");
+                return;
+            }
+
+            if (name === ""){
+                if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["count"] > 0){
+                    alert("You must assign a lineage name to each color that has sequences.");
+                    return;
+                }
+                else {
+                    name = undefined;
+                };
+            }
+
+            my_lineages[color["short"]] = name;
+        };
+
+        // Send the data to the server
+        setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}})
+
+        console.log(my_lineages)
+        console.log(this.lineageCounts)
+
+        for (let color in my_lineages){
+
+            console.log(color);
+
+            if (! (color  in this.lineageCounts)){
+                this.lineageCounts[color] = {};
+            };
+
+            this.lineageCounts[color]["name"] = my_lineages[color];
+        };
+
+        modal.data('modal', null);
+        modal.modal("hide");
+    };
+};
+
 
 function sequenceColorOptions(){
     // Return an options list with the sequence colors
@@ -1240,4 +1413,45 @@ function saveTree(id){
                         settings: sequenceCountLegend[id],
         });     
     };
+};
+
+
+function getLineages(){
+    // Get the lineages from the server
+    $.ajax({
+        type: "GET",
+        headers: { "X-CSRFToken": token },
+        url: "/projects/lineages",
+        dataType: "json",
+        success: function(data) {
+            lineages = data;
+        },
+        error: function (err) {
+            alert( id + " Failed to get lineages!!!  Contact dev team." );
+        }
+    });
+};
+ 
+
+function getLineageCounts(args){
+    // Get lineage counts for a particular tree
+    // Args: tree = ID of the tree to load settings for
+    //       func = function to call on success
+    $.ajax({
+        type: "GET",
+        headers: { "X-CSRFToken": token },
+        url: '/projects/lineages/' + projectName + "/" + args.tree,
+        data: JSON.stringify(args.settings),
+        dataType: 'json',
+        success: args.func,
+        error: function (err) {
+            // alert( args.tree + " Failed to load lineage counts!!!  Contact dev team." );
+            console.log("Failed to load lineage counts: Tree: " + args.tree)
+        }
+    });
+};
+
+
+function setLineagesByColor(id) {
+    treeLineagesCounts[id].showModalForm();
 };

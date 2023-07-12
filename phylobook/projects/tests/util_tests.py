@@ -3,7 +3,7 @@ log = logging.getLogger('test')
 
 from django.test import TestCase
 
-from phylobook.projects.utils import tree_sequences, tree_lineage_counts, parse_sequence_name
+from phylobook.projects.utils import tree_sequences, tree_lineage_counts, parse_sequence_name, get_lineage_dict
 
 
 class TreeTests(TestCase):
@@ -150,3 +150,16 @@ class TreeTests(TestCase):
         lineage_counts = tree_lineage_counts(tree_file_name)
 
         self.assertEqual(lineage_counts["red"]["count"], 37)
+
+    # Tests for lineage_dict
+
+    def test_lineage_dict_should_return_dictionary(self):
+        """ lineage_dict should return a dictionary """
+
+        self.assertIsInstance(get_lineage_dict(), dict)
+
+    def test_lineage_dict_should_return_red_names_correctly(self):
+        """ lineage_dict should return a dictionary with correct red names """
+
+        lineage_dict: dict = get_lineage_dict()
+        self.assertEqual(lineage_dict["Red"], ["SxL", "MxL1"])

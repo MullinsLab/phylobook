@@ -213,6 +213,56 @@ img {
     border: 1px solid #800000;
 }
 
+.yellow_text {
+    color: #efe645;
+}
+.red_text {
+    color: Red;
+}
+.neonblue_text {
+    color: #537eff;
+}
+.green_text {
+    color: #00cb85;
+}
+.orange_text {
+    color: orange;
+}
+.pink_text {
+    color: #e935a1;
+}
+.lightblue_text {
+    color: #00e3ff;
+}
+.black_text {
+    color: black;
+}
+.gray_text {
+    color: gray;
+}
+.purple_text {
+    color: purple;
+}
+
+.apricot_text {
+    color: #FFD8B1;
+}
+.lime_text {
+    color: #BFEF45;
+}
+.olive_text {
+    color: #808000;
+}
+.navy_text {
+    color: #000075;
+}
+.lavender_text {
+    color: #DCBEFF;
+}
+.maroon_text {
+    color: #800000;
+}
+
 .slider-range {
     /* background-image: linear-gradient(to right, yellow , red); */
     /* background-image: linear-gradient(to right, yellow , blue); */
@@ -408,4 +458,10 @@ img {
 .highlighter_legend{
     font-size: 12px;
     padding-right: 10px;
+}
+
+.lineage_info{
+    font-size: 12px;
+    /* padding-right: 10px; */
+    font-weight: normal;
 }
