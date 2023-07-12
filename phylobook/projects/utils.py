@@ -147,19 +147,31 @@ def tree_lineage_counts(tree_file: str) -> dict[str: dict]:
     sequences, has_timepoints = parse_sequences(tree_sequence_names(tree_file))
 
     lineage_counts: dict[str: dict] = {}
+    count_collector: int = 0
 
     for sequence in sequences:
         if not sequence:
             return None
         
-        if sequence["color"] not in lineage_counts or (has_timepoints and sequence["timepoint"] < lineage_counts[sequence["color"]]["timepoint"]):
-            lineage_counts[sequence["color"]] = {
-                "count": sequence["multiplicity"], 
-                "timepoint": sequence["timepoint"]
-            }
+        if has_timepoints:
+            if sequence["color"] not in lineage_counts:
+                lineage_counts[sequence["color"]] = {"timepoints": {}}
 
-        elif not has_timepoints or sequence["timepoint"] == lineage_counts[sequence["color"]]["timepoint"]:
+            if sequence["timepoint"] not in lineage_counts[sequence["color"]]["timepoints"]:
+                lineage_counts[sequence["color"]]["timepoints"][sequence["timepoint"]] = 0
+
+            lineage_counts[sequence["color"]]["timepoints"][sequence["timepoint"]] += sequence["multiplicity"]
+            count_collector += sequence["multiplicity"]
+            # log.debug(f"Color:, {sequence['color']}, timepoint: {sequence['timepoint']}, count: {sequence['multiplicity']}, subtotal: {lineage_counts[sequence['color']]['timepoints'][sequence['timepoint']]}, total: {count_collector}")
+        
+        else:
+            if sequence["color"] not in lineage_counts:
+                lineage_counts[sequence["color"]] = {"count": 0}
+
             lineage_counts[sequence["color"]]["count"] += sequence["multiplicity"]
+            count_collector += sequence["multiplicity"]
+
+    lineage_counts["total"] = count_collector
 
     return lineage_counts
 

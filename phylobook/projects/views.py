@@ -405,6 +405,10 @@ class TreeLineages(LoginRequiredMixin, View):
 
         tree_name: str = kwargs["tree"]
         tree: Tree = Tree.objects.get(project=project, name=tree_name)
+
+        if not tree.fasta_file_name:
+            return JsonResponse({"error": "This tree does not have an associate .fasta file.  Extractions can not be performed on it."})
+
         tree_file: str = svg_file_name(project=project, tree=tree)
         
         tree_lineage: dict = tree_lineage_counts(tree_file)
@@ -421,6 +425,7 @@ class TreeLineages(LoginRequiredMixin, View):
             tree_lineage[color] = {"name": tree_settings_lineages[color]}
 
         return JsonResponse(tree_lineage)
+    
     
 class ExtractToZip(LoginRequiredMixin, View):
     """ Extract sequences to a zip file by lineage """

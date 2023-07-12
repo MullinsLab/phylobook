@@ -1218,68 +1218,111 @@ class treeLineagesCount {
 
         let form = "";
 
-        form += "<table class='table'><thead><tr><th scope='col'>Color</th><th scope='col'>Lineage Name</th></tr><tbody>"
+        if ("error" in this.lineageCounts) {
+            form = this.lineageCounts["error"];
+        }
+        else
+        {
+            form += "<table class='table'><thead><tr><th scope='col'>Color</th><th scope='col'>Lineage Name</th></tr><tbody>"
 
-        for (let color_index in annotationColors ){
-            let color = annotationColors[color_index]
-            
-            form += "<tr><th scope='row'><span  class='" + color["short"] + "_text'>" + color["name"] + "</span>";
-
-            let count_info = {};
-
-            if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["count"]){
-                count_info = this.lineageCounts[color["short"]];
-
-                form += "<br><span class='lineage_info'>" + count_info["count"] + " sequence(s)";
-                if (count_info["timepoint"]){
-                    form += " at timepoint " + count_info["timepoint"];
-                }
-                form += "</span>";
-            }
-
-            form += "</th>";
-            
-            if (lineages[color["name"]].length > 1){
-                form += "<td><select id='lineage___" + color["short"] + "' class='selectpicker' data-width='100px'>";
+            for (let color_index in annotationColors ){
+                let color = annotationColors[color_index]
                 
-                form += "<option value=''>unused</option>";
+                form += "<tr><th scope='row'><span  class='" + color["short"] + "_text'>" + color["name"] + "</span>";
 
-                for (let name_index in lineages[color["name"]]){
-                    let selected = "";
+                let count_info = {};
 
-                    if (count_info["name"] == lineages[color["name"]][name_index]){
-                        selected = "selected";
+                if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["count"]){
+                    count_info = this.lineageCounts[color["short"]];
+
+                    form += "<br><span class='lineage_info'>" + count_info["count"] + " sequence(s)";
+                    if (count_info["timepoint"]){
+                        form += " at timepoint " + count_info["timepoint"];
                     }
-                    else {
-                        selected = "";
-                    }
+                    form += "</span>";
+                }
+                else if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["timepoints"]){
+                    form += "<br><span class='lineage_info'>"
+                    let first = true;
 
-                    let name = lineages[color["name"]][name_index];
-                    form += "<option value='" + name + "' " + selected + ">" + name + "</option>";
+                    for (let timepoint in this.lineageCounts[color["short"]]["timepoints"]){
+                        if (! first){
+                            form += "<br>";
+                        }
+
+                        form += this.lineageCounts[color["short"]]["timepoints"][timepoint];
+                        form += " sequence(s) at timepoint " + timepoint;
+
+                        first = false;
+                    };
+
+                    form += "</span>";
                 };
 
-                form += "</select></td>";
-            }
-            else {
-                form += "<td>" + lineages[color["name"]][0] + "</td>";
+                form += "</th>";
+                
+                if (lineages[color["name"]].length > 1){
+                    form += "<td><select id='lineage___" + color["short"] + "' class='selectpicker' data-width='100px'>";
+                    
+                    form += "<option value=''>unused</option>";
+
+                    for (let name_index in lineages[color["name"]]){
+                        let selected = "";
+                        console.log(count_info);
+
+                        if (color["short"] in this.lineageCounts && "name" in this.lineageCounts[color["short"]] && this.lineageCounts[color["short"]]["name"] == lineages[color["name"]][name_index]){
+                            selected = "selected";
+                        }
+                        else {
+                            selected = "";
+                        }
+
+                        let name = lineages[color["name"]][name_index];
+                        form += "<option value='" + name + "' " + selected + ">" + name + "</option>";
+                    };
+
+                    form += "</select></td>";
+                }
+                else {
+                    form += "<td>" + lineages[color["name"]][0] + "</td>";
+                };
             };
+
+            form += "</tbody></table>";
         };
 
-        form += "</tbody></table>";
-
         modalTitle.html("Assign lineage names by color for: " + this.svgID);
+        if (this.lineageCounts["total"]){
+            modalTitle.append("<br><span class='lineage_subtitle'>" + this.lineageCounts["total"] + " total sequences</span>");
+        }
+
         modalBody.html(form);
 
-        if (args.download){
+        if ("error" in this.lineageCounts) {
+            modalButton.html("Assign lineage names");
+            modalButton.prop("disabled", true);
+            modalButton.addClass("disabled");
+        }
+        else if (args && args.download){
             modalButton.html("Download lineages");
+            modalButton.prop("disabled", false);
+            modalButton.removeClass("disabled");
         }
         else {
             modalButton.html("Assign lineage names");
+            modalButton.prop("disabled", false);
+            modalButton.removeClass("disabled");
         }
         
         let caller = this;
+        let download = false;
+
+        if (args && "download" in args){
+            download = args["download"];
+        }
+
         modalButton.off().on("click", function() {
-            caller.saveLineageNames({download: args.download});
+            caller.saveLineageNames({download: download});
         });
 
         $("[id^=lineage___]").selectpicker();
@@ -1308,7 +1351,7 @@ class treeLineagesCount {
             }
 
             if (name === ""){
-                if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["count"] > 0){
+                if (color["short"] in this.lineageCounts && (this.lineageCounts[color["short"]]["count"] > 0 || "timepoints" in this.lineageCounts[color["short"]])){
                     alert("You must assign a lineage name to each color that has sequences.");
                     return;
                 }
@@ -1335,6 +1378,8 @@ class treeLineagesCount {
 
             this.lineageCounts[color]["name"] = my_lineages[color];
         };
+
+        console.log(this.lineageCounts);
 
         modal.modal("hide");
     };
