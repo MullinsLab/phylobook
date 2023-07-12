@@ -1268,7 +1268,6 @@ class treeLineagesCount {
 
                     for (let name_index in lineages[color["name"]]){
                         let selected = "";
-                        console.log(count_info);
 
                         if (color["short"] in this.lineageCounts && "name" in this.lineageCounts[color["short"]] && this.lineageCounts[color["short"]]["name"] == lineages[color["name"]][name_index]){
                             selected = "selected";
@@ -1378,8 +1377,6 @@ class treeLineagesCount {
 
             this.lineageCounts[color]["name"] = my_lineages[color];
         };
-
-        console.log(this.lineageCounts);
 
         modal.modal("hide");
     };

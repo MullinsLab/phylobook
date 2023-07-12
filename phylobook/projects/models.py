@@ -126,25 +126,17 @@ class Tree(models.Model):
 
         lineage_counts: dict = tree_lineage_counts(tree_file=self.svg_file_name)
 
-        log.debug(self.settings)
         lineage_names = self.settings.get("lineages")
         if lineage_names is None:
             return None
-        
-        log.debug(lineage_names)
-        log.debug(lineage_counts)
 
         for color in [color for color in lineage_counts if color != "total"]:
-            log.debug(color)
             if color in lineage_names:
                 lineages[lineage_names[color]] = lineage_counts[color]
                 lineages[lineage_names[color]]["color"] = color
 
             else:
-                log.debug("Color not in lineage names")
                 return None
-        
-        log.debug("Hit lineages")
 
         return lineages
     
@@ -205,7 +197,6 @@ class Tree(models.Model):
         sequences = SeqIO.index(self.fasta_file_name, "fasta")
 
         lineage_counts = self.lineage_counts()
-        log.debug(lineage_counts)
 
         for lineage_name in lineage_counts:
             color = lineage_counts[lineage_name]["color"]
