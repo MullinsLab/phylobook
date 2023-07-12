@@ -47,7 +47,7 @@ def fasta_type_by_file_name(*, tree: Tree) -> str:
     return "Unknown"
 
 
-def tree_file_name(*, tree: Tree, project: Project) -> str:
+def svg_file_name(*, tree: Tree, project: Project) -> str:
     """ Returns the name of the tree file
     It's found this way because there can be variations in the file name """
 
@@ -58,7 +58,29 @@ def tree_file_name(*, tree: Tree, project: Project) -> str:
     return svg
 
 
-def tree_sequences(tree_file: str) -> list[dict[str: str]]:
+def fasta_file_name(*, tree: Tree, project: Project) -> str:
+    """ Returns the name of the tree file
+    It's found this way because there can be variations in the file name """
+
+    highlighter_png: str = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*_highlighter.png"))[0]
+    file_base: str = highlighter_png.replace("_highlighter.png", "")
+    fasta: str = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{file_base}*_highlighter.fasta"))
+
+    if len(fasta):
+        return fasta[0]
+    
+    fasta: str = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{file_base}*.fasta"))
+    if len(fasta):
+        return fasta[0]
+    
+    fasta: str = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{project.name}*.fasta"))
+    if len(fasta):
+        return fasta[0]
+    
+    return None
+
+
+def tree_sequence_names(tree_file: str) -> list[dict[str: str]]:
     """ Get all the sequence names from the a specific tree """
 
     if not tree_file:
@@ -122,7 +144,7 @@ def tree_lineage_counts(tree_file: str) -> dict[str: dict]:
     if not tree_file:
         return None
     
-    sequences, has_timepoints = parse_sequences(tree_sequences(tree_file))
+    sequences, has_timepoints = parse_sequences(tree_sequence_names(tree_file))
 
     lineage_counts: dict[str: dict] = {}
 

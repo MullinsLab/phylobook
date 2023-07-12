@@ -1,14 +1,13 @@
 import logging
 log = logging.getLogger('app')
 
-import os, tarfile, time, json
+import os, tarfile, time, json, mimetypes, glob
 from io import StringIO
 from datetime import datetime
-import glob
 
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, FileResponse
 from django.shortcuts import render
 from pathlib import Path
 from django.conf import settings
@@ -17,7 +16,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import View
 
 from phylobook.projects.models import Project, ProjectCategory, Tree
-from phylobook.projects.utils import fasta_type, tree_lineage_counts, tree_file_name, get_lineage_dict
+from phylobook.projects.utils import fasta_type, tree_lineage_counts, svg_file_name, get_lineage_dict
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -260,6 +259,7 @@ def downloadOrderedFasta(request, name, file):
 
 
 def buildOrderedFastaFile(name, file):
+    log.debug("buildOrderedFastaFile: " + name + " " + file)
     highlighterFastaFile = glob.glob(os.path.join(PROJECT_PATH, name, file + "*_highlighter.fasta"))
     orderedFasta = ""
     # check to see if ordered highlighter provided fasta is available
@@ -273,6 +273,8 @@ def buildOrderedFastaFile(name, file):
     if len(fastaFile) > 0 and len(highlighterDataFile) > 0:
         recordDict = SeqIO.index(fastaFile[0], "fasta")
         highlighterData = open(highlighterDataFile[0], 'r')
+        # log.debug(highlighterData)
+
         while True:
             record = readNextHighlighterRecord(highlighterData)
             if record is None:
@@ -286,6 +288,8 @@ def buildOrderedFastaFile(name, file):
 
 
 def readNextHighlighterRecord(highlighterData):
+    # log.debug("readNextHighlighterRecord")
+
     seqName = highlighterData.readline()
     if seqName is None or seqName == '':
         return None;
@@ -401,7 +405,7 @@ class TreeLineages(LoginRequiredMixin, View):
 
         tree_name: str = kwargs["tree"]
         tree: Tree = Tree.objects.get(project=project, name=tree_name)
-        tree_file: str = tree_file_name(project=project, tree=tree)
+        tree_file: str = svg_file_name(project=project, tree=tree)
         
         tree_lineage: dict = tree_lineage_counts(tree_file)
         tree_settings_lineages: dict = tree.settings.get("lineages", {})
@@ -412,6 +416,21 @@ class TreeLineages(LoginRequiredMixin, View):
         for color in [color for color in tree_settings_lineages if color not in tree_lineage]:
             tree_lineage[color] = {"name": tree_settings_lineages[color]}
 
-        log.debug(f"Tree lineages: {tree_lineage}") 
-
         return JsonResponse(tree_lineage)
+    
+class ExtractToZip(LoginRequiredMixin, View):
+    """ Extract sequences to a zip file by lineage """
+
+    def get(self, request, *args, **kwargs):
+        """ Return the zip file """
+
+        project_name: str = kwargs["project"]
+        project: Project = Project.objects.get(name=project_name)
+
+        if not project or not (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
+            return render(request, "projects.html", {"noaccess": project_name, "projects": get_user_project_tree(request.user)})
+
+        tree_name: str = kwargs["tree"]
+        tree: Tree = Tree.objects.get(project=project, name=tree_name)
+
+        return FileResponse(tree.extract_all_lineages_to_zip(), as_attachment=True, filename=f"{project.name}.zip")

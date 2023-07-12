@@ -3,7 +3,7 @@ log = logging.getLogger('test')
 
 from django.test import TestCase
 
-from phylobook.projects.utils import tree_sequences, tree_lineage_counts, parse_sequence_name, get_lineage_dict
+from phylobook.projects.utils import tree_sequence_names, tree_lineage_counts, parse_sequence_name, get_lineage_dict
 
 
 class TreeTests(TestCase):
@@ -14,7 +14,7 @@ class TreeTests(TestCase):
     def test_tree_sequences_should_return_none_given_none(self):
         """ tree_det_sequence_names should return None when given None """
 
-        self.assertIs(tree_sequences(None), None)
+        self.assertIs(tree_sequence_names(None), None)
 
     def test_tree_sequences_should_raise_exception_given_nonexistent_file(self):
         """ tree_det_sequence_names should raise an exception when given a nonexistent file """
@@ -25,8 +25,8 @@ class TreeTests(TestCase):
     def test_tree_sequences_should_return_list_of_dicts(self):
         """ tree_det_sequence_names should return a list """
 
-        tree_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        sequences = tree_sequences(tree_file_name)
+        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        sequences = tree_sequence_names(svg_file_name)
 
         self.assertIsInstance(sequences, list)
         self.assertIsInstance(sequences[0], dict)
@@ -34,14 +34,14 @@ class TreeTests(TestCase):
     def test_tree_sequences_should_not_return_empty(self):
         """ tree_get_sequences should not return an empty list """
     
-        tree_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        self.assertGreater(len(tree_sequences(tree_file_name)), 0)
+        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        self.assertGreater(len(tree_sequence_names(svg_file_name)), 0)
     
     def test_tree_sequences_should_contain_particular_sequenc(self):
         """ tree_get_sequences should contain a particular sequence """
     
-        tree_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        sequences = tree_sequences(tree_file_name)
+        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        sequences = tree_sequence_names(svg_file_name)
         my_sequence = [sequence for sequence in sequences if sequence["name"] == "V703_0132_200_GP_NT_70_1"][0]
 
         self.assertTrue(my_sequence)
@@ -87,16 +87,16 @@ class TreeTests(TestCase):
     def test_tree_lineage_counts_should_return_dict(self):
         """ tree_lineage_counts should return a dict """
 
-        tree_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        lineage_counts = tree_lineage_counts(tree_file_name)
+        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        lineage_counts = tree_lineage_counts(svg_file_name)
 
         self.assertIsInstance(lineage_counts, dict)
 
     def test_tree_lineage_counts_should_not_return_empty(self):
         """ tree_lineage_counts should not return an empty list """
 
-        tree_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        self.assertGreater(len(tree_lineage_counts(tree_file_name)), 0)
+        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        self.assertGreater(len(tree_lineage_counts(svg_file_name)), 0)
 
     def test_tree_lineage_counts_should_return_none_given_none(self):
         """ tree_lineage_counts should return None when given None """
@@ -112,24 +112,24 @@ class TreeTests(TestCase):
     def test_tree_lineage_counts_should_return_counts_for_colors(self):
         """ tree_lineage_counts should return counts for colors """
 
-        tree_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        lineage_counts = tree_lineage_counts(tree_file_name)
+        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        lineage_counts = tree_lineage_counts(svg_file_name)
 
         self.assertGreater(lineage_counts["red"]["count"], 0)
     
     def test_tree_lineage_counts_should_be_less_than_total_count(self):
         """ tree_lineage_counts should be less than the total count """
 
-        tree_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        lineage_counts = tree_lineage_counts(tree_file_name)
+        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        lineage_counts = tree_lineage_counts(svg_file_name)
 
         self.assertLess(lineage_counts["red"]["count"], 184)
 
     def test_tree_lineage_counts_should_be_178_for_red(self):
         """ tree_lineage_counts should be 178 for red """
 
-        tree_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        lineage_counts = tree_lineage_counts(tree_file_name)
+        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        lineage_counts = tree_lineage_counts(svg_file_name)
 
         self.assertEqual(lineage_counts["red"]["count"], 178)
 
@@ -138,16 +138,16 @@ class TreeTests(TestCase):
     def test_tree_lineage_counts_should_return_counts_for_no_timepoints(self):
         """ tree_lineage_counts should return counts for colors """
 
-        tree_file_name = "/phylobook/temp/test_without_timepoints.svg"
-        lineage_counts = tree_lineage_counts(tree_file_name)
+        svg_file_name = "/phylobook/temp/test_without_timepoints.svg"
+        lineage_counts = tree_lineage_counts(svg_file_name)
 
         self.assertGreater(lineage_counts["red"]["count"], 0)
 
     def test_tree_lineage_counts_should_be_37_for_red(self):
         """ tree_lineage_counts should be 37 for red """
 
-        tree_file_name = "/phylobook/temp/test_without_timepoints.svg"
-        lineage_counts = tree_lineage_counts(tree_file_name)
+        svg_file_name = "/phylobook/temp/test_without_timepoints.svg"
+        lineage_counts = tree_lineage_counts(svg_file_name)
 
         self.assertEqual(lineage_counts["red"]["count"], 37)
 

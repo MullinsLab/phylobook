@@ -1,6 +1,6 @@
 #!/bin/bash
-./manage.py collectstatic --settings=phylobook.settings.static --noinput
-touch phylobook/wsgi.py
+/phylobook/manage.py collectstatic --settings=phylobook.settings.static --noinput
+touch /phylobook/phylobook/wsgi.py
 
 # Deal with logs (should be done a better way in the future)
 mkdir -p /phylobook/phylobook/logs

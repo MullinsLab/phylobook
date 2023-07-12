@@ -1,7 +1,17 @@
+import logging
+log = logging.getLogger('app')
+
+import io, zipfile
+
+from Bio import SeqIO
+
 from django.db import models
 from django.core.exceptions import ValidationError
 
+
 from treebeard.mp_tree import MP_Node
+
+# from phylobook.projects.utils import svg_file_name, fasta_file_name, tree_lineage_counts
 
 
 class Lineage(models.Model):
@@ -94,8 +104,113 @@ class Tree(models.Model):
         unique_together = ('project', 'name',)
 
     def __str__(self):
-        ''' Returns the name of the tree for print() '''
+        """ Returns the name of the tree for print() """
         return self.name
+    
+    @property
+    def svg_file_name(self) -> str:
+        """ Returns the name of the SVG file for the tree """
+
+        return svg_file_name(project=self.project, tree=self)
+    
+    @property
+    def fasta_file_name(self) -> str:
+        """ Returns the name of the FASTA file for the tree """
+
+        return fasta_file_name(project=self.project, tree=self)
+    
+    def lineage_counts(self) -> dict:
+        """ Return the counts of each lineage in the tree """
+
+        lineages: dict = {}
+
+        lineage_counts: dict = tree_lineage_counts(tree_file=self.svg_file_name)
+
+        lineage_names = self.settings.get("lineages")
+        if lineage_names is None:
+            return None
+        
+        for color in lineage_counts:
+            if color in lineage_names:
+                lineages[lineage_names[color]] = lineage_counts[color]
+                lineages[lineage_names[color]]["color"] = color
+            else:
+                return None
+            
+        return lineages
+    
+    def get_sequence_names(self) -> dict:
+        """ Returns a dictionary of sequences for the tree """
+
+        return tree_sequence_names(self.svg_file_name)
+
+    def get_sequence_names_by_color(self, color: str, all_sequence_names: dict=None) -> list:
+        """ Returns a list of sequences for the given color """
+
+        if not all_sequence_names:
+            all_sequence_names: dict = self.get_sequence_names()
+
+        color_sequence_names: list = [sequence["name"] for sequence in all_sequence_names if sequence["color"] == color]
+
+        return color_sequence_names
+
+    def extract_lineage(self, *, color: str, name: str, sequences: dict=None, all_sequence_names: dict=None) -> list[dict[str: str]]:
+        """ Returns the lineage object for the given color """
+
+        lineage: list[dict[str: str]] = []
+
+        if not all_sequence_names:
+            all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
+        
+        if not sequences:
+            sequences = SeqIO.index(self.fasta_file_name, "fasta")
+
+        sequence_names: list = self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)
+        log.debug(sequence_names)
+
+        for sequence_name in sequence_names:
+            lineage.append({"name": sequence_name, "sequence": sequences.get_raw(sequence_name).decode()})
+
+        return lineage
+    
+    def extract_lineage_to_fasta(self, *, color: str, name: str, sequences: dict=None, all_sequence_names: dict=None) -> str:
+        """ Returns a .fasta file as a string for the given color """
+
+        fasta: str = ""
+
+        if not all_sequence_names:
+            all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
+        
+        if not sequences:
+            sequences = SeqIO.index(self.fasta_file_name, "fasta")
+
+        for seqeuence in self.extract_lineage(color=color, name=name, sequences=sequences, all_sequence_names=all_sequence_names):
+            fasta += seqeuence['sequence']
+
+        return fasta
+    
+    def extract_all_lineages_to_fasta(self) -> dict:
+
+        fastas: dict = {}
+        all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
+        sequences = SeqIO.index(self.fasta_file_name, "fasta")
+
+        lineage_counts = self.lineage_counts()
+        for lineage_name in lineage_counts:
+            color = lineage_counts[lineage_name]["color"]
+            fastas[lineage_name] = self.extract_lineage_to_fasta(color=color, name=lineage_name, sequences=sequences, all_sequence_names=all_sequence_names)
+
+    def extract_all_lineages_to_zip(self) -> bytes:
+        """ Returns a zip file of all the lineages in the tree """
+
+        mem_zip = io.BytesIO()
+        lineages = self.extract_all_lineages_to_fasta()
+        
+        with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zipped_lineages:
+            for lineage_name, lineage in lineages:
+                zipped_lineages.writestr(f"{self.project.name}_{lineage_name}", lineage)
+
+        return mem_zip.getvalue()
     
 
 class TreeLineage(models.Model):
@@ -112,3 +227,7 @@ class TreeLineage(models.Model):
 
         if TreeLineage.objects.filter(tree=self.tree, lineage__color=self.lineage.color).exclude(pk=self.pk).exists():
             raise ValidationError(f"There is already a lineage with this color for this tree: {self.tree}")
+        
+
+# Importing last to avoid circular imports
+from phylobook.projects.utils import svg_file_name, fasta_file_name, tree_lineage_counts, tree_sequence_names
