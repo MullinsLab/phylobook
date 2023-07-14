@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# Reload the environment variables
+source .env
+
+# Restart server and collect static files
 /phylobook/manage.py collectstatic --settings=phylobook.settings.static --noinput
 touch /phylobook/phylobook/wsgi.py
 
