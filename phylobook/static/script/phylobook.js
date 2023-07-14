@@ -60,38 +60,38 @@ $(document).ready(function() {
             // check to see if SVG image exists, so it doesn't get overwritten with 0 bytes
             if ($("#" + id).find(".svgimage").html() && $("#" + id).find(".svgimage").html().length > 0) {
                 $.ajax({
-                type: "POST",
-                headers: { "X-CSRFToken": token },
-                url: '/projects/note/update/' + proj + "/" + id,
-                data: {
-                    "notes": content,
-                    "minval": $("#minval-" + id).val(),
-                    "maxval": $("#maxval-" + id).val(),
-                    "colorlowval": $("#colorlowval-" + id).val(),
-                    "colorhighval": $("#colorhighval-" + id).val(),
-                    "iscolored": $("#iscolored-" + id).val(),
-                },
-                success: function() {
-                    saveTree(id);
+                    type: "POST",
+                    headers: { "X-CSRFToken": token },
+                    url: '/projects/note/update/' + proj + "/" + id,
+                    data: {
+                        "notes": content,
+                        "minval": $("#minval-" + id).val(),
+                        "maxval": $("#maxval-" + id).val(),
+                        "colorlowval": $("#colorlowval-" + id).val(),
+                        "colorhighval": $("#colorhighval-" + id).val(),
+                        "iscolored": $("#iscolored-" + id).val(),
+                    },
+                    success: function() {
+                        saveTree(id);
 
-                    $.ajax({
-                        type: "POST",
-                        headers: { "X-CSRFToken": token },
-                        url: '/projects/svg/update/' + proj + "/" + id,
-                        data: { "svg": svg },
-                        success: function() {
-                            setDirtySaved(edId);
-                            //alert( id + " saved successfully." );
-                        },
-                        error: function (err) {
-                            alert( id + " Failed to save tree!!!  Contact dev team." + err.statusText + "(" + err.status + ")" );
-                        }
-                    });
-                },
-                error: function (err) {
-                    alert( id + " Failed to save notes!!!  Contact dev team." + err.statusText + "(" + err.status + ")" );
-                }
-            });
+                        $.ajax({
+                            type: "POST",
+                            headers: { "X-CSRFToken": token },
+                            url: '/projects/svg/update/' + proj + "/" + id,
+                            data: { "svg": svg },
+                            success: function() {
+                                setDirtySaved(edId);
+                                //alert( id + " saved successfully." );
+                            },
+                            error: function (err) {
+                                alert( id + " Failed to save tree!!!  Contact dev team." + err.statusText + "(" + err.status + ")" );
+                            }
+                        });
+                    },
+                    error: function (err) {
+                        alert( id + " Failed to save notes!!!  Contact dev team." + err.statusText + "(" + err.status + ")" );
+                    }
+                });
             } else {
                 alert(id + " is missing an SVG image.  It will not be saved.");
                 setDirtyUnsaved(ed.id);
@@ -1215,6 +1215,7 @@ class treeLineagesCount {
         let modalTitle = $("#annotations_modal_title");
         let modalBody = $("#annotations_modal_body");
         let modalButton = $("#annotations_modal_button");
+        let totalCount = this.lineageCounts["total"]["count"]
 
         let form = "";
 
@@ -1239,6 +1240,8 @@ class treeLineagesCount {
                     if (count_info["timepoint"]){
                         form += " at timepoint " + count_info["timepoint"];
                     }
+                    
+                    form += " (" + Math.round((count_info["count"]/totalCount)*100) + "%)";
                     form += "</span>";
                 }
                 else if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["timepoints"]){
@@ -1246,12 +1249,14 @@ class treeLineagesCount {
                     let first = true;
 
                     for (let timepoint in this.lineageCounts[color["short"]]["timepoints"]){
+                        let timepointCount = this.lineageCounts[color["short"]]["timepoints"][timepoint]
+
                         if (! first){
                             form += "<br>";
                         }
 
-                        form += this.lineageCounts[color["short"]]["timepoints"][timepoint];
-                        form += " sequence(s) at timepoint " + timepoint;
+                        form += timepointCount + " sequence(s) at timepoint " + timepoint 
+                        form += " (" + Math.round((timepointCount/totalCount)*100) + "%)";
 
                         first = false;
                     };
@@ -1307,7 +1312,7 @@ class treeLineagesCount {
 
         modalTitle.html("Assign lineage names by color for: " + this.svgID);
         if (this.lineageCounts["total"]){
-            modalTitle.append("<br><span class='lineage_subtitle'>" + this.lineageCounts["total"] + " total sequences</span>");
+            modalTitle.append("<br><span class='lineage_subtitle'>" + this.lineageCounts["total"]["count"] + " total sequences</span>");
         }
 
         modalBody.html(form);
