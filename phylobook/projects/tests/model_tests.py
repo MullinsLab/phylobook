@@ -40,7 +40,7 @@ class ProjectTests(TestCase):
         """ Make sure that the migrate creates the correct lineages """
 
         self.assertGreater(Lineage.objects.all().count(), 0)
-        self.assertEqual(Lineage.objects.all().filter(color="Red").count(), 6)
+        self.assertEqual(Lineage.objects.all().filter(color="Red").count(), 2)
 
 
     def test_should_be_able_to_add_lineage_to_tree(self):

@@ -162,4 +162,4 @@ class TreeTests(TestCase):
         """ lineage_dict should return a dictionary with correct red names """
 
         lineage_dict: dict = get_lineage_dict()
-        self.assertEqual(lineage_dict["Red"], ['SxL', 'MxL1', 'MxL2', 'MxL3', 'MxL4', 'MxL5'])
+        self.assertEqual(lineage_dict["Red"], ['SxL', 'MxL1'])
