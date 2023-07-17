@@ -19,11 +19,15 @@ class PhyloTree(object):
         self.file_name = file_name
 
         self.sequences: dict[str: dict[str: ET.Element]] = {}
+        self.lineage_counts: dict[str: dict] = {}
+        self.timepoints: list[int] = []
         self.svg = None
         self.root: ET.Element = None
 
         self.load()
+
         self._prep_sequences()
+        self._prep_tree_lineage_counts()
 
     def load(self, *, file_name: str = None):
         """ Load a new tree """
@@ -67,16 +71,37 @@ class PhyloTree(object):
         color1_object = color_by_short(color1)
         color2_object = color_by_short(color2)
 
-        log.debug(self.sequences)
-
         for sequence in self.sequences.values():
-            log.debug(f"Sequence: {sequence}")
-            log.debug(f"Short: {color1_object['short']}")
-                      
             if sequence["color"] == color1_object["short"]:
                 self.change_lineage(sequence=sequence, color=color2_object["short"])
             elif sequence["color"] == color2_object["short"]:
                 self.change_lineage(sequence=sequence, color=color1_object["short"])
+
+        self._prep_tree_lineage_counts()
+
+    def swap_by_counts(self) -> Union[None, str]:
+        """ Swap lineages that have lower counts than lineages later in the list """
+
+        safety = 0
+        colors: list = []
+
+        while swap := self._need_swaps():
+            self.swap_lineages(swap[0], swap[1])
+            
+            if swap[0] not in colors:
+                colors.append(swap[0])
+            
+            if swap[1] not in colors:
+                colors.append(swap[1])
+
+            safety += 1
+            if safety > 100:
+                return "Safety limit reached"
+            
+        if colors:
+            return f"Lineages have been recolored based on count of sequences at earliest timpeoint ({', '.join([color_by_short(color)['name'] for color in colors])})"
+        
+        return None
 
     def _prep_sequences(self) -> None:
         """ Set up the self.elements dictionarie """
@@ -103,6 +128,74 @@ class PhyloTree(object):
         new_rgb = color_hex_to_rgb_string(hex_value=hex_value)
 
         element.attrib["style"] = re.sub(r"rgb\((.*)\)", new_rgb, style)
+
+    def _prep_tree_lineage_counts(self) -> dict[str: dict]:
+        """ Get the counts of each lineage in the tree 
+        Move this whole thing into the PhyloTree object """
+
+        sequence_list: list[dict[str: str]] = [{"name": sequence, "color": self.sequences[sequence]["color"]} for sequence in self.sequences.keys()]
+        sequences, timepoints = parse_sequences(sequence_list)
+
+        self.timepoints = timepoints
+
+        lineage_counts: dict[str: dict] = {
+            "total": {
+                "count": 0,
+                "timepoints": {},
+            }
+        }
+
+        for sequence in sequences:
+            if timepoints:
+                if sequence["color"] not in lineage_counts:
+                    lineage_counts[sequence["color"]] = {"timepoints": {timepoint: 0 for timepoint in timepoints}, "total": 0}
+
+                if sequence["timepoint"] not in lineage_counts[sequence["color"]]["timepoints"]:
+                    lineage_counts[sequence["color"]]["timepoints"][sequence["timepoint"]] = 0
+
+                lineage_counts[sequence["color"]]["timepoints"][sequence["timepoint"]] += sequence["multiplicity"]
+                lineage_counts[sequence["color"]]["total"] += sequence["multiplicity"]
+                
+                lineage_counts["total"]["count"] += sequence["multiplicity"]
+
+                if sequence["timepoint"] not in lineage_counts["total"]["timepoints"]:
+                    lineage_counts["total"]["timepoints"][sequence["timepoint"]] = 0
+                lineage_counts["total"]["timepoints"][sequence["timepoint"]] += sequence["multiplicity"]
+            
+            else:
+                if sequence["color"] not in lineage_counts:
+                    lineage_counts[sequence["color"]] = {"count": 0}
+
+                lineage_counts[sequence["color"]]["count"] += sequence["multiplicity"]
+                lineage_counts["total"]["count"] += sequence["multiplicity"]
+
+        self.lineage_counts = lineage_counts
+
+    def _need_swaps(self) -> Union[bool, list]:
+        """ Returns tuple of swaps to make or None """
+
+        colors = settings.ANNOTATION_COLORS
+
+        for index1 in range(len(colors)-1):
+            color1 = colors[index1]
+            
+            if not color1["swapable"] or color1["short"] not in self.lineage_counts:
+                continue
+
+            for index2 in range(index1+1, len(colors)-1):
+                color2 = colors[index2]
+
+                if not color2["swapable"] or color2["short"] not in self.lineage_counts:
+                    continue
+                
+                for timepoint in self.timepoints:
+                    log.debug(f"Comparing {color1['short']} and {color2['short']} at {timepoint} ({self.lineage_counts[color1['short']]['timepoints'][timepoint]} vs {self.lineage_counts[color2['short']]['timepoints'][timepoint]}))")
+                    if self.lineage_counts[color1["short"]]["timepoints"][timepoint] < self.lineage_counts[color2["short"]]["timepoints"][timepoint]:
+                        return (color1["short"], color2["short"])
+                    elif self.lineage_counts[color1["short"]]["timepoints"][timepoint] > self.lineage_counts[color2["short"]]["timepoints"][timepoint]:
+                        break
+
+        return False
 
 
 def tree_sequence_names(tree_file: str) -> list[dict[str: str]]:
@@ -161,13 +254,13 @@ def parse_sequences(sequences: list[dict[str: str]]) -> tuple[list[dict[str: str
     return sequences_out, tuple(sorted(timepoints))
 
 
-def tree_lineage_counts(tree_file: str) -> dict[str: dict]:
+def tree_lineage_counts(tree: str) -> dict[str: dict]:
     """ Get all the lineage counts from a specific tree """
 
-    if not tree_file:
+    if not tree:
         return None
     
-    sequences, timepoints = parse_sequences(tree_sequence_names(tree_file))
+    sequences, timepoints = parse_sequences(tree_sequence_names(tree))
 
     lineage_counts: dict[str: dict] = {
         "total": {
@@ -182,11 +275,14 @@ def tree_lineage_counts(tree_file: str) -> dict[str: dict]:
         
         if timepoints:
             if sequence["color"] not in lineage_counts:
-                lineage_counts[sequence["color"]] = {"timepoints": {timepoint: 0 for timepoint in timepoints}}
+                lineage_counts[sequence["color"]] = {"timepoints": {timepoint: 0 for timepoint in timepoints}, "total": 0}
 
             if sequence["timepoint"] not in lineage_counts[sequence["color"]]["timepoints"]:
                 lineage_counts[sequence["color"]]["timepoints"][sequence["timepoint"]] = 0
+
             lineage_counts[sequence["color"]]["timepoints"][sequence["timepoint"]] += sequence["multiplicity"]
+            lineage_counts[sequence["color"]]["total"] += sequence["multiplicity"]
+            
             lineage_counts["total"]["count"] += sequence["multiplicity"]
 
             if sequence["timepoint"] not in lineage_counts["total"]["timepoints"]:

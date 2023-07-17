@@ -214,7 +214,7 @@ class TreeTests(TestCase):
     def test_color_by_short_returns_correct_dict(self):
         """ color_by_short should return the correct dictionary """
 
-        self.assertEqual(utils.color_by_short("red"), {"name": "Red", "short": "red", "value": "FF0000"})
+        self.assertEqual(utils.color_by_short("red"), {'name': 'Red', 'short': 'red', 'swapable': True, 'value': 'FF0000'})
 
 
 class PhyloTreeTests(SimpleTestCase):
@@ -250,6 +250,12 @@ class PhyloTreeTests(SimpleTestCase):
         """ PhyloTree elements TP_2_101_16 should contain a box element """
 
         self.assertIn("box", self.phylotree.sequences["TP_2_101_16"])
+
+    def test_phylobtree_lineage_counts_returns_correct_counts(self):
+        """ PhyloTree lineage counts returns correct counts """
+
+        self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {100: 38, 101: 32, 102: 0, 103: 0, 104: 0}, 'total': 70})
+        self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {100: 0, 101: 7, 102: 10, 103: 8, 104: 1}, 'total': 26})
 
     def test_phylotree_change_lineage_raises_exception_given_bad_sequence_or_color(self):
         """ PhyloTree change lineage raises exception given bad lineage """
@@ -295,6 +301,53 @@ class PhyloTreeTests(SimpleTestCase):
         self.phylotree.swap_lineages("neonblue", "red")
         self.assertEqual(self.phylotree.sequences["TP_2_101_16"]["color"], "neonblue")
 
+        self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {100: 38, 101: 32, 102: 0, 103: 0, 104: 0}, 'total': 70})
+        self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {100: 0, 101: 7, 102: 10, 103: 8, 104: 1}, 'total': 26})
+
         self.phylotree.save(file_name="/phylobook/test_data/with_timepoints_changed.svg")
         self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_changed.svg"), "db1469d992a7a5b25ad88b1857260fac")
         os.remove("/phylobook/test_data/with_timepoints_changed.svg")
+
+    def test_phylotree_should_swap_returns_none_if_no_swap_needed(self):
+        """ PhyloTree should swap returns None if no swap needed """
+
+        self.assertFalse(self.phylotree._need_swaps())
+
+    def test_phylotree_should_swap_return_tuple_of_swaps_if_swap_needed(self):
+        """ PhyloTree should swap return tuple of swaps if swap needed """
+
+        self.phylotree.swap_lineages("neonblue", "red")
+
+        self.assertEqual(self.phylotree._need_swaps(), ("red", "neonblue"))
+
+    def test_phylotree_swap_by_counts_returns_none_if_no_swap_needed(self):
+        """ PhyloTree swap_by_counts returns None if no swap needed """
+
+        self.assertFalse(self.phylotree.swap_by_counts())
+
+    def test_phylotree_swap_by_counts_returns_string_if_swaps_performed(self):
+        """ PhyloTree swap_by_counts returns string if swaps were performed """
+
+        self.phylotree.swap_lineages("neonblue", "red")
+
+        self.assertEqual(self.phylotree.swap_by_counts(), "Lineages have been recolored based on count of sequences at earliest timpeoint (Red, Neon Blue)")
+
+        self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {100: 38, 101: 32, 102: 0, 103: 0, 104: 0}, 'total': 70})
+        self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {100: 0, 101: 7, 102: 10, 103: 8, 104: 1}, 'total': 26})
+
+    def test_phylotree_swap_by_counts_correct_for_misordered(self):
+        """ PhyloTree swap_by_counts correct for misordered """
+
+        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_misordered.svg"), "e99dd0323b06120f30f1eba5c8da19ec")
+        
+        phylotree=utils.PhyloTree(file_name="/phylobook/test_data/with_timepoints_misordered.svg")
+        self.assertEqual(phylotree.swap_by_counts(), "Lineages have been recolored based on count of sequences at earliest timpeoint (Red, Neon Blue, Green, Black, Orange)")
+        self.assertIs(phylotree.swap_by_counts(), None)
+
+        phylotree.save(file_name="/phylobook/test_data/with_timepoints_misordered_changed.svg")
+        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_misordered_changed.svg"), "0ff9e9c38ffd9936834d19532386209e")
+        
+        os.remove("/phylobook/test_data/with_timepoints_misordered_changed.svg")
+
+
+        
