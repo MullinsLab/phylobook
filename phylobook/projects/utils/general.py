@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger('app')
 
-import os, glob
+import os, glob, hashlib
 
 from django.conf import settings
 
@@ -92,3 +92,48 @@ def get_lineage_dict() -> dict[str: list]:
         lineage_dict[lineage.color].append(lineage.lineage_name)
 
     return lineage_dict
+
+
+def color_hex_to_rgb(hex_value: str) -> tuple[int, int, int]:
+    """ Convert a hex color to rgb  """
+
+    if type(hex_value) is not str:
+        raise TypeError("hex must be a string")
+    
+    if hex_value.startswith("#"):
+        hex_value = hex_value.lstrip('#')
+
+    if len(hex_value) != 6:
+        raise ValueError("hex must be a 6 digit hex value")
+
+    hex_value = hex_value.lstrip('#')
+    return tuple(int(hex_value[i:i+2], 16) for i in (0, 2, 4))
+
+def color_hex_to_rgb_string(hex_value: str) -> str:
+    """ Convert a hex color to rgb string """
+
+    rgb: tuple[int, int, int] = color_hex_to_rgb(hex_value=hex_value)
+    return f"rgb({rgb[0]},{rgb[1]},{rgb[2]})"
+
+def file_hash(*, file_name: str) -> str:
+    """ Returns the hash of a file 
+    https://stackoverflow.com/questions/3431825/generating-an-md5-checksum-of-a-file"""
+
+    import hashlib
+
+    hash_md5 = hashlib.md5()
+    with open(file_name, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    
+    return hash_md5.hexdigest()
+
+def color_by_short(color: str) -> dict[str: str]:
+    """ Returns the color dict for a given short color name """
+
+    color_object = [color_object for color_object in settings.ANNOTATION_COLORS if color_object["short"] == color]
+
+    if not len(color_object):
+        raise ValueError(f"Color {color} not found in settings.ANNOTATION_COLORS")
+    
+    return color_object[0]

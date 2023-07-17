@@ -1,15 +1,108 @@
 import logging
 log = logging.getLogger('app')
 
-import os, glob
+import re
+import xml.etree.ElementTree as ET
+from typing import Union
 
 from django.conf import settings
 
-import xml.etree.ElementTree as ET
+from phylobook.projects.utils.general import color_hex_to_rgb_string, color_by_short
 
-from phylobook.projects.models import Tree, Project, Lineage
 
-from phylobook.projects.utils.general import fasta_type, fasta_type_by_file_name, svg_file_name
+class PhyloTree(object):
+    """ Class to do work with a Phylobook tree """
+
+    def __init__(self, *, file_name: str = None):
+        """ Set up the object """
+
+        self.file_name = file_name
+
+        self.sequences: dict[str: dict[str: ET.Element]] = {}
+        self.svg = None
+        self.root: ET.Element = None
+
+        self.load()
+        self._prep_sequences()
+
+    def load(self, *, file_name: str = None):
+        """ Load a new tree """
+
+        if file_name:
+            self.file_name = file_name
+
+        self.svg = ET.parse(self.file_name)
+        self.root = self.svg.getroot()
+
+    def save(self, *, file_name: str = None):
+        """ Save the tree """
+
+        if file_name:
+            self.file_name = file_name
+
+        self.svg.write(self.file_name)
+    
+    def change_lineage(self, *, sequence: Union[str, dict]=None, color: str=None) -> None:
+        """ Change the lineage of a sequence """
+
+        if isinstance(sequence, str):
+            if sequence not in self.sequences:
+                raise ValueError(f"Sequence {sequence} not found in tree")
+            else:
+                sequence_object = self.sequences[sequence]
+        elif type(sequence) is dict:
+            sequence_object = sequence
+        else:
+            raise ValueError(f"Sequence must be a string or a dictionary, not {type(sequence)}")
+
+        color_object = color_by_short(color=color)
+
+        sequence_object["text"].attrib["class"] = f"box{color_object['short']}"
+        self._set_color_in_box(sequence=sequence_object["name"], hex_value=color_object["value"])
+        sequence_object["color"] = color_object["short"]
+
+    def swap_lineages(self, color1: str, color2: str) -> None:
+        """ Swap two lineages """
+
+        color1_object = color_by_short(color1)
+        color2_object = color_by_short(color2)
+
+        log.debug(self.sequences)
+
+        for sequence in self.sequences.values():
+            log.debug(f"Sequence: {sequence}")
+            log.debug(f"Short: {color1_object['short']}")
+                      
+            if sequence["color"] == color1_object["short"]:
+                self.change_lineage(sequence=sequence, color=color2_object["short"])
+            elif sequence["color"] == color2_object["short"]:
+                self.change_lineage(sequence=sequence, color=color1_object["short"])
+
+    def _prep_sequences(self) -> None:
+        """ Set up the self.elements dictionarie """
+
+        for text_element in self.root.iter("{http://www.w3.org/2000/svg}text"):
+            if text_element.attrib.get("class") and text_element.attrib["class"].startswith("box"):
+                if text_element.text not in self.sequences:
+                    self.sequences[text_element.text] = {}
+                self.sequences[text_element.text]["text"] = text_element
+                self.sequences[text_element.text]["color"] = text_element.attrib["class"].replace("box", "")
+                self.sequences[text_element.text]["name"] = text_element.text
+
+        for path_element in self.root.iter("{http://www.w3.org/2000/svg}path"):
+            if path_element.attrib.get("id"):
+                if path_element.attrib["id"] not in self.sequences:
+                    self.sequences[path_element.attrib["id"]] = {}
+                self.sequences[path_element.attrib["id"]]["box"] = path_element 
+
+    def _set_color_in_box(self, *, sequence: str, hex_value: str) -> str:
+        """ Replace the color in a d string """
+
+        element: ET.Element = self.sequences[sequence]["box"]
+        style = element.attrib["style"]
+        new_rgb = color_hex_to_rgb_string(hex_value=hex_value)
+
+        element.attrib["style"] = re.sub(r"rgb\((.*)\)", new_rgb, style)
 
 
 def tree_sequence_names(tree_file: str) -> list[dict[str: str]]:

@@ -1,9 +1,11 @@
 import logging
 log = logging.getLogger('test')
 
-from django.test import TestCase
+import os
 
-from phylobook.projects.utils import tree_sequence_names, tree_lineage_counts, parse_sequence_name, get_lineage_dict
+from django.test import TestCase, SimpleTestCase
+
+from phylobook.projects import utils 
 
 
 class TreeTests(TestCase):
@@ -14,19 +16,19 @@ class TreeTests(TestCase):
     def test_tree_sequences_should_return_none_given_none(self):
         """ tree_det_sequence_names should return None when given None """
 
-        self.assertIs(tree_sequence_names(None), None)
+        self.assertIs(utils.tree_sequence_names(None), None)
 
     def test_tree_sequences_should_raise_exception_given_nonexistent_file(self):
         """ tree_det_sequence_names should raise an exception when given a nonexistent file """
 
         with self.assertRaises(FileNotFoundError):
-            tree_lineage_counts("bad_name")
+            utils.tree_lineage_counts("bad_name")
 
     def test_tree_sequences_should_return_list_of_dicts(self):
         """ tree_det_sequence_names should return a list """
 
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        sequences = tree_sequence_names(svg_file_name)
+        sequences = utils.tree_sequence_names(svg_file_name)
 
         self.assertIsInstance(sequences, list)
         self.assertIsInstance(sequences[0], dict)
@@ -35,13 +37,13 @@ class TreeTests(TestCase):
         """ tree_get_sequences should not return an empty list """
     
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        self.assertGreater(len(tree_sequence_names(svg_file_name)), 0)
+        self.assertGreater(len(utils.tree_sequence_names(svg_file_name)), 0)
     
     def test_tree_sequences_should_contain_particular_sequenc(self):
         """ tree_get_sequences should contain a particular sequence """
     
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        sequences = tree_sequence_names(svg_file_name)
+        sequences = utils.tree_sequence_names(svg_file_name)
         my_sequence = [sequence for sequence in sequences if sequence["name"] == "V703_0132_200_GP_NT_70_1"][0]
 
         self.assertTrue(my_sequence)
@@ -52,31 +54,31 @@ class TreeTests(TestCase):
     def test_parse_sequences_should_return_dict(self):
         """ parse_sequences should return a dict """
 
-        sequence = parse_sequence_name("V703_0132_200_GP_NT_70_1")
+        sequence = utils.parse_sequence_name("V703_0132_200_GP_NT_70_1")
         self.assertIsInstance(sequence, dict)
 
     def test_parse_sequences_should_not_return_none_when_given_none(self):
         """ parse_sequences should not return None when given None """
 
-        sequence = parse_sequence_name(None)
+        sequence = utils.parse_sequence_name(None)
         self.assertIs(sequence, None)
 
     def test_parse_sequences_should_return_correct_dict(self):
         """ parse_sequences should return a dict with the correct values """
 
-        sequence = parse_sequence_name("V703_0132_200_GP_NT_70_1")
+        sequence = utils.parse_sequence_name("V703_0132_200_GP_NT_70_1")
         self.assertEqual(sequence, {"timepoint": 200, "multiplicity": 1})
 
     def test_parse_sequences_should_return_none_with_no_multpilicity(self):
         """ parse_sequences should return None with a noncompliant name """
 
-        sequence = parse_sequence_name("V703_0132_200_GP_NT_70_1_test")
+        sequence = utils.parse_sequence_name("V703_0132_200_GP_NT_70_1_test")
         self.assertIs(sequence, None)
 
     def test_parse_sequences_should_return_value_with_no_timepoint(self):
         """ parse_sequences should return a dict with a no timepoint """
 
-        sequence = parse_sequence_name("V703_0132_test_GP_NT_70_1")
+        sequence = utils.parse_sequence_name("V703_0132_test_GP_NT_70_1")
 
         self.assertEquals(sequence["multiplicity"], 1)
         self.assertIs(sequence["timepoint"], None)
@@ -88,7 +90,7 @@ class TreeTests(TestCase):
         """ tree_lineage_counts should return a dict """
 
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        lineage_counts = tree_lineage_counts(svg_file_name)
+        lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
         self.assertIsInstance(lineage_counts, dict)
 
@@ -96,24 +98,24 @@ class TreeTests(TestCase):
         """ tree_lineage_counts should not return an empty list """
 
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        self.assertGreater(len(tree_lineage_counts(svg_file_name)), 0)
+        self.assertGreater(len(utils.tree_lineage_counts(svg_file_name)), 0)
 
     def test_tree_lineage_counts_should_return_none_given_none(self):
         """ tree_lineage_counts should return None when given None """
 
-        self.assertIs(tree_lineage_counts(None), None)
+        self.assertIs(utils.tree_lineage_counts(None), None)
 
     def test_tree_lineage_counts_should_raise_error_given_bad_file_name(self):
         """ tree_lineage_counts should raise an error when given a bad file name """
 
         with self.assertRaises(FileNotFoundError):
-            tree_lineage_counts("bad_name")
+            utils.tree_lineage_counts("bad_name")
 
     def test_tree_lineage_counts_should_return_counts_for_colors(self):
         """ tree_lineage_counts should return counts for colors """
 
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        lineage_counts = tree_lineage_counts(svg_file_name)
+        lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
         self.assertGreater(lineage_counts["red"]["timepoints"][200], 0)
     
@@ -121,7 +123,7 @@ class TreeTests(TestCase):
         """ tree_lineage_counts should be less than the total count """
 
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        lineage_counts = tree_lineage_counts(svg_file_name)
+        lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
         self.assertLess(lineage_counts["red"]["timepoints"][200], 184)
 
@@ -129,7 +131,7 @@ class TreeTests(TestCase):
         """ tree_lineage_counts should be 178 for red """
 
         svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
-        lineage_counts = tree_lineage_counts(svg_file_name)
+        lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
         self.assertEqual(lineage_counts["red"]["timepoints"][200], 178)
 
@@ -139,7 +141,7 @@ class TreeTests(TestCase):
         """ tree_lineage_counts should return counts for colors """
 
         svg_file_name = "/phylobook/temp/test_without_timepoints.svg"
-        lineage_counts = tree_lineage_counts(svg_file_name)
+        lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
         self.assertGreater(lineage_counts["red"]["count"], 0)
 
@@ -147,7 +149,7 @@ class TreeTests(TestCase):
         """ tree_lineage_counts should be 37 for red """
 
         svg_file_name = "/phylobook/temp/test_without_timepoints.svg"
-        lineage_counts = tree_lineage_counts(svg_file_name)
+        lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
         self.assertEqual(lineage_counts["red"]["count"], 37)
 
@@ -156,10 +158,143 @@ class TreeTests(TestCase):
     def test_lineage_dict_should_return_dictionary(self):
         """ lineage_dict should return a dictionary """
 
-        self.assertIsInstance(get_lineage_dict(), dict)
+        self.assertIsInstance(utils.get_lineage_dict(), dict)
 
     def test_lineage_dict_should_return_red_names_correctly(self):
         """ lineage_dict should return a dictionary with correct red names """
 
-        lineage_dict: dict = get_lineage_dict()
+        lineage_dict: dict = utils.get_lineage_dict()
         self.assertEqual(lineage_dict["Red"], ['SxL', 'MxL1'])
+
+    # Tests for general functions
+
+    def test_color_hex_to_rbg_should_return_tuple(self):
+        """ color_hex_to_rgb should return a tuple """
+
+        self.assertIsInstance(utils.color_hex_to_rgb("#00CB85"), tuple)
+
+    def test_color_hex_to_rgp_should_throw_error_given_bad_hex(self):
+        """ color_hex_to_rgb should throw an error given a bad hex """
+
+        with self.assertRaises(ValueError):
+            utils.color_hex_to_rgb("bad_hex")
+
+        with self.assertRaises(TypeError):
+            utils.color_hex_to_rgb(None)
+
+        with self.assertRaises(ValueError):
+            utils.color_hex_to_rgb("a")
+
+        with self.assertRaises(ValueError):
+            utils.color_hex_to_rgb("aaaaaaaaaaaaaaa")
+
+    def test_color_hex_to_rgb_should_return_correct_tuple(self):
+        """ color_hex_to_rgb should return the correct tuple """
+
+        self.assertEqual(utils.color_hex_to_rgb("#00CB85"), (0, 203, 133))
+        self.assertEqual(utils.color_hex_to_rgb("00CB85"), (0, 203, 133))
+        self.assertEqual(utils.color_hex_to_rgb("#537EFF"), (83, 126, 255))
+        self.assertEqual(utils.color_hex_to_rgb("537EFF"), (83, 126, 255))
+
+    # Test for file hash
+
+    def test_file_hash_should_return_correct_hash(self):
+        """ file_hash should return the correct hash """
+
+        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints.svg"), "e63b2204c92284a1eb7e4ccd385265cf")
+
+    # Test for color_by_short
+
+    def test_color_by_short_should_raise_errror_with_bad_color(self):
+        """ color_by_short should raise an error with a bad color """
+
+        with self.assertRaises(ValueError):
+            utils.color_by_short("bad_color")
+
+    def test_color_by_short_returns_correct_dict(self):
+        """ color_by_short should return the correct dictionary """
+
+        self.assertEqual(utils.color_by_short("red"), {"name": "Red", "short": "red", "value": "FF0000"})
+
+
+class PhyloTreeTests(SimpleTestCase):
+    """ Tests for the PhyloTree class"""
+
+    @classmethod
+    def setUp(self):
+        """ Set up whatever objects are going to be needed for all tests """
+
+        self.phylotree = utils.PhyloTree(file_name="/phylobook/test_data/with_timepoints.svg")
+
+    def test_phylotree_should_instantiate(self):
+        """ PhyloTree should instantiate """
+
+        self.assertIsInstance(self.phylotree, utils.PhyloTree)
+
+    def test_phylotree_should_have_a_non_empty_elements_dict(self):
+        """ PhyloTree should have a non-empty elements dict """
+
+        self.assertGreater(len(self.phylotree.sequences), 0)
+
+    def test_phylotree_elememts_should_contain_TP_2_101_16(self):
+        """ PhyloTree elements should contain TP_2_101_16 """
+
+        self.assertIn("TP_2_101_16", self.phylotree.sequences)
+
+    def test_phylotree_elements_TP_2_101_16_should_contain_text_element(self):
+        """ PhyloTree elements TP_2_101_16 should contain a text element """
+
+        self.assertIn("text", self.phylotree.sequences["TP_2_101_16"])
+
+    def test_phylotree_elements_TP_2_101_16_should_contain_box_element(self):
+        """ PhyloTree elements TP_2_101_16 should contain a box element """
+
+        self.assertIn("box", self.phylotree.sequences["TP_2_101_16"])
+
+    def test_phylotree_change_lineage_raises_exception_given_bad_sequence_or_color(self):
+        """ PhyloTree change lineage raises exception given bad lineage """
+
+        with self.assertRaises(ValueError):
+            self.phylotree.change_lineage(sequence="TP_2_101_16_bad", color="neonblue")
+
+        with self.assertRaises(ValueError):
+            self.phylotree.change_lineage(sequence="TP_2_101_16", color="bad_color")
+
+    def test_phylotree_change_lineage_doesnt_raise_exception_given_good_sequence_and_color(self):
+        """ PhyloTree change lineage doesn't raise exception given good lineage """
+
+        try:
+            self.phylotree.change_lineage(sequence="TP_2_101_16", color="neonblue")
+        except ValueError:
+            self.fail("PhyloTree change lineage raised exception given good lineage")
+
+    def test_phylotree_change_lineage_changes_color(self):
+        """ PhyloTree change lineage changes color """
+
+        self.phylotree.change_lineage(sequence="TP_2_101_16", color="neonblue")
+        self.assertEqual(self.phylotree.sequences["TP_2_101_16"]["text"].attrib["class"], "boxneonblue")
+        self.assertEqual(self.phylotree.sequences["TP_2_101_16"]["box"].attrib["style"], "stroke-width: 1; stroke: rgb(83,126,255); fill: none;")
+        self.assertEqual(self.phylotree.sequences["TP_2_101_16"]["color"], "neonblue")
+
+        self.phylotree.save(file_name="/phylobook/test_data/with_timepoints_changed.svg")
+        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_changed.svg"), "73925a63ef757fc1a02f195716c9fdd8")
+        os.remove("/phylobook/test_data/with_timepoints_changed.svg")
+    
+    def test_phylotree_swap_lineages_raises_exception_given_bad_color(self):
+        """ PhyloTree swap lineages raises exception given bad color """
+
+        with self.assertRaises(ValueError):
+            self.phylotree.swap_lineages("neonblue", "bad_color")
+
+        with self.assertRaises(ValueError):
+            self.phylotree.swap_lineages("bad_color", "red")
+
+    def test_phylotree_swap_lineages_changes_TP_2_101_16(self):
+        """ PhyloTree swap lineages changes TP_2_101_16 """
+
+        self.phylotree.swap_lineages("neonblue", "red")
+        self.assertEqual(self.phylotree.sequences["TP_2_101_16"]["color"], "neonblue")
+
+        self.phylotree.save(file_name="/phylobook/test_data/with_timepoints_changed.svg")
+        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_changed.svg"), "db1469d992a7a5b25ad88b1857260fac")
+        os.remove("/phylobook/test_data/with_timepoints_changed.svg")
