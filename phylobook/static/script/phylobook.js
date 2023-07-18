@@ -289,7 +289,9 @@ function setDirtySaved(edId) {
     $("#" + savebtnId).addClass("disabled");
     $("#" + edId).closest(".tree").removeClass("editedhighlight");
 
-    treeLineagesCounts[edId.replace("notes-", "")].reloadLineageCounts();
+    treeLineagesCounts[edId.replace("notes-", "")].enableSetLineagesButtons();
+
+    // treeLineagesCounts[edId.replace("notes-", "")].reloadLineageCounts();
 }
 
 window.addEventListener('beforeunload', function (e) {
@@ -1160,23 +1162,28 @@ class treeLineagesCount {
         // args: svgID = the ID of the svg
         this.svgID = args.svgID;
 
-        this.getLineageCounts();
+        // this.getLineageCounts();
 
         // Register with treeLineagesCounts so this object can always be found
         treeLineagesCounts[this.svgID] = this;
     }
 
-    getLineageCounts(data){
-        // Get the lineage counts from the server.  Calls itself on success
+    getLineageCounts(args){
+        // Get the lineage counts from the server.
 
-        if (! data){
-            getLineageCounts({tree: this.svgID, func: jQuery.proxy(this.getLineageCounts, this)});
-            return;
-        };
+        let async = true;
+        if (args && args.async === false){
+            async = false;
+        }
 
+        getLineageCounts({tree: this.svgID, func: jQuery.proxy(this.receiveLineageCounts, this), async: async});
+    }
+
+    receiveLineageCounts(data){
+        // Receive the lineage counts from the server.
         this.lineageCounts = data;
         this.enableSetLineagesButtons();
-    }
+    };
 
     reloadLineageCounts(){
         // Reload the lineage counts from the server
@@ -1215,15 +1222,51 @@ class treeLineagesCount {
         let modalTitle = $("#annotations_modal_title");
         let modalBody = $("#annotations_modal_body");
         let modalButton = $("#annotations_modal_button");
-        let totalCount = this.lineageCounts["total"]["count"]
+        let continue_flag = false;
+        if (args && args.continue){
+            continue_flag = true;
+        }
 
         let form = "";
 
+        // Get lineage counts using synchronus ajax
+
+        if (! continue_flag){
+            this.getLineageCounts({async: false});
+        }
+        
+        let totalCount = this.lineageCounts["total"]["count"]
+
         if ("error" in this.lineageCounts) {
             form = this.lineageCounts["error"];
+
+            modalButton.html("Assign lineage names");
+            modalButton.prop("disabled", true);
+            modalButton.addClass("disabled");
+        }
+        else if (this.lineageCounts["swap_message"] && ! continue_flag){
+            form = this.lineageCounts["swap_message"];
+
+            modalButton.html("Continue");
+            modalButton.prop("disabled", false);
+            modalButton.removeClass("disabled");
+
+            let new_args = {continue: true};
+            if (args && args.download){
+                new_args["download"] = true;
+            };
+
+            let caller = this;
+            modalButton.off().on("click", function() {
+                caller.showModalForm(new_args);
+            });
         }
         else
         {
+            if (continue_flag) {
+                loadSVG(this.svgID);
+            }
+
             form += "<table class='table'><thead><tr><th scope='col'>Color</th><th scope='col'>Lineage Name</th></tr><tbody>"
 
             for (let color_index in annotationColors ){
@@ -1308,6 +1351,28 @@ class treeLineagesCount {
             };
 
             form += "</tbody></table>";
+
+            if (args && args.download){
+                modalButton.html("Download lineages");
+                modalButton.prop("disabled", false);
+                modalButton.removeClass("disabled");
+            }
+            else {
+                modalButton.html("Assign lineage names");
+                modalButton.prop("disabled", false);
+                modalButton.removeClass("disabled");
+            }
+
+            let caller = this;
+            let download = false;
+
+            if (args && "download" in args){
+                download = args["download"];
+            }
+
+            modalButton.off().on("click", function() {
+                caller.saveLineageNames({download: download});
+            });
         };
 
         modalTitle.html("Assign lineage names by color for: " + this.svgID);
@@ -1316,38 +1381,22 @@ class treeLineagesCount {
         }
 
         modalBody.html(form);
-
-        if ("error" in this.lineageCounts) {
-            modalButton.html("Assign lineage names");
-            modalButton.prop("disabled", true);
-            modalButton.addClass("disabled");
-        }
-        else if (args && args.download){
-            modalButton.html("Download lineages");
-            modalButton.prop("disabled", false);
-            modalButton.removeClass("disabled");
-        }
-        else {
-            modalButton.html("Assign lineage names");
-            modalButton.prop("disabled", false);
-            modalButton.removeClass("disabled");
-        }
         
-        let caller = this;
-        let download = false;
+        // let caller = this;
+        // let download = false;
 
-        if (args && "download" in args){
-            download = args["download"];
-        }
+        // if (args && "download" in args){
+        //     download = args["download"];
+        // }
 
-        modalButton.off().on("click", function() {
-            caller.saveLineageNames({download: download});
-        });
+        // modalButton.off().on("click", function() {
+        //     caller.saveLineageNames({download: download});
+        // });
 
         $("[id^=lineage___]").selectpicker();
-        
+
         modal.modal("show");
-    }
+    };
 
     saveLineageNames(args){
         // Get the fields from the form and save it to the db
@@ -1521,6 +1570,12 @@ function getLineageCounts(args){
     // Get lineage counts for a particular tree
     // Args: tree = ID of the tree to load settings for
     //       func = function to call on success
+
+    let async = true;
+    if (args && args.async === false) {
+        async = false;
+    };
+
     $.ajax({
         type: "GET",
         headers: { "X-CSRFToken": token },
@@ -1528,6 +1583,7 @@ function getLineageCounts(args){
         data: JSON.stringify(args.settings),
         dataType: 'json',
         success: args.func,
+        async: async,
         error: function (err) {
             // alert( args.tree + " Failed to load lineage counts!!!  Contact dev team." );
             console.log("Failed to load lineage counts: Tree: " + args.tree)
@@ -1540,6 +1596,61 @@ function setLineagesByColor(id) {
     treeLineagesCounts[id].showModalForm();
 };
 
+
 function downloadLineagesByColor(id) {
     treeLineagesCounts[id].showModalForm({download: true});
+};
+
+
+function loadSVG(id){
+    // Load the SVG for the tree
+    $('#' + id).find(".svgimage").load(projectName + "/" + id, function() {
+        // Set up the sequenceAnnotator and the treeLineagesCount after the svg loads
+        // console.log("Loaded SVG for " + id);
+        
+        d3.select($("#" + id).find("svg")[0])
+            .call(d3.drag()
+                .on("start", function (event, d) {
+                    //console.log('start', "x=" + event.x, "y=" + event.y);
+                    var xScale = this.width.baseVal.value/this.clientWidth;
+                    var yScale = this.height.baseVal.value/this.clientHeight;
+                    var datum = {x: event.x * xScale, y: event.y * yScale};
+                    rect = d3.select(this).append("rect")
+                        .datum(datum)
+                        .attr("x", event.x * xScale)
+                        .attr("y", event.y * yScale)
+                        .attr("height", 0)
+                        .attr("width", 0)
+                        .attr("class", "selectrect");
+                    return false;
+                    })
+                .on("drag", function (event, d) {
+                    var xScale = this.width.baseVal.value/this.clientWidth;
+                    var yScale = this.height.baseVal.value/this.clientHeight;
+                    var x = rect.datum().x;
+                    var y = rect.datum().y;
+                    var newx = event.x * xScale;
+                    var newy = event.y * yScale;
+                    var startx = Math.min(x, newx);
+                    var starty = Math.min(y, newy);
+                    var width = Math.abs(x - newx);
+                    var height = Math.abs(y - newy);
+                    rect.attr("x", startx)
+                        .attr("y", starty)
+                        .attr("width", width)
+                        .attr("height", height);
+
+                    //console.log('drag', "x=" + x, "y=" + y, "newx=" + newx, "newy=" + newy, "startx=" + startx, "starty=" + starty, "width=" + width, "height=" + height);
+                    })
+                .on("end",  function (event, d) {
+                    var selectedTexts = getMultiSelectedTexts(this, rect);
+                    d3.selectAll(".selectrect").remove();
+                    if (selectedTexts.length > 0) {
+                        currentSVG = this;
+                        showMultiSelectContextMenu(event.sourceEvent.clientX, event.sourceEvent.clientY);
+                    }
+                    //console.log('end drag');
+                    })
+            );
+    });
 };

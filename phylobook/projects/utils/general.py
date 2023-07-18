@@ -109,11 +109,13 @@ def color_hex_to_rgb(hex_value: str) -> tuple[int, int, int]:
     hex_value = hex_value.lstrip('#')
     return tuple(int(hex_value[i:i+2], 16) for i in (0, 2, 4))
 
+
 def color_hex_to_rgb_string(hex_value: str) -> str:
     """ Convert a hex color to rgb string """
 
     rgb: tuple[int, int, int] = color_hex_to_rgb(hex_value=hex_value)
     return f"rgb({rgb[0]},{rgb[1]},{rgb[2]})"
+
 
 def file_hash(*, file_name: str) -> str:
     """ Returns the hash of a file 
@@ -128,6 +130,7 @@ def file_hash(*, file_name: str) -> str:
     
     return hash_md5.hexdigest()
 
+
 def color_by_short(color: str) -> dict[str: str]:
     """ Returns the color dict for a given short color name """
 
@@ -137,3 +140,13 @@ def color_by_short(color: str) -> dict[str: str]:
         raise ValueError(f"Color {color} not found in settings.ANNOTATION_COLORS")
     
     return color_object[0]
+
+
+def remove_string_from_file(file_name: str, string: str) -> None:
+    """ Removes a string from a file and resaves it """
+
+    with open(file_name, "r") as file:
+        data = file.read().replace(string, "")
+
+    with open(file_name, "w") as file:
+        file.write(data)

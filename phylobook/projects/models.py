@@ -4,6 +4,7 @@ log = logging.getLogger('app')
 import io, zipfile
 
 from Bio import SeqIO
+from typing import Union
 
 from django.db import models
 from django.core.exceptions import ValidationError
@@ -43,6 +44,14 @@ class Project(models.Model):
             list.append({self.name: {'depth': depth+1, 'is_project': True}})
 
         return list
+    
+    def extract_all_trees_to_zip(self) -> io.BytesIO:
+        """ Extract all the trees belonging to this project to a zip file """
+
+        trees = self.trees.all()
+
+        for tree in trees:
+            tree.extract_all_lineages_to_fasta()
 
 
 class ProjectCategory(MP_Node):
@@ -99,13 +108,15 @@ class Tree(models.Model):
     settings = models.JSONField(null=True, blank=True)
     type = models.CharField(max_length=256, choices=TYPE_CHOICES, null=True, blank=True)
     lineages = models.ManyToManyField(Lineage, blank=True, through="TreeLineage", related_name="trees")
-    
+
     class Meta:
         unique_together = ('project', 'name',)
 
     def __str__(self):
         """ Returns the name of the tree for print() """
         return self.name
+    
+    phylotree = None
     
     @property
     def svg_file_name(self) -> str:
@@ -119,12 +130,18 @@ class Tree(models.Model):
 
         return fasta_file_name(project=self.project, tree=self)
     
+    @property
+    def ready_to_extract(self) -> bool:
+        """ Returns true if the tree is ready to extract lineages from """
+
+        pass
+
     def lineage_counts(self) -> dict:
         """ Return the counts of each lineage in the tree """
 
         lineages: dict = {}
 
-        lineage_counts: dict = tree_lineage_counts(tree_file=self.svg_file_name)
+        lineage_counts: dict = tree_lineage_counts(tree=self.svg_file_name)
 
         lineage_names = self.settings.get("lineages")
         if lineage_names is None:
@@ -216,7 +233,28 @@ class Tree(models.Model):
 
         return mem_zip.getvalue()
     
+    def load_file(self) -> None:
+        """ Loads the file for the tree """
 
+        if self.phylotree:
+            self.phylotree.load_file()
+        else:
+            self.phylotree = PhyloTree(file_name=self.svg_file_name)
+
+    def swap_by_counts(self) -> Union[None, str]:
+        """ Swap lineages that have lower counts than lineages later in the list """
+
+        if not self.phylotree:
+            self.phylotree.load_file()
+        
+        return self.phylotree.swap_by_counts()
+
+    def save_file(self) -> None:
+        """ Saves the file for the tree """
+
+        if self.phylotree:
+            self.phylotree.save()
+    
 class TreeLineage(models.Model):
     """ Holds the relation between a tree and a lineage """
 
@@ -234,4 +272,4 @@ class TreeLineage(models.Model):
         
 
 # Importing last to avoid circular imports
-from phylobook.projects.utils import svg_file_name, fasta_file_name, tree_lineage_counts, tree_sequence_names
+from phylobook.projects.utils import svg_file_name, fasta_file_name, tree_lineage_counts, tree_sequence_names, PhyloTree

@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger('app')
 
-import os, tarfile, time, json, glob
+import os, tarfile, time, json, glob, time
 from io import StringIO
 from datetime import datetime
 
@@ -16,7 +16,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import View
 
 from phylobook.projects.models import Project, ProjectCategory, Tree
-from phylobook.projects.utils import fasta_type, tree_lineage_counts, svg_file_name, get_lineage_dict
+from phylobook.projects.utils import fasta_type, tree_lineage_counts, svg_file_name, get_lineage_dict, PhyloTree
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -40,6 +40,7 @@ def displayProject(request, name):
         for file in sorted(os.listdir(projectPath)):
             if file.endswith("_highlighter.png"):
                 uniquesvg = file[0:file.index("_highlighter.png")]
+
                 for svg in os.listdir(projectPath):
                     if svg.endswith(".svg"):
                         if uniquesvg in svg:
@@ -124,9 +125,11 @@ def getFile(request, name, file):
             if file.endswith(".svg"):
                 with open(filePath, "rt") as f:
                     return HttpResponse(f.read(), content_type="image/svg+xml")
+                
             elif file.endswith(".png"):
                 with open(filePath, "rb") as f:
                     return HttpResponse(f.read(), content_type="image/png")
+                
             elif ".cluster" in file:
                 with open(filePath, "rt") as f:
                     lines = f.readlines()
@@ -135,8 +138,16 @@ def getFile(request, name, file):
                         line = cleanClusterRow(line)
                         cleaned = cleaned + line
                     return HttpResponse(cleaned, content_type="text/csv")
+                
+            else:
+                tree = project.trees.get(name=file)
+                filePath = tree.svg_file_name
+                
+                with open(filePath, "rt") as f:
+                    return HttpResponse(f.read(), content_type="image/svg+xml")
+                
         except IOError:
-            log.warn(f"Error: File not found: {file}")
+            log.warn(f"Error: File not found: {filePath}")
             return HttpResponseNotFound("File not found!")
     else:
         log.warn(f"Error: File not found: {file}")
@@ -259,7 +270,6 @@ def downloadOrderedFasta(request, name, file):
 
 
 def buildOrderedFastaFile(name, file):
-    log.debug("buildOrderedFastaFile: " + name + " " + file)
     highlighterFastaFile = glob.glob(os.path.join(PROJECT_PATH, name, file + "*_highlighter.fasta"))
     orderedFasta = ""
     # check to see if ordered highlighter provided fasta is available
@@ -273,7 +283,6 @@ def buildOrderedFastaFile(name, file):
     if len(fastaFile) > 0 and len(highlighterDataFile) > 0:
         recordDict = SeqIO.index(fastaFile[0], "fasta")
         highlighterData = open(highlighterDataFile[0], 'r')
-        # log.debug(highlighterData)
 
         while True:
             record = readNextHighlighterRecord(highlighterData)
@@ -288,8 +297,6 @@ def buildOrderedFastaFile(name, file):
 
 
 def readNextHighlighterRecord(highlighterData):
-    # log.debug("readNextHighlighterRecord")
-
     seqName = highlighterData.readline()
     if seqName is None or seqName == '':
         return None;
@@ -409,8 +416,11 @@ class TreeLineages(LoginRequiredMixin, View):
         if not tree.fasta_file_name:
             return JsonResponse({"error": "This tree does not have an associate .fasta file.  Extractions can not be performed on it."})
 
-        tree_file: str = svg_file_name(project=project, tree=tree)
-        
+        tree.load_file()
+        if swap_message := tree.swap_by_counts():
+            tree.save_file()
+
+        tree_file: str = tree.svg_file_name #svg_file_name(project=project, tree=tree)
         tree_lineage: dict = tree_lineage_counts(tree_file)
         
         if not tree.settings:
@@ -423,6 +433,9 @@ class TreeLineages(LoginRequiredMixin, View):
 
         for color in [color for color in tree_settings_lineages if color not in tree_lineage]:
             tree_lineage[color] = {"name": tree_settings_lineages[color]}
+
+        if swap_message:
+            tree_lineage["swap_message"] = swap_message
 
         return JsonResponse(tree_lineage)
     

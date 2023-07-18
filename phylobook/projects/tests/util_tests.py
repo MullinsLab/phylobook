@@ -283,7 +283,7 @@ class PhyloTreeTests(SimpleTestCase):
         self.assertEqual(self.phylotree.sequences["TP_2_101_16"]["color"], "neonblue")
 
         self.phylotree.save(file_name="/phylobook/test_data/with_timepoints_changed.svg")
-        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_changed.svg"), "73925a63ef757fc1a02f195716c9fdd8")
+        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_changed.svg"), "ea9bb2da5eaaf4ff4292a7bcfeda7681")
         os.remove("/phylobook/test_data/with_timepoints_changed.svg")
     
     def test_phylotree_swap_lineages_raises_exception_given_bad_color(self):
@@ -305,7 +305,7 @@ class PhyloTreeTests(SimpleTestCase):
         self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {100: 0, 101: 7, 102: 10, 103: 8, 104: 1}, 'total': 26})
 
         self.phylotree.save(file_name="/phylobook/test_data/with_timepoints_changed.svg")
-        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_changed.svg"), "db1469d992a7a5b25ad88b1857260fac")
+        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_changed.svg"), "3a1b67a4bf3c88cdf6bd34e96dad2f4f")
         os.remove("/phylobook/test_data/with_timepoints_changed.svg")
 
     def test_phylotree_should_swap_returns_none_if_no_swap_needed(self):
@@ -330,7 +330,7 @@ class PhyloTreeTests(SimpleTestCase):
 
         self.phylotree.swap_lineages("neonblue", "red")
 
-        self.assertEqual(self.phylotree.swap_by_counts(), "Lineages have been recolored based on count of sequences at earliest timpeoint (Red, Neon Blue)")
+        self.assertEqual(self.phylotree.swap_by_counts(), "Lineages have been recolored based on count of sequences at earliest timepoint (Red, Neon Blue)")
 
         self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {100: 38, 101: 32, 102: 0, 103: 0, 104: 0}, 'total': 70})
         self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {100: 0, 101: 7, 102: 10, 103: 8, 104: 1}, 'total': 26})
@@ -341,11 +341,11 @@ class PhyloTreeTests(SimpleTestCase):
         self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_misordered.svg"), "e99dd0323b06120f30f1eba5c8da19ec")
         
         phylotree=utils.PhyloTree(file_name="/phylobook/test_data/with_timepoints_misordered.svg")
-        self.assertEqual(phylotree.swap_by_counts(), "Lineages have been recolored based on count of sequences at earliest timpeoint (Red, Neon Blue, Green, Black, Orange)")
+        self.assertEqual(phylotree.swap_by_counts(), "Lineages have been recolored based on count of sequences at earliest timepoint (Red, Neon Blue, Green, Black, Orange)")
         self.assertIs(phylotree.swap_by_counts(), None)
 
         phylotree.save(file_name="/phylobook/test_data/with_timepoints_misordered_changed.svg")
-        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_misordered_changed.svg"), "0ff9e9c38ffd9936834d19532386209e")
+        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_misordered_changed.svg"), "e777e820d09d90611ad2528de13c4a52")
         
         os.remove("/phylobook/test_data/with_timepoints_misordered_changed.svg")
 

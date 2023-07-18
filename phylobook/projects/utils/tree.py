@@ -7,7 +7,7 @@ from typing import Union
 
 from django.conf import settings
 
-from phylobook.projects.utils.general import color_hex_to_rgb_string, color_by_short
+from phylobook.projects.utils.general import color_hex_to_rgb_string, color_by_short, remove_string_from_file
 
 
 class PhyloTree(object):
@@ -44,7 +44,9 @@ class PhyloTree(object):
         if file_name:
             self.file_name = file_name
 
+        ET.register_namespace("", "http://www.w3.org/2000/svg")
         self.svg.write(self.file_name)
+        # remove_string_from_file(file_name=self.file_name, string="ns0:")
     
     def change_lineage(self, *, sequence: Union[str, dict]=None, color: str=None) -> None:
         """ Change the lineage of a sequence """
@@ -99,7 +101,7 @@ class PhyloTree(object):
                 return "Safety limit reached"
             
         if colors:
-            return f"Lineages have been recolored based on count of sequences at earliest timpeoint ({', '.join([color_by_short(color)['name'] for color in colors])})"
+            return f"Lineages have been recolored based on count of sequences at earliest timepoint ({', '.join([color_by_short(color)['name'] for color in colors])})"
         
         return None
 
@@ -189,7 +191,6 @@ class PhyloTree(object):
                     continue
                 
                 for timepoint in self.timepoints:
-                    log.debug(f"Comparing {color1['short']} and {color2['short']} at {timepoint} ({self.lineage_counts[color1['short']]['timepoints'][timepoint]} vs {self.lineage_counts[color2['short']]['timepoints'][timepoint]}))")
                     if self.lineage_counts[color1["short"]]["timepoints"][timepoint] < self.lineage_counts[color2["short"]]["timepoints"][timepoint]:
                         return (color1["short"], color2["short"])
                     elif self.lineage_counts[color1["short"]]["timepoints"][timepoint] > self.lineage_counts[color2["short"]]["timepoints"][timepoint]:
