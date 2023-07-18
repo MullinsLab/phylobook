@@ -325,7 +325,7 @@
                     <button type="button"  class="btn btn-outline-secondary btn-sm sequencecolor" id="sequencecolor">Update All</button>
                     <button type="button" class="btn btn-outline-secondary btn-sm removesequencecolor" id="removesequencecolor">Remove All</button>
                 </div>
-                <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm" id="extract_all_trees" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;">Extract all trees to file</button></div>
+                {% comment %} <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm" id="extract_all_trees" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;">Extract all trees to file</button></div> {% endcomment %}
                 <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm" id="saveall">Save All</button></div>
             </div>
             {% endif %}
@@ -347,7 +347,7 @@
                     <div class="col-auto">
                         <div class="d-flex justify-content-start">
                             <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show annotation tools</a>
-                            &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm mb-2" id="extract_to_file-{{ entry.uniquesvg }}" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;">Extract to File</button></div>
+                            &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm mb-2 disabled" id="extract_to_file-{{ entry.uniquesvg }}" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;" disabled>Assign lineage names / Extract to File</button></div>
                             &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
                         </div>
                     </div>
@@ -355,12 +355,6 @@
 
                 <!-- Annotations -->
                 <div class="hide"  id="color-{{ entry.uniquesvg }}">
-
-                    <!-- Comments -->
-                    <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap ">
-                        Comments:
-                        <div style="width: 50%;" {% if 'change_project' in context_perms %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
-                    </div>
 
                     <!-- Mark sequences by count of duplicates -->
                     <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap ">
@@ -427,17 +421,23 @@
                     {% endif %}
 
                     <!-- Assign lineage names by color -->
-                    <div class="container border border-dark rounded mt-2 mb-2 p-2 text-nowrap bg-light">
+                    {% comment %} <div class="container border border-dark rounded mt-2 mb-2 p-2 text-nowrap bg-light">
                         <button type="button" class="btn btn-info btn-sm text-nowrap" id="set_lineage_names-{{ entry.uniquesvg }}"  onclick="setLineagesByColor('{{ entry.uniquesvg }}'); return false;">Assign lineage names by color</button>
-                    </div>
+                    </div> {% endcomment %}
                         
                     <br>
                 </div>
                 <!-- End Annotations -->
                 
+                <!-- Comments -->
+                <div class="container border border-primary rounded mt-2 mb-2 p-2 bg-light text-nowrap ">
+                    Comments:
+                    <div style="width: 50%;" {% if 'change_project' in context_perms %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
+                </div>
+
                 <!-- Legend section -->
                 <div class="container rounded border border-primary border-2 bg-light w-100 mb-2" id="legends-{{ entry.uniquesvg }}">
-                    <div class="row border"><b>Legend:</b></div>
+                    <div class="row border justify-content-between"><div class="col-4"><b>Legend:</b></div></div>
                     <div class="row">
                         <!-- Sequence Field Legend -->
                         <div class="col">
@@ -465,6 +465,15 @@
                     </div>
                     <!-- Hilighter legend -->
                     <div class="row border align-items-right">
+                        <div class="col">
+                        {% if entry.tree.ready_to_extract %}
+                            <span id="lineage_names_assigned_tag-{{ entry.uniquesvg }}" class="lineage_tag_assigned">Lineage names assigned</span>
+                        {% else %}
+                            <span id="lineage_names_assigned_tag-{{ entry.uniquesvg }}" class="lineage_tag_unassigned">Lineage names not assigned</span>
+                        {% endif %}
+                        </div>
+
+                        <div class="col">
                         {% if entry.tree.type == "AA" %}
                             <table><tr>
                             <td>Highlighter key: &nbsp;&nbsp;</td>
@@ -493,6 +502,7 @@
                             <td class="highlighter_legend">&nbsp;<font color="#FF00FF" >&#9671;</font> G&rarr;A mutation</td>
                             </tr></table>
                         {% endif %}
+                        </div>
                     </div>
                 </div>
                 <!-- End legends section -->

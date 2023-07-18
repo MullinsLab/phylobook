@@ -134,7 +134,10 @@ class Tree(models.Model):
     def ready_to_extract(self) -> bool:
         """ Returns true if the tree is ready to extract lineages from """
 
-        pass
+        if self.lineage_counts():
+            return True
+
+        return False
 
     def lineage_counts(self) -> dict:
         """ Return the counts of each lineage in the tree """
@@ -143,8 +146,12 @@ class Tree(models.Model):
 
         lineage_counts: dict = tree_lineage_counts(tree=self.svg_file_name)
 
-        lineage_names = self.settings.get("lineages")
-        if lineage_names is None:
+        if self.settings is not None and self.settings.get("lineages"):
+            lineage_names = self.settings.get("lineages")
+        else:
+            return None
+        
+        if not lineage_names:
             return None
 
         for color in [color for color in lineage_counts if color != "total"]:

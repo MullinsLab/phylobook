@@ -7,7 +7,7 @@ from datetime import datetime
 
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, FileResponse
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, FileResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from pathlib import Path
 from django.conf import settings
@@ -37,7 +37,15 @@ def displayProject(request, name):
         entries = []
         projectPath = os.path.join(PROJECT_PATH, name)
 
-        for file in sorted(os.listdir(projectPath)):
+        file: list = []
+
+        try:
+            files = os.listdir(projectPath)
+        except Exception as e:
+            log.warning(f"Error reading project directory: {e}")
+            return HttpResponseBadRequest(f"Error reading project directory (probably due to permissions): {projectPath}")
+
+        for file in files:
             if file.endswith("_highlighter.png"):
                 uniquesvg = file[0:file.index("_highlighter.png")]
 
@@ -230,10 +238,15 @@ def updateSVG(request, name, file):
                 if f.endswith(".svg") and f.startswith(file):
                     filePath = Path(os.path.join(PROJECT_PATH, name, f))
                     svg = request.POST.get('svg')
-                    with open(filePath, "w") as f:
-                        f.write(svg)
-                        f.close()
-                    return HttpResponse("SVG Saved.")
+                    
+                    try:
+                        with open(filePath, "w") as f:
+                            f.write(svg)
+                            f.close()
+                        return HttpResponse("SVG Saved.")
+                    except PermissionError:
+                        log.warn(f"Error: Permission denied: {filePath}")
+                        return HttpResponseForbidden(f"\nPermission Denied for file: '{file}'.")
     else:
         log.warn(f"Error: Permission denied: {file}")
         response = HttpResponseForbidden("Permission Denied.")
@@ -456,5 +469,5 @@ class ExtractToZip(LoginRequiredMixin, View):
         tree: Tree = Tree.objects.get(project=project, name=tree_name)
 
         response = HttpResponse(tree.extract_all_lineages_to_zip(), content_type="application/force-download")
-        response['Content-Disposition'] = f'attachment; filename="{project.name}.zip"'
+        response['Content-Disposition'] = f'attachment; filename="{tree.name}_extracted_lineages.zip"'
         return response

@@ -470,3 +470,11 @@ img {
     font-size: 16px;
     font-style: italic;
 }
+
+.lineage_tag_unassigned{
+    color: Red;
+}
+
+.lineage_tag_assigned{
+    color: Green;
+} 

@@ -84,12 +84,14 @@ $(document).ready(function() {
                                 //alert( id + " saved successfully." );
                             },
                             error: function (err) {
-                                alert( id + " Failed to save tree!!!  Contact dev team." + err.statusText + "(" + err.status + ")" );
+                                console.log(err)
+                                alert( id + " Failed to save tree!!!\nContact dev team." + err.responseText);
                             }
                         });
                     },
                     error: function (err) {
-                        alert( id + " Failed to save notes!!!  Contact dev team." + err.statusText + "(" + err.status + ")" );
+                        console.log(err)
+                        alert( id + " Failed to save notes!!!  Contact dev team." + err.responseText);
                     }
                 });
             } else {
@@ -208,7 +210,7 @@ function showCluster(project, file, id, drawboxes) {
             setDirtyUnsaved("notes-" + id);
         },
         error: function (err) {
-            alert( " Failed to get " + project + "/" + file + ". Contact dev team."  + err.statusText + "(" + err.status + ")");
+            alert( " Failed to get " + project + "/" + file + ". Contact dev team."  + err.responseText + "(" + err.status + ")");
         }
     });
 }
@@ -368,12 +370,12 @@ function saveAll() {
                             }
                         },
                         error: function (err) {
-                            alert( id + " Failed to save tree in saveall!!!  Contact dev team."  + err.statusText + "(" + err.status + ")");
+                            alert( id + " Failed to save tree in saveall!!!/nContact dev team."  + err.responseText + "(" + err.status + ")");
                         }
                     });
                 },
                 error: function (err) {
-                    alert( id + " Failed to save notes in saveall!!!  Contact dev team."  + err.statusText + "(" + err.status + ")");
+                    alert( id + " Failed to save notes in saveall!!!  Contact dev team."  + err.responseText + "(" + err.status + ")");
                 }
             });
         } else {
@@ -413,7 +415,7 @@ $(document).ready(function() {
                 $("#seqbox").val(result);
             },
             error: function (err) {
-                alert( $("#seqsid").val() + " Failed to extract!  Contact dev team."  + err.statusText + "(" + err.status + ")");
+                alert( $("#seqsid").val() + " Failed to extract!  Contact dev team."  + err.responseText + "(" + err.status + ")");
             }
         });
     });
@@ -1284,7 +1286,7 @@ class treeLineagesCount {
                         form += " at timepoint " + count_info["timepoint"];
                     }
                     
-                    form += " (" + Math.round((count_info["count"]/totalCount)*100) + "%)";
+                    form += " (" + Math.round((count_info["count"]/totalCount)*1000)/10 + "%)";
                     form += "</span>";
                 }
                 else if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["timepoints"]){
@@ -1299,7 +1301,7 @@ class treeLineagesCount {
                         }
 
                         form += timepointCount + " sequence(s) at timepoint " + timepoint 
-                        form += " (" + Math.round((timepointCount/totalCount)*100) + "%)";
+                        form += " (" + Math.round((timepointCount/totalCount)*1000)/10 + "%)";
 
                         first = false;
                     };
@@ -1381,17 +1383,6 @@ class treeLineagesCount {
         }
 
         modalBody.html(form);
-        
-        // let caller = this;
-        // let download = false;
-
-        // if (args && "download" in args){
-        //     download = args["download"];
-        // }
-
-        // modalButton.off().on("click", function() {
-        //     caller.saveLineageNames({download: download});
-        // });
 
         $("[id^=lineage___]").selectpicker();
 
@@ -1488,7 +1479,7 @@ function setTreeSetting(args){
         dataType: 'json',
         success: callback,
         error: function (err) {
-            alert( args.tree + " Failed to save settings!!!  Contact dev team." + err.statusText + "(" + err.status + ")");
+            alert( args.tree + " Failed to save settings!!!  Contact dev team." + err.responseText + "(" + err.status + ")");
         }
     });
 };
@@ -1558,6 +1549,9 @@ function getLineages(){
         dataType: "json",
         success: function(data) {
             lineages = data;
+            
+            $("[id^=extract_to_file-]").prop('disabled', false);
+            $("[id^=extract_to_file-]").removeClass("disabled");
         },
         error: function (err) {
             alert( id + " Failed to get lineages!!!  Contact dev team." );
