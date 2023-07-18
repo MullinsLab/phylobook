@@ -27,7 +27,7 @@ class TreeTests(TestCase):
     def test_tree_sequences_should_return_list_of_dicts(self):
         """ tree_det_sequence_names should return a list """
 
-        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         sequences = utils.tree_sequence_names(svg_file_name)
 
         self.assertIsInstance(sequences, list)
@@ -36,18 +36,18 @@ class TreeTests(TestCase):
     def test_tree_sequences_should_not_return_empty(self):
         """ tree_get_sequences should not return an empty list """
     
-        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         self.assertGreater(len(utils.tree_sequence_names(svg_file_name)), 0)
     
     def test_tree_sequences_should_contain_particular_sequenc(self):
         """ tree_get_sequences should contain a particular sequence """
     
-        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         sequences = utils.tree_sequence_names(svg_file_name)
-        my_sequence = [sequence for sequence in sequences if sequence["name"] == "V703_0132_200_GP_NT_70_1"][0]
+        my_sequence = [sequence for sequence in sequences if sequence["name"] == "TP_80_100_1"][0]
 
         self.assertTrue(my_sequence)
-        self.assertEqual(my_sequence["color"], "green")
+        self.assertEqual(my_sequence["color"], "red")
 
     # Tests for parse_sequences
 
@@ -89,7 +89,7 @@ class TreeTests(TestCase):
     def test_tree_lineage_counts_should_return_dict(self):
         """ tree_lineage_counts should return a dict """
 
-        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
         self.assertIsInstance(lineage_counts, dict)
@@ -97,7 +97,7 @@ class TreeTests(TestCase):
     def test_tree_lineage_counts_should_not_return_empty(self):
         """ tree_lineage_counts should not return an empty list """
 
-        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         self.assertGreater(len(utils.tree_lineage_counts(svg_file_name)), 0)
 
     def test_tree_lineage_counts_should_return_none_given_none(self):
@@ -114,33 +114,33 @@ class TreeTests(TestCase):
     def test_tree_lineage_counts_should_return_counts_for_colors(self):
         """ tree_lineage_counts should return counts for colors """
 
-        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
-        self.assertGreater(lineage_counts["red"]["timepoints"][200], 0)
+        self.assertGreater(lineage_counts["red"]["timepoints"][100], 0)
     
     def test_tree_lineage_counts_should_be_less_than_total_count(self):
         """ tree_lineage_counts should be less than the total count """
 
-        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
-        self.assertLess(lineage_counts["red"]["timepoints"][200], 184)
+        self.assertLess(lineage_counts["red"]["timepoints"][100], 184)
 
     def test_tree_lineage_counts_should_be_178_for_red(self):
         """ tree_lineage_counts should be 178 for red """
 
-        svg_file_name = "/phylobook/temp/test_with_timepoints.svg"
+        svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
-        self.assertEqual(lineage_counts["red"]["timepoints"][200], 178)
+        self.assertEqual(lineage_counts["red"]["timepoints"][100], 38)
 
     # With test_with_timepoints.svg
 
     def test_tree_lineage_counts_should_return_counts_for_no_timepoints(self):
         """ tree_lineage_counts should return counts for colors """
 
-        svg_file_name = "/phylobook/temp/test_without_timepoints.svg"
+        svg_file_name = "/phylobook/test_data/without_timepoints.svg"
         lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
         self.assertGreater(lineage_counts["red"]["count"], 0)
@@ -148,10 +148,10 @@ class TreeTests(TestCase):
     def test_tree_lineage_counts_should_be_37_for_red(self):
         """ tree_lineage_counts should be 37 for red """
 
-        svg_file_name = "/phylobook/temp/test_without_timepoints.svg"
+        svg_file_name = "/phylobook/test_data/without_timepoints.svg"
         lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
-        self.assertEqual(lineage_counts["red"]["count"], 37)
+        self.assertEqual(lineage_counts["red"]["count"], 77)
 
     # Tests for lineage_dict
 
@@ -311,14 +311,14 @@ class PhyloTreeTests(SimpleTestCase):
     def test_phylotree_should_swap_returns_none_if_no_swap_needed(self):
         """ PhyloTree should swap returns None if no swap needed """
 
-        self.assertFalse(self.phylotree._need_swaps())
+        self.assertFalse(self.phylotree.need_swaps())
 
     def test_phylotree_should_swap_return_tuple_of_swaps_if_swap_needed(self):
         """ PhyloTree should swap return tuple of swaps if swap needed """
 
         self.phylotree.swap_lineages("neonblue", "red")
 
-        self.assertEqual(self.phylotree._need_swaps(), ("red", "neonblue"))
+        self.assertEqual(self.phylotree.need_swaps(), ("red", "neonblue"))
 
     def test_phylotree_swap_by_counts_returns_none_if_no_swap_needed(self):
         """ PhyloTree swap_by_counts returns None if no swap needed """
@@ -335,8 +335,8 @@ class PhyloTreeTests(SimpleTestCase):
         self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {100: 38, 101: 32, 102: 0, 103: 0, 104: 0}, 'total': 70})
         self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {100: 0, 101: 7, 102: 10, 103: 8, 104: 1}, 'total': 26})
 
-    def test_phylotree_swap_by_counts_correct_for_misordered(self):
-        """ PhyloTree swap_by_counts correct for misordered """
+    def test_phylotree_swap_by_counts_correct_for_timepoints_misordered(self):
+        """ PhyloTree swap_by_counts correct for timepoints misordered """
 
         self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_misordered.svg"), "e99dd0323b06120f30f1eba5c8da19ec")
         
@@ -349,5 +349,16 @@ class PhyloTreeTests(SimpleTestCase):
         
         os.remove("/phylobook/test_data/with_timepoints_misordered_changed.svg")
 
+    def test_phylotree_swap_by_counts_correct_for_without_timepoints_misordered(self):
+        """ PhyloTree swap_by_counts correct for without timepoints misordered """
 
+        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/without_timepoints_misordered.svg"), "6e1d4b3d6fec7c5236c8746e3bfb7546")
+
+        phylotree=utils.PhyloTree(file_name="/phylobook/test_data/without_timepoints_misordered.svg")
+        self.assertEqual(phylotree.swap_by_counts(), "Lineages have been recolored based on count of sequences at earliest timepoint (Red, Neon Blue)")
+        self.assertIs(phylotree.swap_by_counts(), None)
+
+        phylotree.save(file_name="/phylobook/test_data/without_timepoints_misordered_changed.svg")
+        self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/without_timepoints_misordered_changed.svg"), "1f0c381cf022b62b57934068d853b483")
         
+        os.remove("/phylobook/test_data/without_timepoints_misordered_changed.svg")

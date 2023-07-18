@@ -87,7 +87,7 @@ class PhyloTree(object):
         safety = 0
         colors: list = []
 
-        while swap := self._need_swaps():
+        while swap := self.need_swaps():
             self.swap_lineages(swap[0], swap[1])
             
             if swap[0] not in colors:
@@ -173,7 +173,7 @@ class PhyloTree(object):
 
         self.lineage_counts = lineage_counts
 
-    def _need_swaps(self) -> Union[bool, list]:
+    def need_swaps(self) -> Union[bool, list]:
         """ Returns tuple of swaps to make or None """
 
         colors = settings.ANNOTATION_COLORS
@@ -181,20 +181,47 @@ class PhyloTree(object):
         for index1 in range(len(colors)-1):
             color1 = colors[index1]
             
-            if not color1["swapable"] or color1["short"] not in self.lineage_counts:
+            if not color1["swapable"]:
                 continue
 
             for index2 in range(index1+1, len(colors)-1):
                 color2 = colors[index2]
 
-                if not color2["swapable"] or color2["short"] not in self.lineage_counts:
+                if not color2["swapable"]:
                     continue
                 
-                for timepoint in self.timepoints:
-                    if self.lineage_counts[color1["short"]]["timepoints"][timepoint] < self.lineage_counts[color2["short"]]["timepoints"][timepoint]:
+                if self.timepoints:
+                    for timepoint in self.timepoints:
+                        if color1["short"] in self.lineage_counts:
+                            color1_count: int = self.lineage_counts[color1["short"]]["timepoints"][timepoint]
+                        else:
+                            color1_count: int = 0
+
+                        if color2["short"] in self.lineage_counts:
+                            color2_count: int = self.lineage_counts[color2["short"]]["timepoints"][timepoint]
+                        else:
+                            color2_count: int = 0
+
+                        if color1_count < color2_count:
+                            return (color1["short"], color2["short"])
+                        elif color1_count > color2_count:
+                            break
+                else:
+                    if color1["short"] in self.lineage_counts:
+                        color1_count: int = self.lineage_counts[color1["short"]]["count"]
+                    else:
+                        color1_count: int = 0
+
+                    if color2["short"] in self.lineage_counts:
+                        color2_count: int = self.lineage_counts[color2["short"]]["count"]
+                    else:
+                        color2_count: int = 0
+
+                    if color1_count < color2_count:
                         return (color1["short"], color2["short"])
-                    elif self.lineage_counts[color1["short"]]["timepoints"][timepoint] > self.lineage_counts[color2["short"]]["timepoints"][timepoint]:
-                        break
+                    
+                    elif color1_count > color2_count:
+                            break
 
         return False
 

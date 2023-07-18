@@ -1234,8 +1234,6 @@ class treeLineagesCount {
         if (! continue_flag){
             this.getLineageCounts({async: false});
         }
-        
-        let totalCount = this.lineageCounts["total"]["count"]
 
         if ("error" in this.lineageCounts) {
             form = this.lineageCounts["error"];
@@ -1266,6 +1264,8 @@ class treeLineagesCount {
             if (continue_flag) {
                 loadSVG(this.svgID);
             }
+
+            let totalCount = this.lineageCounts["total"]["count"]
 
             form += "<table class='table'><thead><tr><th scope='col'>Color</th><th scope='col'>Lineage Name</th></tr><tbody>"
 
