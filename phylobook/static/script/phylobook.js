@@ -1230,12 +1230,12 @@ class treeLineagesCount {
             continue_flag = true;
         }
 
-        console.log("showModalForm: continue_flag = " + continue_flag)
-
         let download_flag = false;
         if (args && args.download){
             download_flag = true;
         };
+
+        // console.log("showModalForm: continue_flag = " + continue_flag + ", download = " + download_flag)
 
         let form = "";
 
@@ -1254,7 +1254,7 @@ class treeLineagesCount {
             modalButton.prop("disabled", true);
             modalButton.addClass("disabled");
         }
-        else if (this.lineageCounts["swap_message"] && ! continue_flag){
+        else if (this.lineageCounts["swap_message"] && ! continue_flag && ! download_flag){
             // Present swap message
 
             form = this.lineageCounts["swap_message"];
