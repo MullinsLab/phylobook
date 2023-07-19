@@ -190,7 +190,10 @@ class Tree(models.Model):
         if not sequences:
             sequences = SeqIO.index(self.fasta_file_name, "fasta")
 
-        sequence_names: list = self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)
+        sequence_names: list = self.ordered_sequence_names()
+
+        if not sequence_names:
+            sequence_names = self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)
 
         for sequence_name in sequence_names:
             lineage.append({"name": sequence_name, "sequence": sequences.get_raw(sequence_name).decode()})
@@ -264,6 +267,22 @@ class Tree(models.Model):
 
         if self.phylotree:
             self.phylotree.save()
+
+    def ordered_sequence_names(self) -> list:
+        """ Get sequence names in order of the tree """
+
+        ordered_sequence_names: list = []
+
+        try:
+            with open(self.fasta_file_name) as fasta_file:
+                for line in fasta_file:
+                    if line.startswith(">"):
+                        ordered_sequence_names.append(line[1:].strip())
+        except:
+            return None
+        
+        return ordered_sequence_names
+
     
 class TreeLineage(models.Model):
     """ Holds the relation between a tree and a lineage """

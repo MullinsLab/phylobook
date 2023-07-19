@@ -1224,6 +1224,7 @@ class treeLineagesCount {
         let modalTitle = $("#annotations_modal_title");
         let modalBody = $("#annotations_modal_body");
         let modalButton = $("#annotations_modal_button");
+        let closeButton = $("#annotations_close_button");
 
         let continue_flag = false;
         if (args && args.continue){
@@ -1253,6 +1254,8 @@ class treeLineagesCount {
             modalButton.html("Assign lineage names");
             modalButton.prop("disabled", true);
             modalButton.addClass("disabled");
+
+            closeButton.removeClass("hide");
         }
         else if (this.lineageCounts["swap_message"] && ! continue_flag && ! download_flag){
             // Present swap message
@@ -1262,6 +1265,8 @@ class treeLineagesCount {
             modalButton.html("Continue");
             modalButton.prop("disabled", false);
             modalButton.removeClass("disabled");
+            
+            closeButton.removeClass("hide");
 
             let new_args = {continue: true};
             if (args && args.download){
@@ -1286,6 +1291,8 @@ class treeLineagesCount {
             modalButton.html("Download lineages");
             modalButton.prop("disabled", false);
             modalButton.removeClass("disabled");
+
+            closeButton.removeClass("hide");
         }
         else
         {
@@ -1382,16 +1389,11 @@ class treeLineagesCount {
 
             form += "</tbody></table>";
 
-            // if (args && args.download){
-            //     modalButton.html("Download lineages");
-            //     modalButton.prop("disabled", false);
-            //     modalButton.removeClass("disabled");
-            // }
-            // else {
-                modalButton.html("Assign lineage names");
-                modalButton.prop("disabled", false);
-                modalButton.removeClass("disabled");
-            // }
+            modalButton.html("Assign lineage names");
+            modalButton.prop("disabled", false);
+            modalButton.removeClass("disabled");
+
+            closeButton.addClass("hide");
 
             let caller = this;
 
