@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger('app')
 
-import io, zipfile
+import io, zipfile, shutil, datetime
 
 from Bio import SeqIO
 from typing import Union
@@ -258,6 +258,9 @@ class Tree(models.Model):
 
     def save_file(self) -> None:
         """ Saves the file for the tree """
+
+        date_tag: str = datetime.datetime.now().strftime("%m.%d.%y_%H.%M")
+        shutil.copyfile(self.svg_file_name, f"{self.svg_file_name}.{date_tag}")
 
         if self.phylotree:
             self.phylotree.save()

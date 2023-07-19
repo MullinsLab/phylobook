@@ -452,6 +452,25 @@ class TreeLineages(LoginRequiredMixin, View):
 
         return JsonResponse(tree_lineage)
     
+class TreeLineagesReady(LoginRequiredMixin, View):
+    """ Check if the lineages are ready for extraction """
+
+    def get(self, request, *args, **kwargs):
+        """ Return true if the lineage is ready"""
+    
+        project_name: str = kwargs["project"]
+        project: Project = Project.objects.get(name=project_name)
+
+        if not project or not (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
+            return HttpResponseBadRequest(f"Error loading this project while trying to establish whether the lineage is ready extract: {project_name}")
+    
+        tree_name: str = kwargs["tree"]
+        tree: Tree = Tree.objects.get(project=project, name=tree_name)
+
+        ready: dict = {"assigned": tree.ready_to_extract}
+
+        return JsonResponse(ready)
+
     
 class ExtractToZip(LoginRequiredMixin, View):
     """ Extract sequences to a zip file by lineage """

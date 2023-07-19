@@ -1224,20 +1224,30 @@ class treeLineagesCount {
         let modalTitle = $("#annotations_modal_title");
         let modalBody = $("#annotations_modal_body");
         let modalButton = $("#annotations_modal_button");
+
         let continue_flag = false;
         if (args && args.continue){
             continue_flag = true;
         }
 
+        console.log("showModalForm: continue_flag = " + continue_flag)
+
+        let download_flag = false;
+        if (args && args.download){
+            download_flag = true;
+        };
+
         let form = "";
 
         // Get lineage counts using synchronus ajax
 
-        if (! continue_flag){
+        if (! continue_flag && ! download_flag){
             this.getLineageCounts({async: false});
         }
 
         if ("error" in this.lineageCounts) {
+            // Present error message
+
             form = this.lineageCounts["error"];
 
             modalButton.html("Assign lineage names");
@@ -1245,6 +1255,8 @@ class treeLineagesCount {
             modalButton.addClass("disabled");
         }
         else if (this.lineageCounts["swap_message"] && ! continue_flag){
+            // Present swap message
+
             form = this.lineageCounts["swap_message"];
 
             modalButton.html("Continue");
@@ -1261,8 +1273,24 @@ class treeLineagesCount {
                 caller.showModalForm(new_args);
             });
         }
+        else if (download_flag){
+            // Present form to download the file
+
+            form = "Lineage names for this tree have been saved.\nYou can now close this window or download the sequences."
+            
+            let caller = this;
+            modalButton.off().on("click", function() {
+                jQuery.proxy(caller.downloadLineagesCallback({close: true}));
+            });
+
+            modalButton.html("Download lineages");
+            modalButton.prop("disabled", false);
+            modalButton.removeClass("disabled");
+        }
         else
         {
+            // Present form to set lineage names
+
             if (continue_flag) {
                 loadSVG(this.svgID);
             }
@@ -1354,26 +1382,25 @@ class treeLineagesCount {
 
             form += "</tbody></table>";
 
-            if (args && args.download){
-                modalButton.html("Download lineages");
-                modalButton.prop("disabled", false);
-                modalButton.removeClass("disabled");
-            }
-            else {
+            // if (args && args.download){
+            //     modalButton.html("Download lineages");
+            //     modalButton.prop("disabled", false);
+            //     modalButton.removeClass("disabled");
+            // }
+            // else {
                 modalButton.html("Assign lineage names");
                 modalButton.prop("disabled", false);
                 modalButton.removeClass("disabled");
-            }
+            // }
 
             let caller = this;
-            let download = false;
 
             if (args && "download" in args){
                 download = args["download"];
             }
 
             modalButton.off().on("click", function() {
-                caller.saveLineageNames({download: download});
+                caller.saveLineageNames();
             });
         };
 
@@ -1423,29 +1450,69 @@ class treeLineagesCount {
         };
 
         // Send the data to the server
-        if (args.download) {
-            setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}, callback: jQuery.proxy(this.downloadLineagesCallback, this)})
-        }
-        else {
+        // if (args && args.download) {
+        //     setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}, callback: jQuery.proxy(this.downloadLineagesCallback, this)})
+        //     // this.downloadLineagesCallback();
+        // }
+        // else {
             setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}})
-        }
+            this.showModalForm({download: true});
+        // }
 
-        for (let color in my_lineages){
-            if (! (color  in this.lineageCounts)){
-                this.lineageCounts[color] = {};
-            };
+        // for (let color in my_lineages){
+        //     if (! (color  in this.lineageCounts)){
+        //         this.lineageCounts[color] = {};
+        //     };
 
-            this.lineageCounts[color]["name"] = my_lineages[color];
-        };
+        //     this.lineageCounts[color]["name"] = my_lineages[color];
+        // };
 
-        modal.modal("hide");
+        // this.checkLineageNames();
+        this.setLineageNamesAssigned(true);
+        // modal.modal("hide");
     };
 
-    downloadLineagesCallback(){
+    downloadLineagesCallback(args){
         // Download the lineage as a zip
 
         window.open("/projects/extract_to_zip/" + projectName + "/" + this.svgID,"_self")
+
+        if (args && args.close){
+            $("#annotations_modal").modal("hide");
+        }
     };
+
+    checkLineageNames(){
+        // Check the lineage names to make sure they're all set
+
+        let caller = this;
+        $.ajax({
+            type: "POST",
+            headers: { "X-CSRFToken": token },
+            url: '/projects/lineages_ready/' + projectName + "/" + this.svgID,
+            success: function(data) {
+                caller.setLineageNamesAssigned(data["assigned"])
+            },
+            error: function (err) {
+                alert( this.svgID + " Failed to load information on assignment names.\n  Contact dev team." + err.responseText + "(" + err.status + ")");
+            }
+        });
+    }
+
+    setLineageNamesAssigned(assigned) {
+        //  Set the lable and color of the lineage names legend
+
+        if (assigned) {
+            $("#lineage_names_assigned_tag-" + this.svgID).html("Lineage names assigned");
+            $("#lineage_names_assigned_tag-" + this.svgID).addClass("lineage_tag_assigned");
+            $("#lineage_names_assigned_tag-" + this.svgID).removeClass("lineage_tag_unassigned");
+        }
+        else {
+            $("#lineage_names_assigned_tag-" + this.svgID).html("Lineage names not assigned");
+            $("#lineage_names_assigned_tag-" + this.svgID).addClass("lineage_tag_unassigned");
+            $("#lineage_names_assigned_tag-" + this.svgID).removeClass("lineage_tag_assigned");
+        }
+    }
 };
 
 
@@ -1592,7 +1659,7 @@ function setLineagesByColor(id) {
 
 
 function downloadLineagesByColor(id) {
-    treeLineagesCounts[id].showModalForm({download: true});
+    treeLineagesCounts[id].showModalForm();
 };
 
 

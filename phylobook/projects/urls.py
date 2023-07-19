@@ -16,6 +16,7 @@ urlpatterns = [
     path("settings/<str:project>/<str:tree>/<str:setting>", views.TreeSettings.as_view(), name='tree_settings_get'),
     path("lineages", views.Lineages.as_view(), name='lineages'),
     path("lineages/<str:project>/<str:tree>", views.TreeLineages.as_view(), name='tree_lineages'),
+    path("lineages_ready/<str:project>/<str:tree>", views.TreeLineagesReady.as_view(), name='tree_lineages_ready'),
     path("extract_to_zip/<str:project>/<str:tree>", views.ExtractToZip.as_view(), name='extract_lineage'),
     path("<str:name>", login_required(views.displayProject)),
     path("<str:name>/<str:file>", login_required(views.getFile)),
