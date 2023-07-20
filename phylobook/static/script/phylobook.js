@@ -1495,6 +1495,8 @@ class treeLineagesCount {
                 caller.setLineageNamesAssigned(data["assigned"])
             },
             error: function (err) {
+                log.debug(err)
+                log.debug(this.svgID)
                 alert( this.svgID + " Failed to load information on assignment names.\n  Contact dev team." + err.responseText + "(" + err.status + ")");
             }
         });
@@ -1565,7 +1567,7 @@ function getTreeSettings(args){
         dataType: 'json',
         success: args.callback,
         error: function (err) {
-            // alert( args.tree + " Failed to save!!!  Contact dev team." );
+            console.log(err)
             console.log("Failed to get settings: Tree: " + args.tree + ", Setting: " + args.setting)
         }
     });
@@ -1622,6 +1624,7 @@ function getLineages(){
             $("[id^=extract_to_file-]").removeClass("disabled");
         },
         error: function (err) {
+            console.log(err)
             alert( id + " Failed to get lineages!!!  Contact dev team." );
         }
     });
@@ -1653,6 +1656,7 @@ function getLineageCounts(args){
         async: async,
         error: function (err) {
             // alert( args.tree + " Failed to load lineage counts!!!  Contact dev team." );
+            console.log(err)
             console.log("Failed to load lineage counts: Tree: " + args.tree)
         }
     });

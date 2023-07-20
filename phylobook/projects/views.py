@@ -206,10 +206,15 @@ def updateNote(request, name, file):
             dateTimeObj = datetime.now()
             data = {}
             data['notes'] = []
-            #log.warn("minval=" + minval + " maxval=" + maxval + " colorlowval=" + colorlowval + " colorhighval=" + colorhighval + " iscolored=" + iscolored)
+            
             if filePath.is_file():
-                with open(filePath, 'r+') as json_file:
-                    data = json.load(json_file)
+                try: 
+                    with open(filePath, 'r+') as json_file:
+                        data = json.load(json_file)
+                except PermissionError:
+                    log.warn(f"Error: Permission denied: {filePath}")
+                    return HttpResponseForbidden(f"\nPermission Denied for file: '{file}'.")
+
             with open(filePath, "w+") as outfile:
                 data['notes'].append({
                     'note': notes,
