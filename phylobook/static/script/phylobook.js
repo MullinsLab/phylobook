@@ -1178,7 +1178,12 @@ class treeLineagesCount {
             async = false;
         }
 
-        getLineageCounts({tree: this.svgID, func: jQuery.proxy(this.receiveLineageCounts, this), async: async});
+        let recolor = false;
+        if (args && args.recolor){
+            recolor = true;
+        };
+
+        getLineageCounts({tree: this.svgID, func: jQuery.proxy(this.receiveLineageCounts, this), async: async, recolor: recolor});
     }
 
     receiveLineageCounts(data){
@@ -1226,23 +1231,24 @@ class treeLineagesCount {
         let modalButton = $("#annotations_modal_button");
         let closeButton = $("#annotations_close_button");
 
-        let continue_flag = false;
-        if (args && args.continue){
-            continue_flag = true;
-        }
-
         let download_flag = false;
         if (args && args.download){
             download_flag = true;
         };
 
-        // console.log("showModalForm: continue_flag = " + continue_flag + ", download = " + download_flag)
+        let recolor_flag = false;
+        if (args && args.recolor){
+            recolor_flag = true;
+        };
 
         let form = "";
 
         // Get lineage counts using synchronus ajax
 
-        if (! continue_flag && ! download_flag){
+        if (recolor_flag) {
+            this.getLineageCounts({async: false, recolor: true});
+        }
+        else if (! download_flag){
             this.getLineageCounts({async: false});
         }
 
@@ -1256,27 +1262,6 @@ class treeLineagesCount {
             modalButton.addClass("disabled");
 
             closeButton.removeClass("hide");
-        }
-        else if (this.lineageCounts["swap_message"] && ! continue_flag && ! download_flag){
-            // Present swap message
-
-            form = this.lineageCounts["swap_message"];
-
-            modalButton.html("Continue");
-            modalButton.prop("disabled", false);
-            modalButton.removeClass("disabled");
-            
-            closeButton.removeClass("hide");
-
-            let new_args = {continue: true};
-            if (args && args.download){
-                new_args["download"] = true;
-            };
-
-            let caller = this;
-            modalButton.off().on("click", function() {
-                caller.showModalForm(new_args);
-            });
         }
         else if (download_flag){
             // Present form to download the file
@@ -1298,11 +1283,25 @@ class treeLineagesCount {
         {
             // Present form to set lineage names
 
-            if (continue_flag) {
+            if (recolor_flag) {
                 loadSVG(this.svgID);
             }
 
             let totalCount = this.lineageCounts["total"]["count"]
+
+            if (this.lineageCounts["swap_message"] && ! recolor_flag){
+                let script = 'recolorTreeByLineageCounts({id: "' + this.svgID + '", presentModal: true})';
+
+                form += "<div class='container border border-2 rounded warn'><br>This tree has lineages that are miscolored:";
+                form += "<br>(" + this.lineageCounts["swap_message"] + ")";
+                form += "<div class='d-flex flex-row-reverse'><div class='p-2 bd-highlight'><button type='button' class='btn btn-outline-primary btn-sm mb-2 bg-light' onclick='" + script + "'>Recolor tree by lineage counts</button></div></div>";
+                form += "</div><br>";
+            }
+            else if (this.lineageCounts["swap_message"] && recolor_flag){
+                form += "<div class='container border border-2 rounded success'><br>Lineages have been recolored based on count of sequences at earliest timepoint";
+                form += "<br>(" + this.lineageCounts["swap_message"] + ")";
+                form += "</div><br>";
+            }
 
             form += "<table class='table'><thead><tr><th scope='col'>Color</th><th scope='col'>Lineage Name</th></tr><tbody>"
 
@@ -1639,10 +1638,15 @@ function getLineageCounts(args){
         async = false;
     };
 
+    let url = "/projects/lineages/" + projectName + "/" + args.tree
+    if (args && args.recolor){
+        url = '/projects/lineages/' + projectName + "/" + args.tree + "/recolor";
+    }
+
     $.ajax({
         type: "GET",
         headers: { "X-CSRFToken": token },
-        url: '/projects/lineages/' + projectName + "/" + args.tree,
+        url: url,
         data: JSON.stringify(args.settings),
         dataType: 'json',
         success: args.func,
@@ -1716,4 +1720,11 @@ function loadSVG(id){
                     })
             );
     });
+};
+
+
+function recolorTreeByLineageCounts(args) {
+    if (args && args["presentModal"]){
+        treeLineagesCounts[args.id].showModalForm({recolor: true});
+    };
 };

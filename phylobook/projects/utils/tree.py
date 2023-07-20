@@ -101,7 +101,7 @@ class PhyloTree(object):
                 return "Safety limit reached"
             
         if colors:
-            return f"Lineages have been recolored based on count of sequences at earliest timepoint ({', '.join([color_by_short(color)['name'] for color in colors])})"
+            return ', '.join([color_by_short(color)['name'] for color in colors])
         
         return None
 

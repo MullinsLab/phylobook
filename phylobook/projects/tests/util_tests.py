@@ -330,7 +330,7 @@ class PhyloTreeTests(SimpleTestCase):
 
         self.phylotree.swap_lineages("neonblue", "red")
 
-        self.assertEqual(self.phylotree.swap_by_counts(), "Lineages have been recolored based on count of sequences at earliest timepoint (Red, Neon Blue)")
+        self.assertEqual(self.phylotree.swap_by_counts(), "Red, Neon Blue")
 
         self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {100: 38, 101: 32, 102: 0, 103: 0, 104: 0}, 'total': 70})
         self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {100: 0, 101: 7, 102: 10, 103: 8, 104: 1}, 'total': 26})
@@ -341,7 +341,7 @@ class PhyloTreeTests(SimpleTestCase):
         self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_misordered.svg"), "e99dd0323b06120f30f1eba5c8da19ec")
         
         phylotree=utils.PhyloTree(file_name="/phylobook/test_data/with_timepoints_misordered.svg")
-        self.assertEqual(phylotree.swap_by_counts(), "Lineages have been recolored based on count of sequences at earliest timepoint (Red, Neon Blue, Green, Black, Orange)")
+        self.assertEqual(phylotree.swap_by_counts(), "Red, Neon Blue, Green, Black, Orange")
         self.assertIs(phylotree.swap_by_counts(), None)
 
         phylotree.save(file_name="/phylobook/test_data/with_timepoints_misordered_changed.svg")
@@ -355,7 +355,7 @@ class PhyloTreeTests(SimpleTestCase):
         self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/without_timepoints_misordered.svg"), "6e1d4b3d6fec7c5236c8746e3bfb7546")
 
         phylotree=utils.PhyloTree(file_name="/phylobook/test_data/without_timepoints_misordered.svg")
-        self.assertEqual(phylotree.swap_by_counts(), "Lineages have been recolored based on count of sequences at earliest timepoint (Red, Neon Blue)")
+        self.assertEqual(phylotree.swap_by_counts(), "Red, Neon Blue")
         self.assertIs(phylotree.swap_by_counts(), None)
 
         phylotree.save(file_name="/phylobook/test_data/without_timepoints_misordered_changed.svg")

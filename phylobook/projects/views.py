@@ -418,6 +418,8 @@ class TreeLineages(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         """ Return information about the tree lineages to the client """
 
+        flag = kwargs.get("flag")
+
         project_name: str = kwargs["project"]
         project: Project = Project.objects.get(name=project_name)
 
@@ -432,7 +434,8 @@ class TreeLineages(LoginRequiredMixin, View):
 
         tree.load_file()
         if swap_message := tree.swap_by_counts():
-            tree.save_file()
+            if flag == "recolor":
+                tree.save_file()
 
         tree_file: str = tree.svg_file_name #svg_file_name(project=project, tree=tree)
         tree_lineage: dict = tree_lineage_counts(tree_file)

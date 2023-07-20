@@ -478,3 +478,26 @@ img {
 .lineage_tag_assigned{
     color: Green;
 } 
+
+/* .warn{
+    color: Red;
+    font-weight: bold;
+} */
+
+.warn{
+    background-color: #f2e6e6;
+}
+.warn::before{
+    content: "Warning:";
+    color: Red;
+    font-weight: bold;
+}
+
+.success{
+    background-color: #e1f2e6;
+}
+.success::before{
+    content: "Success:";
+    color: Green;
+    font-weight: bold;
+}
