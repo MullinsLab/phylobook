@@ -362,3 +362,8 @@ class PhyloTreeTests(SimpleTestCase):
         self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/without_timepoints_misordered_changed.svg"), "1f0c381cf022b62b57934068d853b483")
         
         os.remove("/phylobook/test_data/without_timepoints_misordered_changed.svg")
+
+    def test_phylotre_lineage_counts_should_warn_of_unassigned_sequences(self):
+        """ PhyloTree lineage_counts should warn of unassigned sequences """
+
+        pass

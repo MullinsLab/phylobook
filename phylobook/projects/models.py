@@ -1,12 +1,13 @@
 import logging
 log = logging.getLogger('app')
 
-import io, zipfile, shutil, datetime
+import io, zipfile, shutil, datetime, os
 
 from Bio import SeqIO
 from typing import Union
 
 from django.db import models
+from django.conf import settings
 from django.core.exceptions import ValidationError
 
 
@@ -139,7 +140,7 @@ class Tree(models.Model):
 
         return False
 
-    def lineage_counts(self) -> dict:
+    def lineage_counts(self, *, include_total: bool=False) -> dict:
         """ Return the counts of each lineage in the tree """
 
         lineages: dict = {}
@@ -161,6 +162,9 @@ class Tree(models.Model):
 
             else:
                 return None
+            
+        if include_total:
+            lineages["total"] = lineage_counts["total"]
 
         return lineages
     
@@ -179,10 +183,11 @@ class Tree(models.Model):
 
         return color_sequence_names
 
-    def extract_lineage(self, *, color: str, name: str, sequences: dict=None, all_sequence_names: dict=None) -> list[dict[str: str]]:
+    def extract_lineage(self, *, color: str, name: str, sequences: dict=None, all_sequence_names: dict=None, sort: str=None) -> list[dict[str: str]]:
         """ Returns the lineage object for the given color """
 
         lineage: list[dict[str: str]] = []
+        sequence_names: list = []
 
         if not all_sequence_names:
             all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
@@ -190,7 +195,26 @@ class Tree(models.Model):
         if not sequences:
             sequences = SeqIO.index(self.fasta_file_name, "fasta")
 
-        sequence_names: list = self.ordered_sequence_names()
+        if not sort or sort == "tree":
+            sequence_names = [name for name in self.ordered_sequence_names() if name in self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)]
+
+        elif sort == "frequency":
+            counts: dict[int: list] = {}
+
+            sequence_names_temp = self.ordered_sequence_names()
+            if not sequence_names_temp:
+                sequence_names_temp = self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)
+
+            for sequence_name in self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names):
+                count: int = int(sequence_name.split("_")[-1])
+                
+                if count not in counts:
+                    counts[count] = []
+                counts[count].append(sequence_name)
+
+            for count in sorted(counts.keys(), reverse=True):
+                if counts[count]:
+                    sequence_names = sequence_names + counts[count]
 
         if not sequence_names:
             sequence_names = self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)
@@ -200,7 +224,7 @@ class Tree(models.Model):
 
         return lineage
     
-    def extract_lineage_to_fasta(self, *, color: str, name: str, sequences: dict=None, all_sequence_names: dict=None) -> str:
+    def extract_lineage_to_fasta(self, *, color: str, name: str, sequences: dict=None, all_sequence_names: dict=None, sort: str=None) -> str:
         """ Returns a .fasta file as a string for the given color """
 
         fasta: str = ""
@@ -211,12 +235,12 @@ class Tree(models.Model):
         if not sequences:
             sequences = SeqIO.index(self.fasta_file_name, "fasta")
 
-        for seqeuence in self.extract_lineage(color=color, name=name, sequences=sequences, all_sequence_names=all_sequence_names):
+        for seqeuence in self.extract_lineage(color=color, name=name, sequences=sequences, all_sequence_names=all_sequence_names, sort=sort):
             fasta += seqeuence['sequence']
 
         return fasta
     
-    def extract_all_lineages_to_fasta(self) -> dict:
+    def extract_all_lineages_to_fasta(self, sort: str = None) -> dict:
 
         fastas: dict = {}
 
@@ -227,7 +251,7 @@ class Tree(models.Model):
 
         for lineage_name in lineage_counts:
             color = lineage_counts[lineage_name]["color"]
-            fastas[lineage_name] = self.extract_lineage_to_fasta(color=color, name=lineage_name, sequences=sequences, all_sequence_names=all_sequence_names)
+            fastas[lineage_name] = self.extract_lineage_to_fasta(color=color, name=lineage_name, sequences=sequences, all_sequence_names=all_sequence_names, sort=sort)
 
         return fastas
 
@@ -238,10 +262,56 @@ class Tree(models.Model):
         lineages = self.extract_all_lineages_to_fasta()
 
         with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zipped_lineages:
-            for lineage_name, lineage in lineages.items():
-                zipped_lineages.writestr(f"{self.name}_{lineage_name}.fasta", lineage)
+            for lineage_name, lineage in self.extract_all_lineages_to_fasta(sort="tree").items():
+                zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_tree_position", f"{self.name}_{lineage_name}.fasta"), lineage)
+
+            for lineage_name, lineage in self.extract_all_lineages_to_fasta(sort="frequency").items():
+                zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_frequency", f"{self.name}_{lineage_name}.fasta"), lineage)
+
+            zipped_lineages.writestr(f"{self.name}_lineage_summary.txt", self.lineage_info_txt())
+
+
+            # os.path.join("test", f"{self.name}_lineage_summary.txt")
 
         return mem_zip.getvalue()
+    
+    def lineage_info_txt(self) -> str:
+        """ Get all the lineage info as a string """
+
+        lineage_counts = self.lineage_counts(include_total=True)
+        txt_collector: str = ""
+        total_count: int = lineage_counts["total"]["count"]
+
+        txt_collector += f"Total Sequences: {lineage_counts['total']['count']}\n"
+        has_timepoints: bool = False
+
+        if "timepoints" in lineage_counts["total"] and lineage_counts["total"]["timepoints"]:
+            has_timepoints = True
+
+            for timepoint in lineage_counts["total"]["timepoints"]:
+                txt_collector += f"@ timepoint {timepoint}: {lineage_counts['total']['timepoints'][timepoint]}\n"
+
+        for color in [color["short"] for color in settings.ANNOTATION_COLORS]:
+            for name, values in lineage_counts.items():
+                if name == "total":
+                    continue
+
+                if values["color"] == color:
+                    if has_timepoints:
+                        sub_collector: str = ""
+                        color_total: int = 0
+
+                        for timepoint in values["timepoints"]:
+                            count: int = values['timepoints'][timepoint]
+                            color_total += count
+
+                            sub_collector += f"@ timepoint {timepoint}: {count} ({round((count/total_count)*100, 1)}%)\n"
+
+                        txt_collector += f"\n{name} total: {color_total} ({round((color_total/total_count)*100, 1)}%)\n{sub_collector}"
+                    else:
+                        txt_collector += f"{name} total: {values['count']} ({round((values['count']/total_count)*100, 1)}%)\n"
+
+        return txt_collector
     
     def load_file(self) -> None:
         """ Loads the file for the tree """
