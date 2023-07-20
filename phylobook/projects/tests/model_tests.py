@@ -42,6 +42,8 @@ class ProjectTests(TestCase):
         self.assertGreater(Lineage.objects.all().count(), 0)
         self.assertEqual(Lineage.objects.all().filter(color="Red").count(), 2)
 
+        for color in ("Gray", "Apricot", "Lavender", "Pink", "Purple"):
+            self.assertEqual(Lineage.objects.all().filter(color=color).count(), 22, f"Testing color: {color}")
 
     def test_should_be_able_to_add_lineage_to_tree(self):
         """ Create a tree and add a lineage to it """

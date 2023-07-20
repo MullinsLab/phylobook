@@ -45,7 +45,7 @@ def displayProject(request, name):
             log.warning(f"Error reading project directory: {e}")
             return HttpResponseBadRequest(f"Error reading project directory (probably due to permissions): {projectPath}")
 
-        for file in files:
+        for file in sorted(files):
             if file.endswith("_highlighter.png"):
                 uniquesvg = file[0:file.index("_highlighter.png")]
 
@@ -53,6 +53,7 @@ def displayProject(request, name):
                     if svg.endswith(".svg"):
                         if uniquesvg in svg:
                             filePath = Path(os.path.join(PROJECT_PATH, name, uniquesvg + ".json"))
+
                             prefix = uniquesvg + ".cluster"
 
                             try:

@@ -6,7 +6,9 @@ Green,MxL3
 Black,MxL4
 Orange,MxL5
 Light Blue,SxL.1
-Lime,MxL1.1
+Light Blue,MxL1.1
+Lime,SxL.2
+Lime,MxL1.2
 Gray,MxL6
 Gray,MxL7
 Gray,MxL8
@@ -16,8 +18,6 @@ Gray,MxL11
 Gray,MxL2.1
 Gray,MxL3.1
 Gray,MxL4.1
-Gray,SxL.2
-Grey,MxL1.2
 Gray,MxL2.2
 Gray,MxL3.2
 Gray,MxL4.2
@@ -40,8 +40,6 @@ Apricot,MxL11
 Apricot,MxL2.1
 Apricot,MxL3.1
 Apricot,MxL4.1
-Apricot,SxL.2
-Apricot,MxL1.2
 Apricot,MxL2.2
 Apricot,MxL3.2
 Apricot,MxL4.2
@@ -64,8 +62,6 @@ Lavender,MxL11
 Lavender,MxL2.1
 Lavender,MxL3.1
 Lavender,MxL4.1
-Lavender,SxL.2
-Lavender,MxL1.2
 Lavender,MxL2.2
 Lavender,MxL3.2
 Lavender,MxL4.2
@@ -88,8 +84,6 @@ Pink,MxL11
 Pink,MxL2.1
 Pink,MxL3.1
 Pink,MxL4.1
-Pink,SxL.2
-Pink,MxL1.2
 Pink,MxL2.2
 Pink,MxL3.2
 Pink,MxL4.2
@@ -112,8 +106,6 @@ Purple,MxL11
 Purple,MxL2.1
 Purple,MxL3.1
 Purple,MxL4.1
-Purple,SxL.2
-Purple,MxL1.2
 Purple,MxL2.2
 Purple,MxL3.2
 Purple,MxL4.2
