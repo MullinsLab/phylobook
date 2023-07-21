@@ -87,12 +87,19 @@ def fasta_file_name(*, tree: Tree, project: Project) -> str:
     return None
 
 
-def get_lineage_dict() -> dict[str: list]:
+def get_lineage_dict(ordering: str=None) -> dict[str: list]:
     """ Returns a list of all lineages in the DB """
 
     lineage_dict: dict[str: list] = {}
 
-    for lineage in Lineage.objects.all():
+    if ordering == "include":
+        lineage_queryset = Lineage.objects.all()
+    if ordering == "only":
+        lineage_queryset = Lineage.objects.filter(color="Ordering")
+    elif not ordering or ordering == "exclude":
+        lineage_queryset = Lineage.objects.exclude(color="Ordering")
+
+    for lineage in lineage_queryset:
         if lineage.color not in lineage_dict:
             lineage_dict[lineage.color] = []
 

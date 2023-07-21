@@ -67,7 +67,7 @@ class TreeTests(TestCase):
         """ parse_sequences should return a dict with the correct values """
 
         sequence = utils.parse_sequence_name("V703_0132_200_GP_NT_70_1")
-        self.assertEqual(sequence, {"timepoint": 200, "multiplicity": 1})
+        self.assertEqual(sequence, {"timepoint": "200", "multiplicity": 1})
 
     def test_parse_sequences_should_return_none_with_no_multpilicity(self):
         """ parse_sequences should return None with a noncompliant name """
@@ -117,7 +117,7 @@ class TreeTests(TestCase):
         svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
-        self.assertGreater(lineage_counts["red"]["timepoints"][100], 0)
+        self.assertGreater(lineage_counts["red"]["timepoints"]["100"], 0)
     
     def test_tree_lineage_counts_should_be_less_than_total_count(self):
         """ tree_lineage_counts should be less than the total count """
@@ -125,7 +125,7 @@ class TreeTests(TestCase):
         svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
-        self.assertLess(lineage_counts["red"]["timepoints"][100], 184)
+        self.assertLess(lineage_counts["red"]["timepoints"]["100"], 184)
 
     def test_tree_lineage_counts_should_be_178_for_red(self):
         """ tree_lineage_counts should be 178 for red """
@@ -133,7 +133,7 @@ class TreeTests(TestCase):
         svg_file_name = "/phylobook/test_data/with_timepoints.svg"
         lineage_counts = utils.tree_lineage_counts(svg_file_name)
 
-        self.assertEqual(lineage_counts["red"]["timepoints"][100], 38)
+        self.assertEqual(lineage_counts["red"]["timepoints"]["100"], 38)
 
     # With test_with_timepoints.svg
 
@@ -165,6 +165,27 @@ class TreeTests(TestCase):
 
         lineage_dict: dict = utils.get_lineage_dict()
         self.assertEqual(lineage_dict["Red"], ['SxL', 'MxL1'])
+
+    def test_lineage_dict_should_include_ordering_given_ordering_include(self):
+        """ lineage_dict should include ordering given ordering include """
+
+        lineage_dict: dict = utils.get_lineage_dict(ordering="include")
+        self.assertIn("Red", lineage_dict)
+        self.assertIn("Ordering", lineage_dict)
+
+    def test_lineage_dict_should_not_includ_ordering_given_no_ordering(self):
+        """ lineage_dict should not include ordering given no ordering """
+
+        lineage_dict: dict = utils.get_lineage_dict()
+        self.assertIn("Red", lineage_dict)
+        self.assertNotIn("Ordering", lineage_dict)
+
+    def test_lineage_dict_should_only_include_ordering_given_ordering_only(self):
+        """ lineage_dict should only include ordering given ordering only """
+
+        lineage_dict: dict = utils.get_lineage_dict(ordering="only")
+        self.assertIn("Ordering", lineage_dict)
+        self.assertNotIn("Red", lineage_dict)
 
     # Tests for general functions
 
@@ -254,8 +275,8 @@ class PhyloTreeTests(SimpleTestCase):
     def test_phylobtree_lineage_counts_returns_correct_counts(self):
         """ PhyloTree lineage counts returns correct counts """
 
-        self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {100: 38, 101: 32, 102: 0, 103: 0, 104: 0}, 'total': 70})
-        self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {100: 0, 101: 7, 102: 10, 103: 8, 104: 1}, 'total': 26})
+        self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {"100": 38, "101": 32, "102": 0, "103": 0, "104": 0}, 'total': 70})
+        self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {"100": 0, "101": 7, "102": 10, "103": 8, "104": 1}, 'total': 26})
 
     def test_phylotree_change_lineage_raises_exception_given_bad_sequence_or_color(self):
         """ PhyloTree change lineage raises exception given bad lineage """
@@ -301,8 +322,8 @@ class PhyloTreeTests(SimpleTestCase):
         self.phylotree.swap_lineages("neonblue", "red")
         self.assertEqual(self.phylotree.sequences["TP_2_101_16"]["color"], "neonblue")
 
-        self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {100: 38, 101: 32, 102: 0, 103: 0, 104: 0}, 'total': 70})
-        self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {100: 0, 101: 7, 102: 10, 103: 8, 104: 1}, 'total': 26})
+        self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {'100': 38, '101': 32, '102': 0, '103': 0, '104': 0}, 'total': 70})
+        self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {"100": 0, "101": 7, "102": 10, "103": 8, "104": 1}, 'total': 26})
 
         self.phylotree.save(file_name="/phylobook/test_data/with_timepoints_changed.svg")
         self.assertEqual(utils.file_hash(file_name="/phylobook/test_data/with_timepoints_changed.svg"), "3a1b67a4bf3c88cdf6bd34e96dad2f4f")
@@ -332,8 +353,8 @@ class PhyloTreeTests(SimpleTestCase):
 
         self.assertEqual(self.phylotree.swap_by_counts(), "Red, Neon Blue")
 
-        self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {100: 38, 101: 32, 102: 0, 103: 0, 104: 0}, 'total': 70})
-        self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {100: 0, 101: 7, 102: 10, 103: 8, 104: 1}, 'total': 26})
+        self.assertEqual(self.phylotree.lineage_counts["red"], {'timepoints': {"100": 38, "101": 32, "102": 0, "103": 0, "104": 0}, 'total': 70})
+        self.assertEqual(self.phylotree.lineage_counts["neonblue"], {'timepoints': {"100": 0, "101": 7, "102": 10, "103": 8, "104": 1}, 'total': 26})
 
     def test_phylotree_swap_by_counts_correct_for_timepoints_misordered(self):
         """ PhyloTree swap_by_counts correct for timepoints misordered """
