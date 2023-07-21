@@ -162,6 +162,7 @@ class PhyloTree(object):
 
                 if sequence["timepoint"] not in lineage_counts["total"]["timepoints"]:
                     lineage_counts["total"]["timepoints"][sequence["timepoint"]] = 0
+                    
                 lineage_counts["total"]["timepoints"][sequence["timepoint"]] += sequence["multiplicity"]
             
             else:
@@ -254,7 +255,7 @@ def parse_sequence_name(sequence_name: str) -> dict:
     sequence_bits: list = sequence_name.split("_")
 
     if len(sequence_bits) >= 4 and sequence_bits[2].isnumeric():
-        sequence["timepoint"] = int(sequence_bits[2])
+        sequence["timepoint"] = sequence_bits[2]
     else:
         sequence["timepoint"] = None
 

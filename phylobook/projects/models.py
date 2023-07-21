@@ -10,7 +10,6 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-
 from treebeard.mp_tree import MP_Node
 
 # from phylobook.projects.utils import svg_file_name, fasta_file_name, tree_lineage_counts
@@ -139,6 +138,14 @@ class Tree(models.Model):
             return True
 
         return False
+    
+    @property
+    def sample_name(self) -> str:
+        """ Returns the name of the sample """
+
+        name_bits = self.name.split("_")
+
+        return f"{name_bits[0]}_{name_bits[1]}"
 
     def lineage_counts(self, *, include_total: bool=False) -> dict:
         """ Return the counts of each lineage in the tree """
@@ -268,15 +275,58 @@ class Tree(models.Model):
             for lineage_name, lineage in self.extract_all_lineages_to_fasta(sort="frequency").items():
                 zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_frequency", f"{self.name}_{lineage_name}.fasta"), lineage)
 
-            zipped_lineages.writestr(f"{self.name}_lineage_summary.txt", self.lineage_info_txt())
-
-
-            # os.path.join("test", f"{self.name}_lineage_summary.txt")
+            zipped_lineages.writestr(f"{self.name}_lineage_summary.csv", self.lineage_info_csv())
 
         return mem_zip.getvalue()
     
-    def lineage_info_txt(self) -> str:
-        """ Get all the lineage info as a string """
+    def lineage_info_csv(self) -> str:
+        """ Get all the lineage info as a csv """
+
+        csv: list[list[str]] = [[]]
+        csv_collector: str = ""
+
+        ordering: dict[str: list] = get_lineage_dict(ordering="only")
+        lineage_counts: dict = self.lineage_counts(include_total=True)
+
+        sample_base: str = self.sample_name
+        timepoints: list = [timepoint for timepoint in sorted(lineage_counts["total"]["timepoints"].keys())]
+
+        if timepoints:
+            csv[0].append("Sample")
+            csv.append([f"{sample_base}_{'-'.join(timepoints)}"])
+
+            csv[0].append("Sequences")
+            csv[1].append(lineage_counts["total"]["count"])
+
+            for name in ordering["Ordering"]:
+                csv[0].append(name)
+                csv[0].append(f"{name} freq")
+
+                if name in lineage_counts:
+                    csv[1].append(lineage_counts[name]["total"])
+                    csv[1].append(round((lineage_counts[name]["total"]/lineage_counts["total"]["count"]), 4))
+                else:
+                    csv[1].append("")
+                    csv[1].append("")
+
+            for timepoint in timepoints:
+                csv.append([f"{sample_base}_{timepoint}"])
+                csv[len(csv)-1].append(lineage_counts["total"]["timepoints"][timepoint])
+
+                for name in ordering["Ordering"]:
+                    if name in lineage_counts:
+                        csv[len(csv)-1].append(lineage_counts[name]["timepoints"][timepoint])
+                        csv[len(csv)-1].append(round((lineage_counts[name]["timepoints"][timepoint]/lineage_counts["total"]["timepoints"][timepoint]), 4))
+                    else:
+                        csv[len(csv)-1].append("")
+                        csv[len(csv)-1].append("")
+
+        for row in csv:
+            for col in row:
+                csv_collector += f"{col},"
+            csv_collector += "\n"
+
+        return csv_collector
 
         lineage_counts = self.lineage_counts(include_total=True)
         txt_collector: str = ""
@@ -371,4 +421,4 @@ class TreeLineage(models.Model):
         
 
 # Importing last to avoid circular imports
-from phylobook.projects.utils import svg_file_name, fasta_file_name, tree_lineage_counts, tree_sequence_names, PhyloTree
+from phylobook.projects.utils import svg_file_name, fasta_file_name, tree_lineage_counts, tree_sequence_names, PhyloTree, get_lineage_dict

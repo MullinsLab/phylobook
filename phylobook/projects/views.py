@@ -414,7 +414,6 @@ class Lineages(LoginRequiredMixin, View):
         """ Return the list of lineages """
 
         return JsonResponse(get_lineage_dict())
-        #return {}
     
 
 class TreeLineages(LoginRequiredMixin, View):
