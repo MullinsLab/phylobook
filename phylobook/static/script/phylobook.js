@@ -1289,7 +1289,15 @@ class treeLineagesCount {
 
             let totalCount = this.lineageCounts["total"]["count"]
 
-            if (this.lineageCounts["swap_message"] && ! recolor_flag){
+            if (this.lineageCounts["warnings"]) {
+                for (let warning_index in this.lineageCounts["warnings"]){
+                    form += "<div class='container border border-2 rounded warn'><br>";
+                    form += this.lineageCounts["warnings"][warning_index];
+                    form += "</div><br>";
+                };
+            };
+
+            if (this.lineageCounts["swap_message"] && ! recolor_flag) {
                 let script = 'recolorTreeByLineageCounts({id: "' + this.svgID + '", presentModal: true})';
 
                 form += "<div class='container border border-2 rounded warn'><br>This tree has lineages that are miscolored:";
@@ -1297,7 +1305,7 @@ class treeLineagesCount {
                 form += "<div class='d-flex flex-row-reverse'><div class='p-2 bd-highlight'><button type='button' class='btn btn-outline-primary btn-sm mb-2 bg-light' onclick='" + script + "'>Recolor tree by lineage counts</button></div></div>";
                 form += "</div><br>";
             }
-            else if (this.lineageCounts["swap_message"] && recolor_flag){
+            else if (this.lineageCounts["swap_message"] && recolor_flag) {
                 form += "<div class='container border border-2 rounded success'><br>Lineages have been recolored based on count of sequences at earliest timepoint";
                 form += "<br>(" + this.lineageCounts["swap_message"] + ")";
                 form += "</div><br>";
@@ -1305,7 +1313,7 @@ class treeLineagesCount {
 
             form += "<table class='table'><thead><tr><th scope='col'>Color</th><th scope='col'>Lineage Name</th></tr><tbody>"
 
-            for (let color_index in annotationColors ){
+            for (let color_index in annotationColors) {
                 let color = annotationColors[color_index]
                 
                 form += "<tr><th scope='row'><span  class='" + color["short"] + "_text'>" + color["name"] + "</span>";

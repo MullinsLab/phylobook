@@ -384,7 +384,13 @@ class PhyloTreeTests(SimpleTestCase):
         
         os.remove("/phylobook/test_data/without_timepoints_misordered_changed.svg")
 
-    def test_phylotre_lineage_counts_should_warn_of_unassigned_sequences(self):
-        """ PhyloTree lineage_counts should warn of unassigned sequences """
+    def test_phylotree_should_count_unassigned_sequences(self):
+        """ PhyloTree should count unassigned sequences """
 
-        pass
+        phylotree=utils.PhyloTree(file_name="/phylobook/test_data/with_timepoints_unassigned_sequences.svg")
+        self.assertEqual(phylotree.unassigned_sequences, 55)
+
+    def test_phylotree_should_show_no_unassigned_sequences_if_there_are_none(self):
+        """ PhyloTree should show no unassigned sequences if there are none """
+
+        self.assertEqual(self.phylotree.unassigned_sequences, 0)

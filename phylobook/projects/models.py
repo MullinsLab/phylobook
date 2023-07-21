@@ -119,6 +119,15 @@ class Tree(models.Model):
     phylotree = None
     
     @property
+    def unassigned_sequences(self) -> int:
+        """ Returns the number of unassigned sequences in the tree """
+
+        if not self.phylotree:
+            self.phylotree.load_file()
+
+        return self.phylotree.unassigned_sequences
+
+    @property
     def svg_file_name(self) -> str:
         """ Returns the name of the SVG file for the tree """
 
@@ -144,6 +153,9 @@ class Tree(models.Model):
         """ Returns the name of the sample """
 
         name_bits = self.name.split("_")
+
+        if len(name_bits) == 1:
+            return self.name
 
         return f"{name_bits[0]}_{name_bits[1]}"
 
@@ -320,6 +332,24 @@ class Tree(models.Model):
                     else:
                         csv[len(csv)-1].append("")
                         csv[len(csv)-1].append("")
+        else:
+            log.debug(lineage_counts)
+            csv[0].append("Sample")
+            csv.append([sample_base])
+
+            csv[0].append("Sequences")
+            csv[1].append(lineage_counts["total"]["count"])
+
+            for name in ordering["Ordering"]:
+                csv[0].append(name)
+                csv[0].append(f"{name} freq")
+
+                if name in lineage_counts:
+                    csv[1].append(lineage_counts[name]["count"])
+                    csv[1].append(round((lineage_counts[name]["count"]/lineage_counts["total"]["count"]), 4))
+                else:
+                    csv[1].append("")
+                    csv[1].append("")
 
         for row in csv:
             for col in row:
@@ -327,41 +357,6 @@ class Tree(models.Model):
             csv_collector += "\n"
 
         return csv_collector
-
-        lineage_counts = self.lineage_counts(include_total=True)
-        txt_collector: str = ""
-        total_count: int = lineage_counts["total"]["count"]
-
-        txt_collector += f"Total Sequences: {lineage_counts['total']['count']}\n"
-        has_timepoints: bool = False
-
-        if "timepoints" in lineage_counts["total"] and lineage_counts["total"]["timepoints"]:
-            has_timepoints = True
-
-            for timepoint in lineage_counts["total"]["timepoints"]:
-                txt_collector += f"@ timepoint {timepoint}: {lineage_counts['total']['timepoints'][timepoint]}\n"
-
-        for color in [color["short"] for color in settings.ANNOTATION_COLORS]:
-            for name, values in lineage_counts.items():
-                if name == "total":
-                    continue
-
-                if values["color"] == color:
-                    if has_timepoints:
-                        sub_collector: str = ""
-                        color_total: int = 0
-
-                        for timepoint in values["timepoints"]:
-                            count: int = values['timepoints'][timepoint]
-                            color_total += count
-
-                            sub_collector += f"@ timepoint {timepoint}: {count} ({round((count/total_count)*100, 1)}%)\n"
-
-                        txt_collector += f"\n{name} total: {color_total} ({round((color_total/total_count)*100, 1)}%)\n{sub_collector}"
-                    else:
-                        txt_collector += f"{name} total: {values['count']} ({round((values['count']/total_count)*100, 1)}%)\n"
-
-        return txt_collector
     
     def load_file(self) -> None:
         """ Loads the file for the tree """

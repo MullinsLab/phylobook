@@ -65,20 +65,27 @@ def displayProject(request, name):
                                 tree.type = fasta_type(tree=tree)
                                 tree.save()
 
+                            data = None
+
                             if filePath.is_file():
-                                with open(filePath, 'r') as json_file:
-                                    data = json.load(json_file)
-                                    minval = data["minval"] if (data["minval"] != "None" and data["minval"] != None and data["minval"] != "") else ""
-                                    maxval = data["maxval"] if (data["maxval"] != "None" and data["maxval"] != None and data["maxval"] != "") else ""
-                                    colorlowval = data["colorlowval"] if (data["colorlowval"] != "None" and data["colorlowval"] != None and data["colorlowval"] != "") else ""
-                                    colorhighval = data["colorhighval"] if (data["colorhighval"] != "None" and data["colorhighval"] != None and data["colorhighval"] != "") else ""
-                                    iscolored = data["iscolored"] if (data["iscolored"] != "None" and data["iscolored"] != None and data["iscolored"] != "") else "false"
-                                    entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": minval, \
-                                                    "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored, "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
+                                try:
+                                    with open(filePath, 'r') as json_file:
+                                        data = json.load(json_file)
+                                except:
+                                    pass
+
+                            if data:      
+                                minval = data["minval"] if (data["minval"] != "None" and data["minval"] != None and data["minval"] != "") else ""
+                                maxval = data["maxval"] if (data["maxval"] != "None" and data["maxval"] != None and data["maxval"] != "") else ""
+                                colorlowval = data["colorlowval"] if (data["colorlowval"] != "None" and data["colorlowval"] != None and data["colorlowval"] != "") else ""
+                                colorhighval = data["colorhighval"] if (data["colorhighval"] != "None" and data["colorhighval"] != None and data["colorhighval"] != "") else ""
+                                iscolored = data["iscolored"] if (data["iscolored"] != "None" and data["iscolored"] != None and data["iscolored"] != "") else "false"
+                                entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": minval, \
+                                                "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored, "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
                             else:
                                 entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", \
                                                 "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
-
+        
         context = {
             "entries": entries,
             "project": name,
@@ -457,6 +464,12 @@ class TreeLineages(LoginRequiredMixin, View):
 
         if swap_message:
             tree_lineage["swap_message"] = swap_message
+
+        if tree.unassigned_sequences:
+            if "warnings" not in tree_lineage:
+                tree_lineage["warnings"] = []
+            
+            tree_lineage["warnings"].append(f"{tree.unassigned_sequences} sequence(s) have not been assigned to a lineage.")
 
         return JsonResponse(tree_lineage)
     

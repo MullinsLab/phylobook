@@ -19,6 +19,7 @@ class PhyloTree(object):
         self.file_name = file_name
 
         self.sequences: dict[str: dict[str: ET.Element]] = {}
+        self.unassigned_sequences: int = 0
         self.lineage_counts: dict[str: dict] = {}
         self.timepoints: list[int] = []
         self.svg = None
@@ -106,7 +107,7 @@ class PhyloTree(object):
         return None
 
     def _prep_sequences(self) -> None:
-        """ Set up the self.elements dictionarie """
+        """ Set up the self.elements dictionary """
 
         for text_element in self.root.iter("{http://www.w3.org/2000/svg}text"):
             if text_element.attrib.get("class") and text_element.attrib["class"].startswith("box"):
@@ -115,6 +116,9 @@ class PhyloTree(object):
                 self.sequences[text_element.text]["text"] = text_element
                 self.sequences[text_element.text]["color"] = text_element.attrib["class"].replace("box", "")
                 self.sequences[text_element.text]["name"] = text_element.text
+
+            elif text_element.attrib.get("x") == "0":
+                self.unassigned_sequences += 1
 
         for path_element in self.root.iter("{http://www.w3.org/2000/svg}path"):
             if path_element.attrib.get("id"):

@@ -33,6 +33,5 @@ class Command(BaseCommand):
             reader: csv.DictReader = csv.DictReader(lineage_file)
             for row in reader:
                 Lineage.objects.create(**row)
-                print(row)
 
         self.stdout.write(self.style.SUCCESS(f"Lineages have been updated from {settings.LINEAGE_FILE}"))
