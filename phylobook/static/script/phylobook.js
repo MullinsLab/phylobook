@@ -1335,7 +1335,8 @@ class treeLineagesCount {
                     form += "<br><span class='lineage_info'>"
                     let first = true;
 
-                    for (let timepoint in this.lineageCounts[color["short"]]["timepoints"]){
+                    for (let timepoint_index in Object.keys(this.lineageCounts[color["short"]]["timepoints"]).sort()){
+                        let timepoint = Object.keys(this.lineageCounts[color["short"]]["timepoints"]).sort()[timepoint_index];
                         let timepointCount = this.lineageCounts[color["short"]]["timepoints"][timepoint]
 
                         if (! first){
