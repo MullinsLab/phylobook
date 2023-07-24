@@ -1323,28 +1323,30 @@ class treeLineagesCount {
                 if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["count"]){
                     count_info = this.lineageCounts[color["short"]];
 
-                    form += "<br><span class='lineage_info'>" + count_info["count"] + " sequence(s)";
+                    form += "<br><span class='lineage_info'>" + count_info["count"];
                     if (count_info["timepoint"]){
-                        form += " at timepoint " + count_info["timepoint"];
+                        form += " at <span class='lineage_name'>tp " + count_info["timepoint"] + "</span>";
                     }
                     
-                    form += " (" + Math.round((count_info["count"]/totalCount)*1000)/10 + "%)";
+                    form += " (" + Math.round((count_info["count"]/totalCount)*1000)/10 + "% of <span class='lineage_name'>total</span>)";
                     form += "</span>";
                 }
                 else if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["timepoints"]){
-                    form += "<br><span class='lineage_info'>"
+                    form += "<br><span class='lineage_info'>";
                     let first = true;
 
                     for (let timepoint_index in Object.keys(this.lineageCounts[color["short"]]["timepoints"]).sort()){
                         let timepoint = Object.keys(this.lineageCounts[color["short"]]["timepoints"]).sort()[timepoint_index];
+                        let timepointTotal = this.lineageCounts["total"]["timepoints"][timepoint];
                         let timepointCount = this.lineageCounts[color["short"]]["timepoints"][timepoint]
 
                         if (! first){
                             form += "<br>";
                         }
 
-                        form += timepointCount + " sequence(s) at timepoint " + timepoint 
-                        form += " (" + Math.round((timepointCount/totalCount)*1000)/10 + "%)";
+                        form += "<b>" + timepointCount + "</b> at <span class='lineage_name'>tp " + timepoint + "</span>: ";
+                        form += "<b>" + Math.round((timepointCount/timepointTotal)*1000)/10 + "%</b> ";
+                        form += " (" + Math.round((timepointCount/totalCount)*1000)/10 + "% of <span class='lineage_name'>total</span>)";
 
                         first = false;
                     };
@@ -1416,7 +1418,17 @@ class treeLineagesCount {
 
         modalTitle.html("Assign lineage names by color for: " + this.svgID);
         if (this.lineageCounts["total"]){
-            modalTitle.append("<br><span class='lineage_subtitle'>" + this.lineageCounts["total"]["count"] + " total sequences</span>");
+            let timepointAccumulator = "";
+
+            if ("timepoints" in this.lineageCounts["total"]){
+                for (let timepoint_index in Object.keys(this.lineageCounts["total"]["timepoints"]).sort()){
+                    let timepoint = Object.keys(this.lineageCounts["total"]["timepoints"]).sort()[timepoint_index];
+                    // timepointAccumulator += this.lineageCounts["total"]["timepoints"][timepoint] + " @" + timepoint + ", ";
+                    timepointAccumulator += "<span class='lineage_name'>tp " + timepoint + ":</span> " + this.lineageCounts["total"]["timepoints"][timepoint] + ", ";
+                };
+            };
+            
+            modalTitle.append("<br><span class='subtitle'>Sequences: " + timepointAccumulator  + " <span class='lineage_name'>total: </span>" + this.lineageCounts["total"]["count"] + "</span>");
         }
 
         modalBody.html(form);
@@ -1460,26 +1472,9 @@ class treeLineagesCount {
         };
 
         // Send the data to the server
-        // if (args && args.download) {
-        //     setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}, callback: jQuery.proxy(this.downloadLineagesCallback, this)})
-        //     // this.downloadLineagesCallback();
-        // }
-        // else {
-            setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}})
-            this.showModalForm({download: true});
-        // }
-
-        // for (let color in my_lineages){
-        //     if (! (color  in this.lineageCounts)){
-        //         this.lineageCounts[color] = {};
-        //     };
-
-        //     this.lineageCounts[color]["name"] = my_lineages[color];
-        // };
-
-        // this.checkLineageNames();
+        setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}})
+        this.showModalForm({download: true});
         this.setLineageNamesAssigned(true);
-        // modal.modal("hide");
     };
 
     downloadLineagesCallback(args){

@@ -258,7 +258,7 @@ def parse_sequence_name(sequence_name: str) -> dict:
     sequence: dict = {}
     sequence_bits: list = sequence_name.split("_")
 
-    if len(sequence_bits) >= 4 and sequence_bits[2].isnumeric():
+    if len(sequence_bits) >= 4: # and sequence_bits[2] .isnumeric():
         sequence["timepoint"] = sequence_bits[2]
     else:
         sequence["timepoint"] = None

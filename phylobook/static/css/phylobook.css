@@ -466,9 +466,12 @@ img {
     font-weight: normal;
 }
 
-.lineage_subtitle{
-    font-size: 16px;
+.lineage_name{
     font-style: italic;
+}
+
+.subtitle{
+    font-size: 16px;
 }
 
 .lineage_tag_unassigned{
