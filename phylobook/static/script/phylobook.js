@@ -1323,12 +1323,12 @@ class treeLineagesCount {
                 if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["count"]){
                     count_info = this.lineageCounts[color["short"]];
 
-                    form += "<br><span class='lineage_info'>" + count_info["count"];
+                    form += "<br><span class='lineage_info'>";
                     if (count_info["timepoint"]){
-                        form += " at <span class='lineage_name'>tp " + count_info["timepoint"] + "</span>";
+                        form += "<span class='lineage_name'>tp-" + count_info["timepoint"] + "</span>";
                     }
                     
-                    form += " (" + Math.round((count_info["count"]/totalCount)*1000)/10 + "% of <span class='lineage_name'>total</span>)";
+                    form += count_info["count"] + " (" + Math.round((count_info["count"]/totalCount)*1000)/10 + "% of <span class='lineage_name'>total</span>)";
                     form += "</span>";
                 }
                 else if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["timepoints"]){
@@ -1344,9 +1344,9 @@ class treeLineagesCount {
                             form += "<br>";
                         }
 
-                        form += "<b>" + timepointCount + "</b> at <span class='lineage_name'>tp " + timepoint + "</span>: ";
-                        form += "<b>" + Math.round((timepointCount/timepointTotal)*1000)/10 + "%</b> ";
-                        form += " (" + Math.round((timepointCount/totalCount)*1000)/10 + "% of <span class='lineage_name'>total</span>)";
+                        form += "<span class='lineage_name'>tp-" + timepoint + "</span>: <b>" + timepointCount + "</b>";
+                        form += " (<b>" + Math.round((timepointCount/timepointTotal)*1000)/10 + "%</b> of <span class='lineage_name'>tp-" + timepoint + "</span>, ";
+                        form += "" + Math.round((timepointCount/totalCount)*1000)/10 + "% of <span class='lineage_name'>total</span>)";
 
                         first = false;
                     };
@@ -1424,7 +1424,7 @@ class treeLineagesCount {
                 for (let timepoint_index in Object.keys(this.lineageCounts["total"]["timepoints"]).sort()){
                     let timepoint = Object.keys(this.lineageCounts["total"]["timepoints"]).sort()[timepoint_index];
                     // timepointAccumulator += this.lineageCounts["total"]["timepoints"][timepoint] + " @" + timepoint + ", ";
-                    timepointAccumulator += "<span class='lineage_name'>tp " + timepoint + ":</span> " + this.lineageCounts["total"]["timepoints"][timepoint] + ", ";
+                    timepointAccumulator += "<span class='lineage_name'>tp-" + timepoint + ":</span> " + this.lineageCounts["total"]["timepoints"][timepoint] + ", ";
                 };
             };
             
