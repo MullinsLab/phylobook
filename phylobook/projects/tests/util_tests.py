@@ -78,7 +78,7 @@ class TreeTests(TestCase):
     def test_parse_sequences_should_return_value_with_no_timepoint(self):
         """ parse_sequences should return a dict with a no timepoint """
 
-        sequence = utils.parse_sequence_name("V703_0132_test_GP_NT_70_1")
+        sequence = utils.parse_sequence_name("V703_test_1")
 
         self.assertEquals(sequence["multiplicity"], 1)
         self.assertIs(sequence["timepoint"], None)
