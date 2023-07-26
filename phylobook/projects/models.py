@@ -45,6 +45,9 @@ class Project(models.Model):
 
         return list
     
+    def ready_to_extract(self) -> bool:
+        pass
+    
     def extract_all_trees_to_zip(self) -> io.BytesIO:
         """ Extract all the trees belonging to this project to a zip file """
 
@@ -107,7 +110,6 @@ class Tree(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='trees')
     settings = models.JSONField(null=True, blank=True)
     type = models.CharField(max_length=256, choices=TYPE_CHOICES, null=True, blank=True)
-    lineages = models.ManyToManyField(Lineage, blank=True, through="TreeLineage", related_name="trees")
 
     class Meta:
         unique_together = ('project', 'name',)
@@ -333,7 +335,6 @@ class Tree(models.Model):
                         csv[len(csv)-1].append("")
                         csv[len(csv)-1].append("")
         else:
-            log.debug(lineage_counts)
             csv[0].append("Sample")
             csv.append([sample_base])
 
@@ -397,22 +398,6 @@ class Tree(models.Model):
             return None
         
         return ordered_sequence_names
-
-    
-class TreeLineage(models.Model):
-    """ Holds the relation between a tree and a lineage """
-
-    tree = models.ForeignKey(Tree, on_delete=models.CASCADE)
-    lineage = models.ForeignKey(Lineage, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('tree', 'lineage',)
-
-    def clean(self):
-        """ Ensure that there is only one lineage per color for the tree """
-
-        if TreeLineage.objects.filter(tree=self.tree, lineage__color=self.lineage.color).exclude(pk=self.pk).exists():
-            raise ValidationError(f"There is already a lineage with this color for this tree: {self.tree}")
         
 
 # Importing last to avoid circular imports
