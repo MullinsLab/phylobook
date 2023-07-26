@@ -1289,14 +1289,6 @@ class treeLineagesCount {
 
             let totalCount = this.lineageCounts["total"]["count"]
 
-            if (this.lineageCounts["warnings"]) {
-                for (let warning_index in this.lineageCounts["warnings"]){
-                    form += "<div class='container border border-2 rounded warn'><br>";
-                    form += this.lineageCounts["warnings"][warning_index];
-                    form += "</div><br>";
-                };
-            };
-
             if (this.lineageCounts["swap_message"] && ! recolor_flag) {
                 let script = 'recolorTreeByLineageCounts({id: "' + this.svgID + '", presentModal: true})';
 
@@ -1309,7 +1301,15 @@ class treeLineagesCount {
                 form += "<div class='container border border-2 rounded success'><br>Lineages have been recolored based on count of sequences at earliest timepoint";
                 form += "<br>(" + this.lineageCounts["swap_message"] + ")";
                 form += "</div><br>";
-            }
+            };
+
+            if (this.lineageCounts["warnings"]) {
+                for (let warning_index in this.lineageCounts["warnings"]){
+                    form += "<div class='container border border-2 rounded warn'><br>";
+                    form += this.lineageCounts["warnings"][warning_index];
+                    form += "</div><br>";
+                };
+            };
 
             form += "<table class='table'><thead><tr><th scope='col'>Color</th><th scope='col'>Lineage Name</th></tr><tbody>"
 
@@ -1499,8 +1499,7 @@ class treeLineagesCount {
                 caller.setLineageNamesAssigned(data["assigned"])
             },
             error: function (err) {
-                log.debug(err)
-                log.debug(this.svgID)
+                console.log(err)
                 alert( this.svgID + " Failed to load information on assignment names.\n  Contact dev team." + err.responseText + "(" + err.status + ")");
             }
         });
@@ -1736,3 +1735,11 @@ function recolorTreeByLineageCounts(args) {
         treeLineagesCounts[args.id].showModalForm({recolor: true});
     };
 };
+
+
+function resetTree(id){
+    //  Reset the tree to last saved colors
+
+    loadSVG(id);
+    setDirtySaved("notes-"+id);
+}

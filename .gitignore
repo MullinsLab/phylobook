@@ -133,3 +133,4 @@ phylobook_error_log
 # Exclude working files
 phylobook/logs/
 seed_data/
+ResetSeed

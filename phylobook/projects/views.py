@@ -443,14 +443,27 @@ class TreeLineages(LoginRequiredMixin, View):
         if not tree.fasta_file_name:
             return JsonResponse({"error": "This tree does not have an associate .fasta file.  Extractions can not be performed on it."})
 
+        tree_file: str = tree.svg_file_name #svg_file_name(project=project, tree=tree)
+        tree_lineage: dict = tree_lineage_counts(tree_file)
+        
         tree.load_file()
         if swap_message := tree.swap_by_counts():
             if flag == "recolor":
                 tree.save_file()
+                
+                log.debug([setting_color["short"] for setting_color in settings.ANNOTATION_COLORS if setting_color['has_UOLs']])
 
-        tree_file: str = tree.svg_file_name #svg_file_name(project=project, tree=tree)
-        tree_lineage: dict = tree_lineage_counts(tree_file)
-        
+                for color in tree_lineage.keys():
+                    log.debug(color)
+
+                    if color in [setting_color["short"] for setting_color in settings.ANNOTATION_COLORS if setting_color['has_UOLs']]:
+                        log.debug("UOLs found in tree")
+                        if "warnings" not in tree_lineage:
+                            tree_lineage["warnings"] = []
+
+                        tree_lineage["warnings"].append(f"This tree may contain UOLs. Please ensure that UOL designations match the correct major lineage after being recolored.")
+                        break
+
         if not tree.settings:
             tree_settings_lineages: dict = {}
         else:
