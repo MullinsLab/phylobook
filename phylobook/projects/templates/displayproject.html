@@ -350,6 +350,7 @@
                             <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show annotation tools</a>
                             &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm mb-2 disabled" id="extract_to_file-{{ entry.uniquesvg }}" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;" disabled>Assign lineage names / Extract to File</button></div>
                             &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
+                            &nbsp;&nbsp;<div><button type="button" onclick="resetTree('{{ entry.uniquesvg }}'); return false;" class="btn btn-outline-primary btn-sm disabled" id="revert-{{ entry.uniquesvg }}" disabled>Revert</button></div>
                         </div>
                     </div>
                 </div>

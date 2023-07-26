@@ -451,13 +451,8 @@ class TreeLineages(LoginRequiredMixin, View):
             if flag == "recolor":
                 tree.save_file()
                 
-                log.debug([setting_color["short"] for setting_color in settings.ANNOTATION_COLORS if setting_color['has_UOLs']])
-
                 for color in tree_lineage.keys():
-                    log.debug(color)
-
                     if color in [setting_color["short"] for setting_color in settings.ANNOTATION_COLORS if setting_color['has_UOLs']]:
-                        log.debug("UOLs found in tree")
                         if "warnings" not in tree_lineage:
                             tree_lineage["warnings"] = []
 

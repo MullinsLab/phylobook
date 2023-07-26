@@ -277,9 +277,15 @@ function setAllDirtyUnsaved() {
 function setDirtyUnsaved(edId) {
     $("#" + edId).closest(".tree").addClass("editedhighlight");
     tinyMCE.get(edId).setDirty(true);
+    
     var savebtnId = edId.replace("notes", "save");
+    var revertbtnId = edId.replace("notes", "revert");
+
     $("#" + savebtnId).prop('disabled', false);
     $("#" + savebtnId).removeClass("disabled");
+
+    $("#" + revertbtnId).prop('disabled', false);
+    $("#" + revertbtnId).removeClass("disabled");
 
     treeLineagesCounts[edId.replace("notes-", "")].disableSetLineagesButtons();
 }
@@ -287,8 +293,14 @@ function setDirtyUnsaved(edId) {
 function setDirtySaved(edId) {
     tinyMCE.get(edId).setDirty(false);
     var savebtnId = edId.replace("notes", "save");
+    var revertbtnId = edId.replace("notes", "revert");
+
     $("#" + savebtnId).prop('disabled', true);
     $("#" + savebtnId).addClass("disabled");
+
+    $("#" + revertbtnId).prop('disabled', true);
+    $("#" + revertbtnId).addClass("disabled");
+
     $("#" + edId).closest(".tree").removeClass("editedhighlight");
 
     treeLineagesCounts[edId.replace("notes-", "")].enableSetLineagesButtons();
@@ -1789,6 +1801,8 @@ function recolorTreeByLineageCounts(args) {
 function resetTree(id){
     //  Reset the tree to last saved colors
 
-    loadSVG(id);
-    setDirtySaved("notes-"+id);
-}
+    if (confirm("Are you sure you want to reset the tree?  This will reset all colors to the last saved state.")) {
+        loadSVG(id);
+        setDirtySaved("notes-"+id);
+    };
+};
