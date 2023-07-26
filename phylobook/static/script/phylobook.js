@@ -1389,7 +1389,7 @@ class treeLineagesCount {
                             if (selecting_name == "MxL1"){
                                 for (let check_color_index in annotationColors) {
                                     let check_color = annotationColors[check_color_index];
-                                    if (lineages[check_color["name"]].length == 1) {
+                                    if (check_color["short"] != "yellow" && lineages[check_color["name"]].length == 1) {
                                         if (check_color["short"] in this.lineageCounts) {
                                             selecting_default = true;
                                             break;
@@ -1401,7 +1401,7 @@ class treeLineagesCount {
                                 selecting_default = true;
                                 for (let check_color_index in annotationColors) {
                                     let check_color = annotationColors[check_color_index];
-                                    if (lineages[check_color["name"]].length == 1) {
+                                    if (check_color["short"] != "yellow" && lineages[check_color["name"]].length == 1) {
                                         if (check_color["short"] in this.lineageCounts) {
                                             selecting_default = false;
                                             break;
