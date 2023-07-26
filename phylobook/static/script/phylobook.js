@@ -1229,6 +1229,7 @@ class treeLineagesCount {
         let modalTitle = $("#annotations_modal_title");
         let modalBody = $("#annotations_modal_body");
         let modalButton = $("#annotations_modal_button");
+        let bonusButton = $("#annotations_bonus_button");
         let closeButton = $("#annotations_close_button");
 
         let download_flag = false;
@@ -1262,6 +1263,7 @@ class treeLineagesCount {
             modalButton.addClass("disabled");
 
             closeButton.removeClass("hide");
+            bonusButton.addClass("hide");
         }
         else if (download_flag){
             // Present form to download the file
@@ -1278,6 +1280,7 @@ class treeLineagesCount {
             modalButton.removeClass("disabled");
 
             closeButton.removeClass("hide");
+            bonusButton.addClass("hide");
         }
         else
         {
@@ -1320,6 +1323,7 @@ class treeLineagesCount {
 
                 let count_info = {};
 
+                // Create labels for the lineages
                 if (color["short"] in this.lineageCounts && this.lineageCounts[color["short"]]["count"]){
                     count_info = this.lineageCounts[color["short"]];
 
@@ -1356,6 +1360,7 @@ class treeLineagesCount {
 
                 form += "</th>";
                 
+                // Create dropdown for lineage names
                 if (lineages[color["name"]].length > 1){
                     form += "<td><select id='lineage___" + color["short"] + "' class='selectpicker' data-width='100px'>";
                     
@@ -1366,9 +1371,39 @@ class treeLineagesCount {
                         let selecting_name = lineages[color["name"]][name_index];
                         let selecting_default = false;
 
-                        if (selecting_name.startsWith("*")){
-                            selecting_name = selecting_name.replace("*", "");
-                            selecting_default = true;
+                        // Special case for Red.  Should be genericized in the future
+                        
+                        if (color["short"] == "red") {
+                            if (selecting_name == "MxL1"){
+                                for (let check_color_index in annotationColors) {
+                                    let check_color = annotationColors[check_color_index];
+                                    if (lineages[check_color["name"]].length == 1) {
+                                        if (check_color["short"] in this.lineageCounts) {
+                                            selecting_default = true;
+                                            break;
+                                        };
+                                    };
+                                };
+                            }
+                            else if (selecting_name == "SxL"){
+                                selecting_default = true;
+                                for (let check_color_index in annotationColors) {
+                                    let check_color = annotationColors[check_color_index];
+                                    if (lineages[check_color["name"]].length == 1) {
+                                        if (check_color["short"] in this.lineageCounts) {
+                                            selecting_default = false;
+                                            break;
+                                        };
+                                    };
+                                };
+                            };
+                        }
+                        else
+                        {
+                            if (selecting_name.startsWith("*")){
+                                selecting_name = selecting_name.replace("*", "");
+                                selecting_default = true;
+                            };
                         };
 
                         let current_name = "";
@@ -1403,16 +1438,20 @@ class treeLineagesCount {
             modalButton.prop("disabled", false);
             modalButton.removeClass("disabled");
 
-            closeButton.addClass("hide");
-
             let caller = this;
-
             if (args && "download" in args){
                 download = args["download"];
             }
-
             modalButton.off().on("click", function() {
                 caller.saveLineageNames();
+            });
+
+            closeButton.addClass("hide");
+            
+            bonusButton.html("Clear lineage assignments")
+            bonusButton.removeClass("hide");
+            bonusButton.off().on("click", function() {
+                caller.clearLineageNames();
             });
         };
 
@@ -1475,6 +1514,16 @@ class treeLineagesCount {
         setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}})
         this.showModalForm({download: true});
         this.setLineageNamesAssigned(true);
+    };
+
+    clearLineageNames(){
+        // Clear the lineage names
+
+        let modal = $("#annotations_modal");
+        
+        setTreeSetting({tree: this.svgID, settings: {lineages: {}}})
+        modal.modal("hide");
+        this.setLineageNamesAssigned(false)
     };
 
     downloadLineagesCallback(args){
