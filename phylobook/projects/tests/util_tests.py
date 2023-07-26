@@ -235,7 +235,7 @@ class TreeTests(TestCase):
     def test_color_by_short_returns_correct_dict(self):
         """ color_by_short should return the correct dictionary """
 
-        self.assertEqual(utils.color_by_short("red"), {'name': 'Red', 'short': 'red', 'swapable': True, 'value': 'FF0000'})
+        self.assertEqual(utils.color_by_short("red"), {'name': 'Red', 'short': 'red', 'swapable': True, 'value': 'FF0000', "has_UOLs": False})
 
 
 class PhyloTreeTests(SimpleTestCase):

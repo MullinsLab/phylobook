@@ -196,19 +196,19 @@ if LOGIN_TYPE == "sso":
 # Settings for the colors used to tag elements in the SVG
 # Any new colors added will need to be added to /phylobook/static/css/phylobook.css
 ANNOTATION_COLORS = (
-    {"name": "Red", "short": "red", "value": "FF0000", "swapable": True},
-    {"name": "Neon Blue", "short": "neonblue", "value": "537EFF", "swapable": True},
-    {"name": "Green", "short": "green", "value": "00CB85", "swapable": True}, 
-    {"name": "Black", "short": "black", "value": "000000", "swapable": True}, 
-    {"name": "Orange", "short": "orange", "value": "FFA500", "swapable": True}, 
-    {"name": "Light Blue", "short": "lightblue", "value": "00E3FF", "swapable": False}, 
-    {"name": "Lime", "short": "lime", "value": "BFEF45", "swapable": False}, 
-    {"name": "Gray", "short": "gray", "value": "808080", "swapable": False}, 
-    {"name": "Apricot", "short": "apricot", "value": "FFD8B1", "swapable": False}, 
-    {"name": "Lavender", "short": "lavender", "value": "DCBEFF", "swapable": False}, 
-    {"name": "Pink", "short": "pink", "value": "E935A1", "swapable": False}, 
-    {"name": "Purple", "short": "purple", "value": "800080", "swapable": False}, 
-    {"name": "Yellow", "short": "yellow", "value": "EFE645", "swapable": False}, 
+    {"name": "Red", "short": "red", "value": "FF0000", "swapable": True, "has_UOLs": False},
+    {"name": "Neon Blue", "short": "neonblue", "value": "537EFF", "swapable": True, "has_UOLs": False},
+    {"name": "Green", "short": "green", "value": "00CB85", "swapable": True, "has_UOLs": False}, 
+    {"name": "Black", "short": "black", "value": "000000", "swapable": True, "has_UOLs": False}, 
+    {"name": "Orange", "short": "orange", "value": "FFA500", "swapable": True, "has_UOLs": False}, 
+    {"name": "Light Blue", "short": "lightblue", "value": "00E3FF", "swapable": False, "has_UOLs": True}, 
+    {"name": "Lime", "short": "lime", "value": "BFEF45", "swapable": False, "has_UOLs": True}, 
+    {"name": "Gray", "short": "gray", "value": "808080", "swapable": False, "has_UOLs": True}, 
+    {"name": "Apricot", "short": "apricot", "value": "FFD8B1", "swapable": False, "has_UOLs": True}, 
+    {"name": "Lavender", "short": "lavender", "value": "DCBEFF", "swapable": False, "has_UOLs": True}, 
+    {"name": "Pink", "short": "pink", "value": "E935A1", "swapable": False, "has_UOLs": True}, 
+    {"name": "Purple", "short": "purple", "value": "800080", "swapable": False, "has_UOLs": True}, 
+    {"name": "Yellow", "short": "yellow", "value": "EFE645", "swapable": False, "has_UOLs": False}, 
 )
 
 SEQUENCE_ANNOTATION_COLORS = (
