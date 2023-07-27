@@ -482,7 +482,7 @@ class TreeLineages(LoginRequiredMixin, View):
         return JsonResponse(tree_lineage)
     
 class TreeLineagesReady(LoginRequiredMixin, View):
-    """ Check if the lineages are ready for extraction """
+    """ Check if the tree lineages are ready for extraction """
 
     def get(self, request, *args, **kwargs):
         """ Return true if the lineage is ready"""
@@ -500,7 +500,39 @@ class TreeLineagesReady(LoginRequiredMixin, View):
 
         return JsonResponse(ready)
 
+
+class ProjectLineagesReady(LoginRequiredMixin, View):
+    """ Check if the project lineages are ready for extraction """
+
+    def get(self, request, *args, **kwargs):
+        """ return the ready object as json """
+
+        project_name: str = kwargs["project"]
+        project: Project = Project.objects.get(name=project_name)
+
+        if not project or not (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
+            return HttpResponseBadRequest(f"Error loading this project while trying to establish whether the lineage is ready extract: {project_name}")
+
+        return JsonResponse(project.ready_to_extract())
+
     
+class ExtractAllToZip(LoginRequiredMixin, View):
+    """ Extract all tree sequences to a zip file by lineage """
+
+    def get(self, request, *args, **kwargs):
+        """ Return the zip file """
+
+        project_name: str = kwargs["project"]
+        project: Project = Project.objects.get(name=project_name)
+
+        if not project or not (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
+            return render(request, "projects.html", {"noaccess": project_name, "projects": get_user_project_tree(request.user)})
+        
+        response = HttpResponse(project.extract_all_trees_to_zip(), content_type="application/force-download")
+        response["Content-Disposition"] = f'attachment; filename="{project.name}_extracted_lineages.zip"'
+        return response
+    
+
 class ExtractToZip(LoginRequiredMixin, View):
     """ Extract sequences to a zip file by lineage """
 
@@ -517,5 +549,5 @@ class ExtractToZip(LoginRequiredMixin, View):
         tree: Tree = Tree.objects.get(project=project, name=tree_name)
 
         response = HttpResponse(tree.extract_all_lineages_to_zip(), content_type="application/force-download")
-        response['Content-Disposition'] = f'attachment; filename="{tree.name}_extracted_lineages.zip"'
+        response["Content-Disposition"] = f'attachment; filename="{tree.name}_extracted_lineages.zip"'
         return response

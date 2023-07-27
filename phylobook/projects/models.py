@@ -27,17 +27,17 @@ class Lineage(models.Model):
 
 
 class Project(models.Model):
-    ''' Projects corrispond with directories in PROJECT_PATH to load lineage data. '''
+    """ Projects corrispond with directories in PROJECT_PATH to load lineage data. """
 
     name = models.CharField(max_length=256)
     category = models.ForeignKey("ProjectCategory", null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        ''' Returns the Name of the project for print() '''
+        """ Returns the Name of the project for print() """
         return self.name
 
     def tree_node(self, list: list=[], user=None, depth: int=0) -> dict:
-        ''' Returns the tree node for the displayed list of nodes of Projects and Categories '''
+        """ Returns the tree node for the displayed list of nodes of Projects and Categories """
 
         # If a user is supplied, check if they can see this project
         if user is None or user.has_perm('projects.change_project', self) or user.has_perm('projects.view_project', self):
@@ -45,20 +45,44 @@ class Project(models.Model):
 
         return list
     
-    def ready_to_extract(self) -> bool:
-        pass
+    def ready_to_extract(self) -> dict[str: any]:
+        """ Returns a list of trees and whether they're ready to extract or not """
+
+        ready: dict[str: any] = {"ready": True, "ready_trees": [], "not_ready_trees": []}
+
+        for tree in self.trees.all():
+            if tree.ready_to_extract:
+                ready["ready_trees"].append(tree.name)
+            else:
+                ready["not_ready_trees"].append(tree.name)
+
+        if len(ready["not_ready_trees"]) > 0:
+            ready["ready"] = False
+
+        return ready
     
     def extract_all_trees_to_zip(self) -> io.BytesIO:
         """ Extract all the trees belonging to this project to a zip file """
 
-        trees = self.trees.all()
+        mem_zip = io.BytesIO()
+        with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zipped_lineages:
 
-        for tree in trees:
-            tree.extract_all_lineages_to_fasta()
+            for tree in self.trees.all():
+                lineages = tree.extract_all_lineages_to_fasta()
+            
+                for lineage_name, lineage in tree.extract_all_lineages_to_fasta(sort="tree").items():
+                    zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_tree_position", f"{tree.name}_{lineage_name}.fasta"), lineage)
+
+                for lineage_name, lineage in tree.extract_all_lineages_to_fasta(sort="timepoint_frequency").items():
+                    zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_frequency", f"{tree.name}_{lineage_name}.fasta"), lineage)
+
+                zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_lineage_summary.csv"), tree.lineage_info_csv())
+
+        return mem_zip.getvalue()
 
 
 class ProjectCategory(MP_Node):
-    ''' A hierarchical node for categorizing Projects to display them in a colapsing tree '''
+    """ A hierarchical node for categorizing Projects to display them in a colapsing tree """
     
     name = models.CharField(max_length=256) 
     node_order_by = ['name']
@@ -67,11 +91,11 @@ class ProjectCategory(MP_Node):
         verbose_name_plural = "Project Categories"
 
     def __str__(self):
-        ''' Returns the Name of the category for print() '''
+        """ Returns the Name of the category for print() """
         return self.name
     
     def display_for_user(self, user) -> bool:
-        ''' Recursive function to show if ProjectCategory should show for a specific user based on showing or editing the Project. '''
+        """ Recursive function to show if ProjectCategory should show for a specific user based on showing or editing the Project. """
 
         # Step through each project in this category and return True if they can view or edit it.
         for project in self.project_set.all():
@@ -85,7 +109,7 @@ class ProjectCategory(MP_Node):
         return False
 
     def tree_node(self, list: list=[], user=None, depth: int=0) -> dict:
-        ''' Returns the tree node for the displayed list of nodes of Projects and Categories '''
+        """ Returns the tree node for the displayed list of nodes of Projects and Categories """
 
         # If a user is supplied, check if they can see this project
         if user is None or self.display_for_user(user=user):
