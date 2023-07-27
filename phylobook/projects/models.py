@@ -160,6 +160,15 @@ class Tree(models.Model):
             return self.name
 
         return f"{name_bits[0]}_{name_bits[1]}"
+    
+    @property
+    def timepoints(self) -> list:
+        """ Returns true if the tree has timepoints """
+
+        if not self.phylotree:
+            self.load_file()
+
+        return self.phylotree.timepoints
 
     def lineage_counts(self, *, include_total: bool=False) -> dict:
         """ Return the counts of each lineage in the tree """
@@ -219,12 +228,42 @@ class Tree(models.Model):
         if not sort or sort == "tree":
             sequence_names = [name for name in self.ordered_sequence_names() if name in self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)]
 
+        elif sort == "timepoint_frequency":
+            timepoint_counts: dict[str: dict[str:list]] = {}
+
+            for timepoint in self.timepoints:
+                timepoint_counts[timepoint] = {}
+
+                for sequence_name in self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names):
+                    if timepoint != sequence_name.split("_")[2]:
+                        continue
+
+                    count: int = int(sequence_name.split("_")[-1])
+
+                    if count not in timepoint_counts[timepoint]:
+                        timepoint_counts[timepoint][count] = []
+
+                    timepoint_counts[timepoint][count].append(sequence_name)
+
+            for timepoint in timepoint_counts:
+                if timepoint not in timepoint_counts or not timepoint_counts[timepoint]:
+                    continue
+
+                count = sorted(timepoint_counts[timepoint].keys(), reverse=True)[0]
+                sequence_names.append(timepoint_counts[timepoint][count][0])
+                timepoint_counts[timepoint][count].pop(0)
+
+            for timepoint in timepoint_counts:
+                for count in sorted(timepoint_counts[timepoint].keys(), reverse=True):
+                    if timepoint_counts[timepoint][count]:
+                        sequence_names = sequence_names + timepoint_counts[timepoint][count]
+
         elif sort == "frequency":
             counts: dict[int: list] = {}
 
-            sequence_names_temp = self.ordered_sequence_names()
-            if not sequence_names_temp:
-                sequence_names_temp = self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)
+            # sequence_names_temp = self.ordered_sequence_names()
+            # if not sequence_names_temp:
+            #     sequence_names_temp = self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)
 
             for sequence_name in self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names):
                 count: int = int(sequence_name.split("_")[-1])
@@ -286,7 +325,7 @@ class Tree(models.Model):
             for lineage_name, lineage in self.extract_all_lineages_to_fasta(sort="tree").items():
                 zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_tree_position", f"{self.name}_{lineage_name}.fasta"), lineage)
 
-            for lineage_name, lineage in self.extract_all_lineages_to_fasta(sort="frequency").items():
+            for lineage_name, lineage in self.extract_all_lineages_to_fasta(sort="timepoint_frequency").items():
                 zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_frequency", f"{self.name}_{lineage_name}.fasta"), lineage)
 
             zipped_lineages.writestr(f"{self.name}_lineage_summary.csv", self.lineage_info_csv())
