@@ -6,10 +6,10 @@
 {% get_obj_perms request.user for project_obj as "context_perms" %}
 {% comment %} {% if "change_project" in context_perms %} {% endcomment %}
 {% if "change_project" in context_perms and not project_obj.edit_locked %}
-    <script src="{% static 'script/phylobook.js' %}"></script>
+    <script src="{% static 'script/phylobook_edit.js' %}"></script>
 {% endif %}
     <script src="{% static 'script/csvToArray.v2.1.js' %}"></script>
-    <script src="{% static 'script/phylobookview.js' %}"></script>
+    <script src="{% static 'script/phylobook_view.js' %}"></script>
     <script type="text/javascript">
         var token = '{{csrf_token}}';
         var projectName = '{{ project }}';
@@ -316,20 +316,25 @@
                 </div>
             </div>
             {% if "change_project" in context_perms and not project_obj.edit_locked %}
-            <div class="row">
-                <div class="col-auto mr-auto"><span>Number of sequences color range (all trees):&nbsp;&nbsp;</span></div>
-            </div>
-            <div class="row">
-                <div class="col-auto mr-auto text-nowrap">
-                    <label for="min">Min(cutoff):</label><input type="number" id="min" name="min" min="1" max="49000"  value="2" style="width: 4em">
-                    <div class="slider-range" id="slider-range"></div>
-                    <label for="max">Max(threshold >=):</label><input type="number" id="max" name="max" min="2" max="50000" value="50" style="width: 4em">
-                    <button type="button"  class="btn btn-outline-secondary btn-sm sequencecolor" id="sequencecolor">Update All</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm removesequencecolor" id="removesequencecolor">Remove All</button>
+                <div class="row">
+                    <div class="col-auto mr-auto"><span>Number of sequences color range (all trees):&nbsp;&nbsp;</span></div>
                 </div>
-                <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm disabled" id="extract_all_trees" onclick="project.showDownloadLineagesModal(); return false;" disabled>Extract all trees to file</button></div>
-                <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm" id="saveall">Save All</button></div>
-            </div>
+                <div class="row">
+                    <div class="col-auto mr-auto text-nowrap">
+                        <label for="min">Min(cutoff):</label><input type="number" id="min" name="min" min="1" max="49000"  value="2" style="width: 4em">
+                        <div class="slider-range" id="slider-range"></div>
+                        <label for="max">Max(threshold >=):</label><input type="number" id="max" name="max" min="2" max="50000" value="50" style="width: 4em">
+                        <button type="button"  class="btn btn-outline-secondary btn-sm sequencecolor" id="sequencecolor">Update All</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm removesequencecolor" id="removesequencecolor">Remove All</button>
+                    </div>
+                    <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm disabled" id="extract_all_trees" onclick="project.showDownloadLineagesModal(); return false;" disabled>Extract All Trees to File</button></div>
+                    <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm" id="saveall">Save All</button></div>
+                </div>
+            {% else %}
+                <div class="row">
+                    <div class="col-auto mr-auto text-nowrap"></div>
+                    <div class="col-auto"><button type="button" class="btn btn-outline-primary btn-sm disabled" id="extract_all_trees" onclick="project.showDownloadLineagesModal(); return false;" disabled>Extract All Trees to File</button></div>
+                </div>
             {% endif %}
             <div id="saveallprog" class="progress hide">
                 <div id="progressBar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
@@ -350,13 +355,16 @@
                         <div class="d-flex justify-content-start">
                             {% if "change_project" in context_perms and not project_obj.edit_locked %}
                                 <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show annotation tools</a>
-                                &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm mb-2 disabled" id="extract_to_file-{{ entry.uniquesvg }}" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;" disabled>Assign lineage names / Extract to File</button></div>
+                                &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm mb-2 disabled" id="extract_to_file-{{ entry.uniquesvg }}" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;" disabled>Assign Lineage Names / Extract to File</button></div>
                                 &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
                                 &nbsp;&nbsp;<div><button type="button" onclick="resetTree('{{ entry.uniquesvg }}'); return false;" class="btn btn-outline-primary btn-sm disabled" id="revert-{{ entry.uniquesvg }}" disabled>Revert</button></div>
-                            {% elif project_obj.edit_locked %}
-                                This project is locked for editing for all users.
-                            {% elif "change_project" not in context_perms %}
-                                You do not have edit permission for this project.
+                            {% else %}   
+                            <div><button type="button" class="btn btn-outline-primary btn-sm mb-2 disabled" id="extract_to_file-{{ entry.uniquesvg }}" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;" disabled>Extract Lineages to File</button></div>
+                                {% if project_obj.edit_locked %}
+                                    &nbsp;&nbsp;This project is locked for editing for all users.
+                                {% elif "change_project" not in context_perms %}
+                                    You do not have edit permission for this project.
+                                {% endif %}
                             {% endif %}
 
                         </div>
@@ -383,8 +391,8 @@
                             <input type="hidden" class="colorlowval" id="colorlowval-{{ entry.uniquesvg }}" value="{{ entry.colorlowval }}"/>
                             <input type="hidden" class="colorhighval" id="colorhighval-{{ entry.uniquesvg }}" value="{{ entry.colorhighval }}"/>
                             <input type="hidden" class="iscolored" id="iscolored-{{ entry.uniquesvg }}" value="{{ entry.iscolored }}"/>
-                            <script>
 
+                            <script>
                             // Slider/colorization functions
                             $( function() {
                                 $( "#slider-range-{{ entry.uniquesvg }}" ).slider({
@@ -538,11 +546,13 @@
                 <script type="text/javascript">
                     var rect;
                     $('#{{ entry.uniquesvg }}').find(".svgimage").load('{{ entry.svg }}', function() {
+                        
+                        // Set up the sequenceAnnotator and the treeLineagesCount after the svg loads
                         {% if "change_project" in context_perms and not project_obj.edit_locked %}
-                            // Set up the sequenceAnnotator and the treeLineagesCount after the svg loads
                             new sequenceAnnotator({{ "{" }}svgID: "{{ entry.uniquesvg }}"{{ "}" }})
-                            new treeLineagesCount({{ "{" }}svgID: "{{ entry.uniquesvg }}"{{ "}" }})
                         {% endif %}
+
+                        new treeLineagesCount({{ "{" }}svgID: "{{ entry.uniquesvg }}"{% if "change_project" not in context_perms or project_obj.edit_locked  %}, downloadOnly: true{% endif %}{{ "}" }})
 
                         d3.select($("#{{ entry.uniquesvg }}").find("svg")[0])
                             .call(d3.drag()

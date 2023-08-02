@@ -22,13 +22,9 @@ PROJECT_PATH = settings.PROJECT_PATH
 
 
 def projects(request):
-
     context = {
-        # "projects": getUserProjects(request.user)
         "project_tree": get_user_project_tree(request.user)
     }
-
-    log.debug(context)
 
     return render(request, "projects.html", context)
 
