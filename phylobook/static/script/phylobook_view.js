@@ -270,24 +270,40 @@ class treeLineagesCount {
                 };
             };
 
-            if (download_flag) {
-                form += "Lineage names for this tree have been saved.\nYou can now close this window or download the sequences."
+            console.log(this.lineageCounts);
+
+            if (! this.lineageOK()) {
+                form += "<div class='container border border-2 rounded warn'><br>";
+                form += "Some lineages have not been assigned names.";
+                form += "</div><br>";
+
+                modalButton.html("Download lineages");
+                modalButton.prop("disabled", true);
+                modalButton.addClass("disabled");
+
+                closeButton.removeClass("hide");
+                bonusButton.addClass("hide");
             }
-            else if (this.downloadOnly) {
-                form += "Lineages are ready to download."
-            }
+            else {
+                if (download_flag) {
+                    form += "Lineage names for this tree have been saved.\nYou can now close this window or download the sequences."
+                }
+                else if (this.downloadOnly) {
+                    form += "Lineages are ready to download."
+                }
             
-            let caller = this;
-            modalButton.off().on("click", function() {
-                jQuery.proxy(caller.downloadLineagesCallback({close: true}));
-            });
+                let caller = this;
+                modalButton.off().on("click", function() {
+                    jQuery.proxy(caller.downloadLineagesCallback({close: true}));
+                });
 
-            modalButton.html("Download lineages");
-            modalButton.prop("disabled", false);
-            modalButton.removeClass("disabled");
+                modalButton.html("Download lineages");
+                modalButton.prop("disabled", false);
+                modalButton.removeClass("disabled");
 
-            closeButton.removeClass("hide");
-            bonusButton.addClass("hide");
+                closeButton.removeClass("hide");
+                bonusButton.addClass("hide");
+            };
         }
         else
         {
@@ -483,6 +499,24 @@ class treeLineagesCount {
 
         modal.modal("show");
     };
+
+    lineageOK() {
+        // Check if the lineage is valid
+
+        for (let color_index in annotationColors){
+            let color = annotationColors[color_index];
+            if (color["short"] in this.lineageCounts){
+                let lineage = this.lineageCounts[color["short"]]
+                // if (! ("total" in lineage && lineage["total"] && "name" in lineage && lineage["name"])){
+                if ("total" in lineage && lineage["total"]  && ! ("name" in lineage && lineage["name"])){
+                    console.log
+                    return false;
+                };
+            };
+        };
+
+        return true;
+    }
 
     saveLineageNames(args){
         // Get the fields from the form and save it to the db
