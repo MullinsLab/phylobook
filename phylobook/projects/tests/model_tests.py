@@ -15,7 +15,7 @@ class ProjectTests(TestCase):
         my_project.save()
 
         self.assertEqual(str(my_project), "My Project")
-        self.assertEqual(my_project.tree_node(), [{"My Project": {"depth": 1, "is_project": True}}])
+        self.assertEqual(my_project.tree_node(), [{"My Project": {"depth": 1, "is_project": True, "description": None}}])
 
     def test_add_project_to_category(self):
         """ Create a category and add our project to it """
