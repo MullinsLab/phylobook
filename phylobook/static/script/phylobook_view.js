@@ -274,7 +274,7 @@ class treeLineagesCount {
 
             if (! this.lineageOK()) {
                 form += "<div class='container border border-2 rounded warn'><br>";
-                form += "Some lineages have not been assigned names.";
+                form += "Some lineages have not been assigned names.<br><br>Can not download lineages.";
                 form += "</div><br>";
 
                 modalButton.html("Download lineages");
