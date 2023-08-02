@@ -4,7 +4,8 @@
 {% load static %}
 {% load guardian_tags %}
 {% get_obj_perms request.user for project_obj as "context_perms" %}
-{% if "change_project" in context_perms %}
+{% comment %} {% if "change_project" in context_perms %} {% endcomment %}
+{% if "change_project" in context_perms and not project_obj.edit_locked %}
     <script src="{% static 'script/phylobook.js' %}"></script>
 {% endif %}
     <script src="{% static 'script/csvToArray.v2.1.js' %}"></script>
@@ -172,7 +173,7 @@
             }
         }
 
-        {% if 'change_project' in context_perms %}
+        {% if "change_project" in context_perms and not project_obj.edit_locked %}
         // add listener for cluster select
         $(function(){
             $('.cluster-select').on('change', function() {
@@ -314,7 +315,7 @@
                 <div class="col-auto mr-auto align-self-center"><button type="button" id="downloadproject" class="btn btn-outline-primary btn-sm">Download Project Files</button>&nbsp;&nbsp;&nbsp;&nbsp;<a target="_blank" class="highlighterdoc" href="https://www.hiv.lanl.gov/content/sequence/HIGHLIGHT/help.html">Highlighter plot explanation >></a>
                 </div>
             </div>
-            {% if 'change_project' in context_perms %}
+            {% if "change_project" in context_perms and not project_obj.edit_locked %}
             <div class="row">
                 <div class="col-auto mr-auto"><span>Number of sequences color range (all trees):&nbsp;&nbsp;</span></div>
             </div>
@@ -347,10 +348,17 @@
 
                     <div class="col-auto">
                         <div class="d-flex justify-content-start">
-                            <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show annotation tools</a>
-                            &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm mb-2 disabled" id="extract_to_file-{{ entry.uniquesvg }}" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;" disabled>Assign lineage names / Extract to File</button></div>
-                            &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
-                            &nbsp;&nbsp;<div><button type="button" onclick="resetTree('{{ entry.uniquesvg }}'); return false;" class="btn btn-outline-primary btn-sm disabled" id="revert-{{ entry.uniquesvg }}" disabled>Revert</button></div>
+                            {% if "change_project" in context_perms and not project_obj.edit_locked %}
+                                <a style="white-space: nowrap;" href="#" onclick="showhideColorRange('color-{{ entry.uniquesvg }}', this); return false;" class="seqcolor">Show annotation tools</a>
+                                &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm mb-2 disabled" id="extract_to_file-{{ entry.uniquesvg }}" onclick="downloadLineagesByColor('{{ entry.uniquesvg }}'); return false;" disabled>Assign lineage names / Extract to File</button></div>
+                                &nbsp;&nbsp;<div><button type="button" class="btn btn-outline-primary btn-sm save disabled" id="save-{{ entry.uniquesvg }}" disabled>Save</button></div>
+                                &nbsp;&nbsp;<div><button type="button" onclick="resetTree('{{ entry.uniquesvg }}'); return false;" class="btn btn-outline-primary btn-sm disabled" id="revert-{{ entry.uniquesvg }}" disabled>Revert</button></div>
+                            {% elif project_obj.edit_locked %}
+                                This project is locked for editing for all users.
+                            {% elif "change_project" not in context_perms %}
+                                You do not have edit permission for this project.
+                            {% endif %}
+
                         </div>
                     </div>
                 </div>
@@ -362,10 +370,11 @@
                     <div class="container border border-dark rounded mt-2 mb-2 p-2 bg-light text-nowrap ">
                         Mark sequences by count of duplicates:
                         <div class="text-nowrap">
-                            <label for="min-{{ entry.uniquesvg }}">{% if "change_project" not in context_perms %} Sequence count: {% endif %}Min(cutoff):</label><input type="number" class="min" id="min-{{ entry.uniquesvg }}" name="min" min="1" max="49999" value={% if entry.minval %} "{{ entry.minval }}" {% else %} "2" {% endif %} style="width: 4em;" {% if "change_project" not in context_perms %} disabled {% endif %}>
+                            {% comment %} {% if "change_project" not in context_perms %} {% endcomment %}
+                            <label for="min-{{ entry.uniquesvg }}">{% if "change_project" not in context_perms or project_obj.edit_locked %} Sequence count: {% endif %}Min(cutoff):</label><input type="number" class="min" id="min-{{ entry.uniquesvg }}" name="min" min="1" max="49999" value={% if entry.minval %} "{{ entry.minval }}" {% else %} "2" {% endif %} style="width: 4em;" {% if "change_project" not in context_perms or project_obj.edit_locked %} disabled {% endif %}>
                             <div class="slider-range" id="slider-range-{{ entry.uniquesvg }}"></div>
-                            <label for="max-{{ entry.uniquesvg }}">Max(threshold >=):</label><input type="number" class="max" id="max-{{ entry.uniquesvg }}" name="max" min="2" max="50000"  value={% if entry.maxval %} "{{ entry.maxval }}" {% else %}"50"{% endif %} style="width: 4em;" {% if "change_project" not in context_perms %} disabled {% endif %}>
-                            {% if 'change_project' in context_perms %}
+                            <label for="max-{{ entry.uniquesvg }}">Max(threshold >=):</label><input type="number" class="max" id="max-{{ entry.uniquesvg }}" name="max" min="2" max="50000"  value={% if entry.maxval %} "{{ entry.maxval }}" {% else %}"50"{% endif %} style="width: 4em;" {% if "change_project" not in context_perms or project_obj.edit_locked %} disabled {% endif %}>
+                            {% if "change_project" in context_perms and not project_obj.edit_locked %}
                             <button type="button"  class="btn btn-info btn-sm sequencecolor" id="sequencecolor-{{ entry.uniquesvg }}">Update</button>
                             <button type="button" class="btn btn-info btn-sm removesequencecolor" id="removesequencecolor-{{ entry.uniquesvg }}">Remove</button>
                             {% endif %}
@@ -380,7 +389,7 @@
                             $( function() {
                                 $( "#slider-range-{{ entry.uniquesvg }}" ).slider({
                                     range: true,
-                                    {% if "change_project" not in context_perms %} disabled: true, {% endif %}
+                                    {% if "change_project" not in context_perms or project_obj.edit_locked %} disabled: true, {% endif %}
                                     min: 1,
                                     max: 100,
                                     values: {% if entry.colorlowval and entry.colorhighval %} [ {{ entry.colorlowval }}, {{ entry.colorhighval }} ] {% else %} [ 1, 100 ] {% endif %},
@@ -405,7 +414,7 @@
                     </div>
 
                     <!-- Color sequence boxes by cluster -->
-                    {% if entry.clusterfiles|length > 0 and 'change_project' in context_perms %}
+                    {% if entry.clusterfiles|length > 0 and "change_project" in context_perms %}
                         <div class="container border border-dark rounded mt-2 mb-2 p-2 text-nowrap bg-light">
                             Annotate sequence boxes by cluster:
                             <div class="input-group">
@@ -434,7 +443,7 @@
                 <!-- Comments -->
                 <div class="container border border-primary rounded mt-2 mb-2 p-2 bg-light text-nowrap ">
                     Comments:
-                    <div style="width: 50%;" {% if 'change_project' in context_perms %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
+                    <div style="width: 50%;" {% if "change_project" in context_perms and not project_obj.edit_locked %} class="notes" {% endif %} id="notes-{{ entry.uniquesvg }}"></div>
                 </div>
 
                 <!-- Legend section -->
@@ -456,12 +465,14 @@
                                 <div class="slider-range-legend rounded border border-dark" id="slider-range-legend-{{ entry.uniquesvg }}"></div>
                                 <span id="slider-range-legend-max-{{ entry.uniquesvg }}"></span>
                             </div>
-                            {% if entry.iscolored == "true" %}
-                                <script>
-                                    $(document).ready(function() {
-                                        setSequenceCountLegend("{{ entry.uniquesvg }}", true);
-                                    });
-                                </script>
+                            {% if "change_project" in context_perms and not project_obj.edit_locked %}
+                                {% if entry.iscolored == "true" %}
+                                    <script>
+                                        $(document).ready(function() {
+                                            setSequenceCountLegend("{{ entry.uniquesvg }}", true);
+                                        });
+                                    </script>
+                                {% endif %}
                             {% endif %}
                         </div>
                     </div>
@@ -527,9 +538,11 @@
                 <script type="text/javascript">
                     var rect;
                     $('#{{ entry.uniquesvg }}').find(".svgimage").load('{{ entry.svg }}', function() {
-                        // Set up the sequenceAnnotator and the treeLineagesCount after the svg loads
-                        new sequenceAnnotator({{ "{" }}svgID: "{{ entry.uniquesvg }}"{{ "}" }})
-                        new treeLineagesCount({{ "{" }}svgID: "{{ entry.uniquesvg }}"{{ "}" }})
+                        {% if "change_project" in context_perms and not project_obj.edit_locked %}
+                            // Set up the sequenceAnnotator and the treeLineagesCount after the svg loads
+                            new sequenceAnnotator({{ "{" }}svgID: "{{ entry.uniquesvg }}"{{ "}" }})
+                            new treeLineagesCount({{ "{" }}svgID: "{{ entry.uniquesvg }}"{{ "}" }})
+                        {% endif %}
 
                         d3.select($("#{{ entry.uniquesvg }}").find("svg")[0])
                             .call(d3.drag()
@@ -575,30 +588,9 @@
                                     //console.log('end drag');
                                     })
                             );
-
-                            // draggable vertical bar on svg tree
-                            /*
-                            d3.select($("#{{ entry.uniquesvg }}").find("svg")[0]).append('rect')
-                              .attr('x', 0)
-                              .attr('y', 0)
-                              .attr('width', 3)
-                              .attr('height', "100%")
-                              .attr('stroke', 'gray')
-                              .attr('fill', 'gray')
-                              .style("opacity", 0.2)
-                              .style('cursor', 'pointer')
-                              .call(d3.drag()
-                                .on("drag", function (event, d) {
-                                    var maxX = parseInt(d3.select($("#{{ entry.uniquesvg }}").find("svg")[0]).attr("width")) - 3;
-                                    var x = event.x;
-                                    if (x >= 0 && x <= maxX) {
-                                        d3.select(this).attr("x", event.x);
-                                    }
-                                }));
-                            */
                     });
                     $('#notes-' + "{{ entry.uniquesvg }}").load('/projects/note/read/{{ project }}/' + "{{ entry.uniquesvg }}", function() {
-                        {% if 'change_project' in context_perms %}
+                        {% if "change_project" in context_perms and not project_obj.edit_locked %}
                         if (tinymce.get("notes-" + "{{ entry.uniquesvg }}")){
                             var content = tinymce.get("notes-" + "{{ entry.uniquesvg }}").getContent();
                             if (content.length > 0) {

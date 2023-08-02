@@ -28,6 +28,8 @@ def projects(request):
         "project_tree": get_user_project_tree(request.user)
     }
 
+    log.debug(context)
+
     return render(request, "projects.html", context)
 
 

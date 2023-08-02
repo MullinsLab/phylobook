@@ -504,3 +504,9 @@ img {
     color: Green;
     font-weight: bold;
 }
+
+.project_description{
+    font-size: 12px;
+    font-style: italic;
+    color: black;
+}

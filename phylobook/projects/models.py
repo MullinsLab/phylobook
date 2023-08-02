@@ -31,6 +31,8 @@ class Project(models.Model):
 
     name = models.CharField(max_length=256)
     category = models.ForeignKey("ProjectCategory", null=True, blank=True, on_delete=models.SET_NULL)
+    description = models.TextField(null=True, blank=True)
+    edit_locked = models.BooleanField(default=False)
 
     def __str__(self):
         """ Returns the Name of the project for print() """
@@ -41,7 +43,7 @@ class Project(models.Model):
 
         # If a user is supplied, check if they can see this project
         if user is None or user.has_perm('projects.change_project', self) or user.has_perm('projects.view_project', self):
-            list.append({self.name: {'depth': depth+1, 'is_project': True}})
+            list.append({self.name: {'depth': depth+1, 'is_project': True, 'description': self.description}})
 
         return list
     
