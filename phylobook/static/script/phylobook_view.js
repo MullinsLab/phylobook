@@ -37,6 +37,9 @@ function resizeSVGWidth(imgparentid, adjustment) {
 }
 
 $(document).ready(function() {
+    // Get project object
+    project = new projectObject();
+    
     // Get lineages for extractions
     getLineages();
 
@@ -667,4 +670,114 @@ function getLineages(){
             alert( id + " Failed to get lineages!!!  Contact dev team." );
         }
     });
+};
+
+
+class projectObject {
+    projectName = "";       // Name of the project
+    readyLineages = {};     // A dictionary holding information for the ready lineages
+
+    constructor(args){
+        this.projectName = projectName;
+
+        this.enableExtractAllButton();
+    };
+
+    getReadyLineages(args){
+        // Get the ready lineages from the server
+
+        let async = true;
+        if (args && args.async === false){
+            async = false;
+        }
+
+        let caller = this;
+        $.ajax({
+            type: "GET",
+            headers: { "X-CSRFToken": token },
+            url: '/projects/lineages_ready/' + caller.projectName,
+            async: async,
+            success: function(data) {
+                caller.setReadyLineages(data)
+            },
+            error: function (err) {
+                console.log(err)
+                alert("Failed to load information on assignment names.\n  Contact dev team." + err.responseText + "(" + err.status + ")");
+            }
+        });
+    };
+
+    setReadyLineages(ready){
+        // Set the ready lineages
+
+        this.readyLineages = ready;
+    };
+
+    enableExtractAllButton(){
+        // Enable the set lineage names button
+
+        $("#extract_all_trees").prop("disabled", false);
+        $("#extract_all_trees").removeClass("disabled");
+    };
+
+    showDownloadLineagesModal(){
+        // Show form to download lineages by color
+
+        let modal = $("#annotations_modal");
+        let modalTitle = $("#annotations_modal_title");
+        let modalBody = $("#annotations_modal_body");
+        let modalButton = $("#annotations_modal_button");
+        let bonusButton = $("#annotations_bonus_button");
+        let closeButton = $("#annotations_close_button");
+
+        let message = "";
+        let caller = this;
+
+        this.getReadyLineages({async: false});
+
+        if (this.readyLineages.ready) {
+            message = "Lineages are ready to download."
+
+            modalButton.removeClass("disabled");
+            modalButton.off().on("click", function() {
+                jQuery.proxy(caller.downloadLineagesCallback({close: true}));
+            });
+        }
+        else {
+            message += "<div class='warn'> Lineages are not ready to download.<br>All trees must have lineage names assigned before downloading.</div>";
+            message += "<br>The following lineages have not been assigned names:<ul>";
+            
+            for (let lineage_index in this.readyLineages.not_ready_trees.sort()){
+                let lineage = this.readyLineages.not_ready_trees.sort()[lineage_index];
+                message += "<li>" + lineage + "</li>";
+            }
+
+            message += "</ul>";
+
+            modalButton.addClass("disabled");
+        };
+
+        modalBody.html(message);
+
+        modalTitle.html("Download lineages for all trees");
+        modalButton.html("Download Lineages");
+        
+        modalButton.removeClass("hide");
+        closeButton.removeClass("hide");
+        bonusButton.addClass("hide");
+
+        modal.modal("show");
+    };
+
+    downloadLineagesCallback(args){
+        // Download the lineages
+
+        let modal = $("#annotations_modal");
+
+        window.open("/projects/extract_to_zip/" + projectName, "_self")
+
+        if (args.close){
+            modal.modal("hide");
+        };
+    };
 };
