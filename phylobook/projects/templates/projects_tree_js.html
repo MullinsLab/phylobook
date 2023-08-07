@@ -1,6 +1,6 @@
 {% for node in project_tree %}
     {% for key, thing in node.items %}
-        {text: "{{ key }}{% if thing.description %}<br><span class='project_description'>{{ thing.description }}</span>{% endif %}",
+        {text: "{{ key }}{% if thing.description %}<br><span class='project_description'>{{ thing.description|linebreaksbr }}</span>{% endif %}",
         {% if thing.is_project %}
         href: "/projects/{{ key }}",
         class: "projectlink",
