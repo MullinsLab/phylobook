@@ -9,6 +9,10 @@ from typing import Union
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.contrib.contenttypes.models import ContentType
+
+from guardian.models import UserObjectPermission
+from guardian.models import GroupObjectPermission
 
 from treebeard.mp_tree import MP_Node
 
@@ -81,6 +85,59 @@ class Project(models.Model):
                 zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_lineage_summary.csv"), tree.lineage_info_csv())
 
         return mem_zip.getvalue()
+
+    def clone(self, *, name: str, no_lock: bool=False) -> "Project":
+        """ Clone a project """
+
+        if Project.objects.filter(name=name).exists():
+            raise ValidationError(f"Project with name {name} already exists.")
+        
+        if " " in name:
+            raise ValidationError("Project name cannot contain spaces.")
+
+        content_type_id = ContentType.objects.get_for_model(self).id
+
+        was_locked: bool = self.edit_locked
+        if not no_lock and not self.edit_locked:
+            self.edit_locked = True
+            self.save()
+
+        origional_id: int = self.id
+
+        self.copy_files(name=name)
+
+        self.id=None
+        self.name = name
+        self.edit_locked = was_locked
+        self.save()
+
+        for user_object_permission in UserObjectPermission.objects.filter(object_pk=origional_id, content_type_id=content_type_id):
+            user_object_permission.id = None
+            user_object_permission.object_pk = self.id
+            user_object_permission.save()
+
+        for group_object_permission in GroupObjectPermission.objects.filter(object_pk=origional_id, content_type_id=content_type_id):
+            group_object_permission.id = None
+            group_object_permission.object_pk = self.id
+            group_object_permission.save()
+
+        for tree in Tree.objects.filter(project=origional_id):
+            tree.project=self
+            tree.id=None
+            tree.save()
+
+        return self
+    
+    def copy_files(self, *, name: str) -> None:
+        """ Copy files from one project to another """
+
+        old_path = os.path.join(settings.PROJECT_PATH, self.name)
+        new_path = os.path.join(settings.PROJECT_PATH, name)
+
+        if os.path.exists(new_path):
+            raise ValidationError(f"Directory with name {name} already exists.")
+        
+        shutil.copytree(old_path, new_path)
 
 
 class ProjectCategory(MP_Node):
