@@ -241,7 +241,8 @@ class treeLineagesCount {
         if (recolor_flag) {
             this.getLineageCounts({async: false, recolor: true});
         }
-        else if (! download_flag){
+        // else if (! download_flag) {
+        else {
             this.getLineageCounts({async: false});
         }
 
@@ -555,7 +556,12 @@ class treeLineagesCount {
         };
 
         // Send the data to the server
-        setTreeSetting({tree: this.svgID, settings: {lineages: my_lineages}})
+        setTreeSetting({tree: this.svgID, callback: jQuery.proxy(this.saveLineageNamesCallback, this), settings: {lineages: my_lineages}})
+    };
+
+    saveLineageNamesCallback(args){
+        // Callback for saving the lineage names
+
         this.showModalForm({download: true});
         this.setLineageNamesAssigned(true);
     };
