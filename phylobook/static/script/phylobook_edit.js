@@ -81,13 +81,13 @@ $(document).ready(function() {
                             },
                             error: function (err) {
                                 console.log(err)
-                                alert( id + " Failed to save tree!!!\nContact dev team." + err.responseText);
+                                alert( id + " Failed to save tree!!!\nContact dev team.\n\n" + err.responseText);
                             }
                         });
                     },
                     error: function (err) {
                         console.log(err)
-                        alert( id + " Failed to save notes!!!  Contact dev team." + err.responseText);
+                        alert( id + " Failed to save notes!!!  Contact dev team.\n\n" + err.responseText);
                     }
                 });
             } else {
@@ -206,7 +206,7 @@ function showCluster(project, file, id, drawboxes) {
             setDirtyUnsaved("notes-" + id);
         },
         error: function (err) {
-            alert( " Failed to get " + project + "/" + file + ". Contact dev team."  + err.responseText + "(" + err.status + ")");
+            alert( " Failed to get " + project + "/" + file + ". Contact dev team.\n\n"  + err.responseText + "(" + err.status + ")");
         }
     });
 }
@@ -376,12 +376,12 @@ function saveAll() {
                             }
                         },
                         error: function (err) {
-                            alert( id + " Failed to save tree in saveall!!!/nContact dev team."  + err.responseText + "(" + err.status + ")");
+                            alert( id + " Failed to save tree in saveall!!!/nContact dev team.\n\n"  + err.responseText + "(" + err.status + ")");
                         }
                     });
                 },
                 error: function (err) {
-                    alert( id + " Failed to save notes in saveall!!!  Contact dev team."  + err.responseText + "(" + err.status + ")");
+                    alert( id + " Failed to save notes in saveall!!!  Contact dev team.\n\n"  + err.responseText + "(" + err.status + ")");
                 }
             });
         } else {
@@ -421,7 +421,7 @@ $(document).ready(function() {
                 $("#seqbox").val(result);
             },
             error: function (err) {
-                alert( $("#seqsid").val() + " Failed to extract!  Contact dev team."  + err.responseText + "(" + err.status + ")");
+                alert( $("#seqsid").val() + " Failed to extract!  Contact dev team.\n\n"  + err.responseText + "(" + err.status + ")");
             }
         });
     });
@@ -1192,7 +1192,7 @@ function setTreeSetting(args){
         dataType: 'json',
         success: callback,
         error: function (err) {
-            alert( args.tree + " Failed to save settings!!!  Contact dev team." + err.responseText + "(" + err.status + ")");
+            alert( args.tree + " Failed to save settings!!!  Contact dev team.\n\n" + err.responseText + "(" + err.status + ")");
         }
     });
 };
@@ -1212,6 +1212,7 @@ function getTreeSettings(args){
         error: function (err) {
             console.log(err)
             console.log("Failed to get settings: Tree: " + args.tree + ", Setting: " + args.setting)
+            alert("Failed to load settings: Tree: " + args.tree + ".\n  Contact dev team.\n\n" + err.responseText + "(" + err.status + ")");
         }
     });
 }

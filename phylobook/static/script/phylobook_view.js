@@ -599,7 +599,7 @@ class treeLineagesCount {
             },
             error: function (err) {
                 console.log(err)
-                alert( this.svgID + " Failed to load information on assignment names.\n  Contact dev team." + err.responseText + "(" + err.status + ")");
+                alert( this.svgID + " Failed to load information on assignment names.\n  Contact dev team.\n\n" + err.responseText + "(" + err.status + ")");
             }
         });
     }
@@ -651,6 +651,7 @@ function getLineageCounts(args){
         async: async,
         error: function (err) {
             // alert( args.tree + " Failed to load lineage counts!!!  Contact dev team." );
+            alert("Failed to load lineage counts.\n  Contact dev team.\n\n" + err.responseText + "(" + err.status + ")");
             console.log(err)
             console.log("Failed to load lineage counts: Tree: " + args.tree)
         }
@@ -673,7 +674,8 @@ function getLineages(){
         },
         error: function (err) {
             console.log(err)
-            alert( id + " Failed to get lineages!!!  Contact dev team." );
+            // alert( id + " Failed to get lineages!!!  Contact dev team." );
+            alert("Failed to load lineages.\n  Contact dev team.\n\n" + err.responseText + "(" + err.status + ")");
         }
     });
 };
@@ -708,7 +710,7 @@ class projectObject {
             },
             error: function (err) {
                 console.log(err)
-                alert("Failed to load information on assignment names.\n  Contact dev team." + err.responseText + "(" + err.status + ")");
+                alert("Failed to load information on assignment names.\n  Contact dev team.\n\n" + err.responseText + "(" + err.status + ")");
             }
         });
     };
