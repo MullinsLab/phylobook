@@ -12,9 +12,9 @@ from django.shortcuts import render
 from pathlib import Path
 from django.conf import settings
 from guardian.shortcuts import get_perms
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.base import View
 
+from phylobook.projects.mixins import LoginRequredSimpleErrorMixin
 from phylobook.projects.models import Project, ProjectCategory, Tree
 from phylobook.projects.utils import fasta_type, tree_lineage_counts, svg_file_name, get_lineage_dict, PhyloTree
 
@@ -361,7 +361,7 @@ def downloadExtractedFasta(request, name, file):
         return response
     
 
-class TreeSettings(LoginRequiredMixin, View):
+class TreeSettings(LoginRequredSimpleErrorMixin, View):
     """ Class to get or set settings for a tree """
 
     def get(self, request, *args, **kwargs):
@@ -412,7 +412,7 @@ class TreeSettings(LoginRequiredMixin, View):
         return JsonResponse(return_data)
     
 
-class Lineages(LoginRequiredMixin, View):
+class Lineages(LoginRequredSimpleErrorMixin, View):
     """ Get the full list of lineages """
 
     def get(self, request, *args, **kwargs):
@@ -421,9 +421,9 @@ class Lineages(LoginRequiredMixin, View):
         return JsonResponse(get_lineage_dict())
     
 
-class TreeLineages(LoginRequiredMixin, View):
+class TreeLineages(LoginRequredSimpleErrorMixin, View):
     """ Get and set the lineages for a tree """
-
+    
     def get(self, request, *args, **kwargs):
         """ Return information about the tree lineages to the client """
 
@@ -479,7 +479,7 @@ class TreeLineages(LoginRequiredMixin, View):
 
         return JsonResponse(tree_lineage)
     
-class TreeLineagesReady(LoginRequiredMixin, View):
+class TreeLineagesReady(LoginRequredSimpleErrorMixin, View):
     """ Check if the tree lineages are ready for extraction """
 
     def get(self, request, *args, **kwargs):
@@ -499,7 +499,7 @@ class TreeLineagesReady(LoginRequiredMixin, View):
         return JsonResponse(ready)
 
 
-class ProjectLineagesReady(LoginRequiredMixin, View):
+class ProjectLineagesReady(LoginRequredSimpleErrorMixin, View):
     """ Check if the project lineages are ready for extraction """
 
     def get(self, request, *args, **kwargs):
@@ -514,7 +514,7 @@ class ProjectLineagesReady(LoginRequiredMixin, View):
         return JsonResponse(project.ready_to_extract())
 
     
-class ExtractAllToZip(LoginRequiredMixin, View):
+class ExtractAllToZip(LoginRequredSimpleErrorMixin, View):
     """ Extract all tree sequences to a zip file by lineage """
 
     def get(self, request, *args, **kwargs):
@@ -531,7 +531,7 @@ class ExtractAllToZip(LoginRequiredMixin, View):
         return response
     
 
-class ExtractToZip(LoginRequiredMixin, View):
+class ExtractToZip(LoginRequredSimpleErrorMixin, View):
     """ Extract sequences to a zip file by lineage """
 
     def get(self, request, *args, **kwargs):
