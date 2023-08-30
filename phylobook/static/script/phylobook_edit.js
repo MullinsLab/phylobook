@@ -874,22 +874,24 @@ function processContextMenuClick(e, selectedTextNode, selectedText, colorText) {
     ];
 
     if (existingColoredBox.node()) {
-        existingColoredBox.style("stroke", color);
-    } else {
-        // Specify the function for generating path data
-        var d3line = d3.line()
-            .x(function(d){return d.x;})
-            .y(function(d){return d.y;})
-            .curve(d3.curveLinear);
+        // existingColoredBox.style("stroke", color);
+        existingColoredBox.remove();
+    };
 
-        // Draw the line
-        svgcanvas.append("path")
-            .attr("id", labelText)
-            .attr("d", d3line(pathinfo))
-            .style("stroke-width", 1)
-            .style("stroke", color)
-            .style("fill", "none");
-    }
+    // Specify the function for generating path data
+    var d3line = d3.line()
+        .x(function(d){return d.x;})
+        .y(function(d){return d.y;})
+        .curve(d3.curveLinear);
+
+    // Draw the line
+    svgcanvas.append("path")
+        .attr("id", labelText)
+        .attr("d", d3line(pathinfo))
+        .style("stroke-width", 1)
+        .style("stroke", color)
+        .style("fill", "none");
+        
     setDirtyUnsaved("notes-" + $(selectedText.node()).closest(".imgparent").attr("id"));
     hideContextMenu();
 }
