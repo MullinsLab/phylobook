@@ -96,7 +96,7 @@ class Mutations:
             raise ValueError("Reference and sequence must be the same length")
         
         return Mutations.get_mutations_from_str(sequence=sequence, reference=reference, type=type, apobec=apobec, g_to_a=g_to_a, stop_codons=stop_codons, glycosylation=glycosylation, codon_offset=codon_offset)
-        
+    
     @staticmethod
     @cache
     def get_mutations_from_str(*, sequence: str, reference: str, type: str, apobec: bool, g_to_a: bool, stop_codons: bool=False, glycosylation: bool, codon_offset: int=0) -> dict[int: list]:
@@ -319,7 +319,8 @@ class MutationPlot:
                 id += " (r)"
 
             x: float = self.left_margin + self.plot_width + (inch/4)
-            y: float = ((self._seq_count-(plot_index + .5)) * (self._seq_height + self.seq_gap)) + self._plot_floor
+            #y: float = ((self._seq_count-(plot_index + .5)) * (self._seq_height + self.seq_gap)) + self._plot_floor
+            y: float = ((self._seq_count-(plot_index + .75)) * (self._seq_height + self.seq_gap))  + self.seq_gap + self._plot_floor
             sequence_str: String = String(x, y, id, fontName="Helvetica", fontSize=self.seq_name_font_size)
             drawing.add(sequence_str, id)
 

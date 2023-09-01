@@ -68,7 +68,7 @@ def displayProject(request, name, *, test_svg=False):
                                     file = file.replace(".png", ".svg")
 
                                 else:
-                                    if tree.make_svg_highlighter(project=project, tree=tree):
+                                    if tree.make_svg_highlighter():
                                         file = file.replace(".png", ".svg")
 
                             data = None
