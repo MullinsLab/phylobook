@@ -577,7 +577,7 @@ class Tree(models.Model):
         # log.debug(self.highlighter_file_name_png)
         # log.debug(self.highlighter_file_name_svg)
 
-        if not os.path.exists(self.nexus_file_name) or not os.path.exists(self.fasta_file_name):
+        if not self.nexus_file_name or not self.fasta_file_name or not os.path.exists(self.nexus_file_name) or not os.path.exists(self.fasta_file_name):
             return False
 
         alignment = AlignIO.read(self.fasta_file_name, "fasta")
