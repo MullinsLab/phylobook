@@ -16,7 +16,7 @@ from django.views.generic.base import View
 
 from phylobook.projects.mixins import LoginRequredSimpleErrorMixin
 from phylobook.projects.models import Project, ProjectCategory, Tree
-from phylobook.projects.utils import fasta_type, tree_lineage_counts, svg_file_name, get_lineage_dict, PhyloTree
+from phylobook.projects.utils import fasta_type, tree_lineage_counts,  get_lineage_dict
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -29,7 +29,7 @@ def projects(request):
     return render(request, "projects.html", context)
 
 
-def displayProject(request, name):
+def displayProject(request, name, *, test_svg=False):
     project = Project.objects.get(name=name)
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
         entries = []
@@ -46,15 +46,11 @@ def displayProject(request, name):
         for file in sorted(files):
             if file.endswith("_highlighter.png"):
                 uniquesvg = file[0:file.index("_highlighter.png")]
-                #file = file.replace(".png", ".svg")
-
-            #if file.endswith("_highlighter.svg"):
-                #uniquesvg = file[0:file.index("_highlighter.svg")]
-
+                                        
                 for svg in os.listdir(projectPath):
                     if svg.endswith(".svg") and not svg.endswith("_highlighter.svg"):
                         if uniquesvg in svg:
-                            filePath = Path(os.path.join(PROJECT_PATH, name, uniquesvg + ".json"))
+                            filePath = Path(os.path.join(projectPath, uniquesvg + ".json"))
 
                             prefix = uniquesvg + ".cluster"
 
@@ -66,6 +62,14 @@ def displayProject(request, name):
                             if not tree.type:
                                 tree.type = fasta_type(tree=tree)
                                 tree.save()
+
+                            if (test_svg):
+                                if os.path.exists(Path(os.path.join(projectPath, file.replace(".png", ".svg")))):
+                                    file = file.replace(".png", ".svg")
+
+                                else:
+                                    if tree.make_svg_highlighter(project=project, tree=tree):
+                                        file = file.replace(".png", ".svg")
 
                             data = None
 
@@ -87,8 +91,6 @@ def displayProject(request, name):
                             else:
                                 entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", \
                                                 "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
-        
-        log.debug(entries)
 
         context = {
             "entries": entries,
@@ -137,7 +139,7 @@ def get_user_project_tree(user) -> dict:
     return projects_tree
 
 
-def getFile(request, name, file):
+def getFile(request, name, file, *, throw_away=None):
     project = Project.objects.get(name=name)
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
         filePath = os.path.join(PROJECT_PATH, name, file)

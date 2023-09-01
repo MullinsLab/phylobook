@@ -87,6 +87,19 @@ def fasta_file_name(*, tree: Tree, project: Project) -> str:
     return None
 
 
+def nexus_file_name(*, tree: Tree, project: Project) -> str:
+    """ Returns the name of a nexus tree file """
+
+    tre_list = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*nexus.tre"))
+
+    if tre_list:
+        tre: str = tre_list[0]
+    else:
+        tre: str = None
+
+    return tre
+
+
 def get_lineage_dict(ordering: str=None) -> dict[str: list]:
     """ Returns a list of all lineages in the DB """
 

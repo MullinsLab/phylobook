@@ -1,9 +1,16 @@
+import phylobook.projects.utils.mutations
+
 import logging
 log = logging.getLogger('app')
 
 import io, zipfile, shutil, datetime, os
 
-from Bio import SeqIO
+import Bio
+from Bio import AlignIO, Phylo, SeqIO
+from Bio.Align import AlignInfo
+from Bio.Phylo import NexusIO, BaseTree
+from Bio.Graphics import MutationPlot
+
 from typing import Union
 
 from django.db import models
@@ -243,6 +250,12 @@ class Tree(models.Model):
         """ Returns the name of the FASTA file for the tree """
 
         return fasta_file_name(project=self.project, tree=self)
+    
+    @property
+    def nexus_file_name(self) -> str:
+        """ Returns the name of the NEXUS file for the tree """
+
+        return nexus_file_name(project=self.project, tree=self)
     
     @property
     def ready_to_extract(self) -> bool:
@@ -540,7 +553,21 @@ class Tree(models.Model):
             return None
         
         return ordered_sequence_names
+    
+    def make_svg_highlighter(self) -> bool:
+        """ Create a mutation highlighter plot """
+
+        log.debug(self.nexus_file_name)
+
+        if not os.path.exists(self.nexus_file_name) or not os.path.exists(self.fasta_file_name):
+            return False
+
+        alignment = AlignIO.read(self.fasta_file_name, "fasta")
+        nexus_tree = Phylo.read(self.nexus_file_name, "nexus")
+
+        mutation_plot = MutationPlot(alignment, tree=nexus_tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10) # (46*2)-36
+        mutation_plot.draw("V704_0011_240-241_REN_highlighter.svg", apobec=True, g_to_a=True, sort="tree")
         
 
 # Importing last to avoid circular imports
-from phylobook.projects.utils import svg_file_name, fasta_file_name, tree_lineage_counts, tree_sequence_names, PhyloTree, get_lineage_dict
+from phylobook.projects.utils import svg_file_name, fasta_file_name, nexus_file_name, tree_lineage_counts, tree_sequence_names, PhyloTree, get_lineage_dict
