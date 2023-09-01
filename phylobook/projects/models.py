@@ -249,6 +249,12 @@ class Tree(models.Model):
         return fasta_file_name(project=self.project, tree=self)
     
     @property
+    def origional_fasta_file_name(self) -> str:
+        """ Returns the name of the origional FASTA file (when available) for the tree """
+
+        return fasta_file_name(project=self.project, tree=self, prefer_origional=True)
+    
+    @property
     def nexus_file_name(self) -> str:
         """ Returns the name of the NEXUS file for the tree """
 
@@ -580,7 +586,7 @@ class Tree(models.Model):
         if not self.nexus_file_name or not self.fasta_file_name or not os.path.exists(self.nexus_file_name) or not os.path.exists(self.fasta_file_name):
             return False
 
-        alignment = AlignIO.read(self.fasta_file_name, "fasta")
+        alignment = AlignIO.read(self.origional_fasta_file_name, "fasta")
         nexus_tree = Phylo.read(self.nexus_file_name, "nexus")
 
         mutation_plot = MutationPlot(alignment, tree=nexus_tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10) # (46*2)-36
