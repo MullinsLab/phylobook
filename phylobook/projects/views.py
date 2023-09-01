@@ -46,9 +46,13 @@ def displayProject(request, name):
         for file in sorted(files):
             if file.endswith("_highlighter.png"):
                 uniquesvg = file[0:file.index("_highlighter.png")]
+                #file = file.replace(".png", ".svg")
+
+            #if file.endswith("_highlighter.svg"):
+                #uniquesvg = file[0:file.index("_highlighter.svg")]
 
                 for svg in os.listdir(projectPath):
-                    if svg.endswith(".svg"):
+                    if svg.endswith(".svg") and not svg.endswith("_highlighter.svg"):
                         if uniquesvg in svg:
                             filePath = Path(os.path.join(PROJECT_PATH, name, uniquesvg + ".json"))
 
@@ -84,6 +88,8 @@ def displayProject(request, name):
                                 entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", \
                                                 "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
         
+        log.debug(entries)
+
         context = {
             "entries": entries,
             "project": name,

@@ -128,16 +128,36 @@ class Project(models.Model):
 
         return self
     
-    def copy_files(self, *, name: str) -> None:
+    def copy_files(self, *, name: str, overwrite: bool=False) -> None:
         """ Copy files from one project to another """
 
         old_path = os.path.join(settings.PROJECT_PATH, self.name)
         new_path = os.path.join(settings.PROJECT_PATH, name)
 
-        if os.path.exists(new_path):
-            raise ValidationError(f"Directory with name {name} already exists.")
+        if overwrite:
+            shutil.copytree(old_path, new_path, dirs_exist_ok=True)
+        else:
+            if os.path.exists(new_path):
+                raise ValidationError(f"Directory with name {name} already exists.")
         
-        shutil.copytree(old_path, new_path)
+            shutil.copytree(old_path, new_path)
+
+    @property
+    def files_path(self) -> str:
+        """ Returns the path to the project directory """
+
+        return os.path.join(settings.PROJECT_PATH, self.name)
+    
+    def files(self) -> list:
+        """ Returns a list of files in the project directory """
+
+        return os.listdir(self.files_path)
+    
+    @property
+    def content_type_id(self) -> int:
+        """ Returns the content type id for the project """
+
+        return ContentType.objects.get_for_model(self).id
 
 
 class ProjectCategory(MP_Node):
