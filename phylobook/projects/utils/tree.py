@@ -130,10 +130,18 @@ class PhyloTree(object):
         """ Replace the color in a d string """
 
         element: ET.Element = self.sequences[sequence]["box"]
+        log.debug(f"Name: {self.sequences[sequence]['name']},  Color: {self.sequences[sequence]['color']}, Style: {element.attrib['style']}")
         style = element.attrib["style"]
         new_rgb = color_hex_to_rgb_string(hex_value=hex_value)
 
-        element.attrib["style"] = re.sub(r"rgb\((.*)\)", new_rgb, style)
+        if "rgb" in str(element.attrib["style"]):
+            element.attrib["style"] = re.sub(r"rgb\((.*)\)", new_rgb, style)
+        elif self.sequences[sequence]["color"] in element.attrib["style"]:
+            element.attrib["style"] = element.attrib["style"].replace(self.sequences[sequence]["color"], new_rgb)
+        else:
+            raise RuntimeError(f"Could not find color {self.sequences[sequence]['color']} or color code in style '{style}' for sequence {sequence}")
+        
+        log.debug(f"Name: {self.sequences[sequence]['name']},  Color: {self.sequences[sequence]['color']}, Style: {element.attrib['style']}\n")
 
     def _prep_tree_lineage_counts(self) -> dict[str: dict]:
         """ Get the counts of each lineage in the tree 
