@@ -126,11 +126,15 @@ class PhyloTree(object):
                     self.sequences[path_element.attrib["id"]] = {}
                 self.sequences[path_element.attrib["id"]]["box"] = path_element 
 
+                if "rgb" not in path_element.attrib["style"]:
+                    temp_color = re.search(r"stroke: (.*?);", path_element.attrib["style"]).group(1)
+                    if temp_color:
+                        self.sequences[path_element.attrib["id"]]["color"] = temp_color
+
     def _set_color_in_box(self, *, sequence: str, hex_value: str) -> str:
         """ Replace the color in a d string """
 
         element: ET.Element = self.sequences[sequence]["box"]
-        log.debug(f"Name: {self.sequences[sequence]['name']},  Color: {self.sequences[sequence]['color']}, Style: {element.attrib['style']}")
         style = element.attrib["style"]
         new_rgb = color_hex_to_rgb_string(hex_value=hex_value)
 
@@ -141,8 +145,6 @@ class PhyloTree(object):
         else:
             raise RuntimeError(f"Could not find color {self.sequences[sequence]['color']} or color code in style '{style}' for sequence {sequence}")
         
-        log.debug(f"Name: {self.sequences[sequence]['name']},  Color: {self.sequences[sequence]['color']}, Style: {element.attrib['style']}\n")
-
     def _prep_tree_lineage_counts(self) -> dict[str: dict]:
         """ Get the counts of each lineage in the tree 
         Move this whole thing into the PhyloTree object """
@@ -183,6 +185,8 @@ class PhyloTree(object):
 
                 lineage_counts[sequence["color"]]["count"] += sequence["multiplicity"]
                 lineage_counts["total"]["count"] += sequence["multiplicity"]
+
+        log.debug(lineage_counts)
 
         self.lineage_counts = lineage_counts
 

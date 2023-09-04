@@ -451,8 +451,12 @@ class TreeLineages(LoginRequredSimpleErrorMixin, View):
 
         tree_file: str = tree.svg_file_name #svg_file_name(project=project, tree=tree)
         tree_lineage: dict = tree_lineage_counts(tree_file)
-        
+        log.debug(tree_lineage)
+
         tree.load_file()
+        tree_lineage: dict = tree.phylotree.lineage_counts
+        log.debug(tree_lineage)
+        
         if swap_message := tree.swap_by_counts():
             if flag == "recolor":
                 tree.save_file()
