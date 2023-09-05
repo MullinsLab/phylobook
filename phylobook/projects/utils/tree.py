@@ -186,8 +186,6 @@ class PhyloTree(object):
                 lineage_counts[sequence["color"]]["count"] += sequence["multiplicity"]
                 lineage_counts["total"]["count"] += sequence["multiplicity"]
 
-        log.debug(lineage_counts)
-
         self.lineage_counts = lineage_counts
 
     def need_swaps(self) -> Union[bool, list]:

@@ -264,14 +264,15 @@ class Tree(models.Model):
     def highlighter_file_name_png(self) -> str:
         """ Returns the name of the highlighter file for the tree (png) """
 
-        png_list = glob.glob(os.path.join(self.project.files_path, f"{self.name}*_highlighter.png"))
+        return os.path.join(self.project.files_path, f"{self.name}_highlighter.png")
+        # png_list = sorted(glob.glob(os.path.join(self.project.files_path, f"{self.name}*_highlighter.png")))
 
-        if png_list:
-            png: str = png_list[0]
-        else:
-            png: str = None
+        # if png_list:
+        #     png: str = png_list[0]
+        # else:
+        #     png: str = None
 
-        return png
+        # return png
 
     @property
     def highlighter_file_name_svg(self) -> str:
@@ -584,10 +585,6 @@ class Tree(models.Model):
     
     def make_svg_highlighter(self) -> bool:
         """ Create a mutation highlighter plot """
-
-        # log.debug(self.nexus_file_name)
-        # log.debug(self.highlighter_file_name_png)
-        # log.debug(self.highlighter_file_name_svg)
 
         if not self.nexus_file_name or not self.fasta_file_name or not os.path.exists(self.nexus_file_name) or not os.path.exists(self.fasta_file_name):
             return False
