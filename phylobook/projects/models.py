@@ -313,7 +313,13 @@ class Tree(models.Model):
 
         lineages: dict = {}
 
-        lineage_counts: dict = tree_lineage_counts(tree=self.svg_file_name)
+        # lineage_counts: dict = tree_lineage_counts(tree=self.svg_file_name)
+
+        if not self.phylotree:
+            self.load_file()
+
+        lineage_counts: dict = self.phylotree.lineage_counts
+
 
         if self.settings is not None and self.settings.get("lineages"):
             lineage_names = self.settings.get("lineages")
@@ -596,6 +602,6 @@ class Tree(models.Model):
         
 
 # Importing last to avoid circular imports
-from phylobook.projects.utils import svg_file_name, fasta_file_name, nexus_file_name, tree_lineage_counts, tree_sequence_names, PhyloTree, get_lineage_dict
+from phylobook.projects.utils import svg_file_name, fasta_file_name, nexus_file_name, tree_sequence_names, PhyloTree, get_lineage_dict
 from phylobook.projects.utils import mutations
 from Bio.Graphics import MutationPlot

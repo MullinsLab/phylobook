@@ -16,7 +16,7 @@ from django.views.generic.base import View
 
 from phylobook.projects.mixins import LoginRequredSimpleErrorMixin
 from phylobook.projects.models import Project, ProjectCategory, Tree
-from phylobook.projects.utils import fasta_type, tree_lineage_counts,  get_lineage_dict
+from phylobook.projects.utils import fasta_type, get_lineage_dict
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -449,13 +449,8 @@ class TreeLineages(LoginRequredSimpleErrorMixin, View):
         if not tree.fasta_file_name:
             return JsonResponse({"error": "This tree does not have an associate .fasta file.  Extractions can not be performed on it."})
 
-        tree_file: str = tree.svg_file_name #svg_file_name(project=project, tree=tree)
-        tree_lineage: dict = tree_lineage_counts(tree_file)
-        log.debug(tree_lineage)
-
         tree.load_file()
         tree_lineage: dict = tree.phylotree.lineage_counts
-        log.debug(tree_lineage)
         
         if swap_message := tree.swap_by_counts():
             if flag == "recolor":
