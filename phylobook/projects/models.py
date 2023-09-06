@@ -485,13 +485,15 @@ class Tree(models.Model):
 
         ordering: dict[str: list] = get_lineage_dict(ordering="only")
         lineage_counts: dict = self.lineage_counts(include_total=True)
-
+        
         sample_base: str = self.sample_name
-        timepoints: list = [timepoint for timepoint in sorted(lineage_counts["total"]["timepoints"].keys())]
+        timepoints: list = [timepoint for timepoint in sorted(lineage_counts["total"]["timepoints"].keys(), key=lambda x: (x is None, x))]
 
         if timepoints:
+            timepoints_with_none: list = [timepoint if timepoint is not None else "None" for timepoint in timepoints]
+
             csv[0].append("Sample")
-            csv.append([f"{sample_base}_{'-'.join(timepoints)}"])
+            csv.append([f"{sample_base}_{'-'.join(timepoints_with_none)}"])
 
             csv[0].append("Sequences")
             csv[1].append(lineage_counts["total"]["count"])
@@ -513,8 +515,8 @@ class Tree(models.Model):
 
                 for name in ordering["Ordering"]:
                     if name in lineage_counts:
-                        csv[len(csv)-1].append(lineage_counts[name]["timepoints"][timepoint])
-                        csv[len(csv)-1].append(round((lineage_counts[name]["timepoints"][timepoint]/lineage_counts["total"]["timepoints"][timepoint]), 4))
+                        csv[len(csv)-1].append(lineage_counts[name]["timepoints"].get(timepoint, 0))
+                        csv[len(csv)-1].append(round((lineage_counts[name]["timepoints"].get(timepoint, 0)/lineage_counts["total"]["timepoints"][timepoint]), 4))
                     else:
                         csv[len(csv)-1].append("")
                         csv[len(csv)-1].append("")
