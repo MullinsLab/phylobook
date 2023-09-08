@@ -16,7 +16,7 @@ from django.views.generic.base import View
 
 from phylobook.projects.mixins import LoginRequredSimpleErrorMixin
 from phylobook.projects.models import Project, ProjectCategory, Tree
-from phylobook.projects.utils import fasta_type, get_lineage_dict
+from phylobook.projects.utils import fasta_type, get_lineage_dict, ensure_project_highlighter_svgs
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -29,9 +29,13 @@ def projects(request):
     return render(request, "projects.html", context)
 
 
-def displayProject(request, name, *, test_svg=False):
+def displayProject(request, name, width=1, *, test_svg=False):
     project = Project.objects.get(name=name)
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
+
+        if (test_svg):
+            ensure_project_highlighter_svgs(project, width=width)
+
         entries = []
         projectPath = os.path.join(PROJECT_PATH, name)
 
@@ -48,7 +52,7 @@ def displayProject(request, name, *, test_svg=False):
                 uniquesvg = file[0:file.index("_highlighter.png")]
                                         
                 for svg in os.listdir(projectPath):
-                    if svg.endswith(".svg") and not svg.endswith("_highlighter.svg"):
+                    if svg.endswith(".svg") and "_highlighter" not in svg: # not svg.endswith("_highlighter.svg"):
                         if uniquesvg in svg:
                             filePath = Path(os.path.join(projectPath, uniquesvg + ".json"))
 
@@ -68,11 +72,11 @@ def displayProject(request, name, *, test_svg=False):
                                 #     file = file.replace(".png", ".svg")
 
                                 # else:
-                                #     if tree.make_svg_highlighter():
+                                #     if tree.has_svg_highlighter():
                                 #         file = file.replace(".png", ".svg")
 
-                                if tree.make_svg_highlighter():
-                                    file = file.replace(".png", ".svg")
+                                if tree.has_svg_highlighter(width=width):
+                                    file = tree.highlighter_file_name_svg(width=width, path=False)
 
                             data = None
 

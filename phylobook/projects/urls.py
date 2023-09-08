@@ -23,6 +23,7 @@ urlpatterns = [
     path("extract_to_zip/<str:project>/<str:tree>", views.ExtractToZip.as_view(), name="extract_lineage"),
     path("<str:name>", login_required(views.displayProject)),
     path("<str:name>/TEST_SVG", login_required(views.displayProject), {"test_svg": True}),
+    path("<str:name>/TEST_SVG<int:width>", login_required(views.displayProject), {"test_svg": True}),
     path("<str:name>/<str:file>", login_required(views.getFile)),
     path("<str:name>/<str:throw_away>/<str:file>", login_required(views.getFile)),
 ]

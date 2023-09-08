@@ -3,6 +3,8 @@ log = logging.getLogger('app')
 
 import re
 import xml.etree.ElementTree as ET
+
+from multiprocessing import Pool, cpu_count
 from typing import Union
 
 from django.conf import settings
@@ -242,7 +244,21 @@ class PhyloTree(object):
         return False
 
 
-# def check_tree_highlighter_svg()
+def ensure_tree_highlighter_svg(tree: Tree, width: int=1) -> None:
+    """ Makes sure that a particular tree has a highlighter svg file """
+
+    tree.has_svg_highlighter(width=width)
+
+
+def ensure_project_highlighter_svgs(project: Project, width: int=1) -> None:
+    """ Makes sure that all trees in a particular project have highlighter svg files"""
+
+    pool = Pool()
+    pool.starmap(ensure_tree_highlighter_svg, [(tree, width) for tree in project.trees.all()])
+
+    pool.close()
+    pool.join()
+
 
 ####################################################################################################
 # Should get rid of these, but need to point tests at Phylotree :(

@@ -265,20 +265,15 @@ class Tree(models.Model):
         """ Returns the name of the highlighter file for the tree (png) """
 
         return os.path.join(self.project.files_path, f"{self.name}_highlighter.png")
-        # png_list = sorted(glob.glob(os.path.join(self.project.files_path, f"{self.name}*_highlighter.png")))
 
-        # if png_list:
-        #     png: str = png_list[0]
-        # else:
-        #     png: str = None
-
-        # return png
-
-    @property
-    def highlighter_file_name_svg(self) -> str:
+    def highlighter_file_name_svg(self, *, width: int=1, path=True) -> str:
         """ Returns the name of the highlighter file for the tree (svg)"""
 
-        return self.highlighter_file_name_png.replace(".png", ".svg")
+        if path:
+            return os.path.join(self.project.files_path, f"{self.name}_highlighter.{width}.svg")
+        
+        else:
+            return f"{self.name}_highlighter.{width}.svg"
     
     @property
     def ready_to_extract(self) -> bool:
@@ -585,17 +580,20 @@ class Tree(models.Model):
         
         return ordered_sequence_names
     
-    def make_svg_highlighter(self) -> bool:
+    def has_svg_highlighter(self, *, width: int=1) -> bool:
         """ Create a mutation highlighter plot """
 
         if not self.nexus_file_name or not self.fasta_file_name or not os.path.exists(self.nexus_file_name) or not os.path.exists(self.fasta_file_name):
             return False
 
+        if os.path.exists(self.highlighter_file_name_svg(width=width)):
+            return True
+        
         alignment = AlignIO.read(self.origional_fasta_file_name, "fasta")
         nexus_tree = Phylo.read(self.nexus_file_name, "nexus")
 
         mutation_plot = MutationPlot(alignment, tree=nexus_tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10) # (46*2)-36
-        mutation_plot.draw(self.highlighter_file_name_svg, apobec=True, g_to_a=True, sort="tree")
+        mutation_plot.draw(self.highlighter_file_name_svg(width=width), apobec=True, g_to_a=True, glycosylation=True, sort="tree", scheme="ML", mark_width=width)
 
         return True
         
