@@ -186,13 +186,3 @@ def color_by_short(color: str) -> dict[str: str]:
         raise ValueError(f"Color {color} not found in settings.ANNOTATION_COLORS")
     
     return color_object[0]
-
-
-def remove_string_from_file(file_name: str, string: str) -> None:
-    """ Removes a string from a file and resaves it """
-
-    with open(file_name, "r") as file:
-        data = file.read().replace(string, "")
-
-    with open(file_name, "w") as file:
-        file.write(data)
