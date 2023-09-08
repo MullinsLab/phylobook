@@ -64,12 +64,15 @@ def displayProject(request, name, *, test_svg=False):
                                 tree.save()
 
                             if (test_svg):
-                                if os.path.exists(Path(os.path.join(projectPath, file.replace(".png", ".svg")))):
-                                    file = file.replace(".png", ".svg")
+                                # if os.path.exists(Path(os.path.join(projectPath, file.replace(".png", ".svg")))):
+                                #     file = file.replace(".png", ".svg")
 
-                                else:
-                                    if tree.make_svg_highlighter():
-                                        file = file.replace(".png", ".svg")
+                                # else:
+                                #     if tree.make_svg_highlighter():
+                                #         file = file.replace(".png", ".svg")
+
+                                if tree.make_svg_highlighter():
+                                    file = file.replace(".png", ".svg")
 
                             data = None
 

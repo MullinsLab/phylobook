@@ -7,7 +7,8 @@ from typing import Union
 
 from django.conf import settings
 
-from phylobook.projects.utils.general import color_hex_to_rgb_string, color_by_short, remove_string_from_file
+from phylobook.projects.models import Tree, Project
+from phylobook.projects.utils.general import color_hex_to_rgb_string, color_by_short
 
 
 class PhyloTree(object):
@@ -240,6 +241,12 @@ class PhyloTree(object):
 
         return False
 
+
+# def check_tree_highlighter_svg()
+
+####################################################################################################
+# Should get rid of these, but need to point tests at Phylotree :(
+####################################################################################################
 
 def tree_sequence_names(tree_file: str) -> list[dict[str: str]]:
     """ Get all the sequence names from the a specific tree """
