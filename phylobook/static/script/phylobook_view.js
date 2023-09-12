@@ -442,7 +442,7 @@ class treeLineagesCount {
                         if (current_name == selecting_name){
                             selected = "selected";
                         }
-                        else if (selecting_default) {
+                        else if (! current_name && selecting_default) {
                             selected = "selected";
                         }
                         else {
