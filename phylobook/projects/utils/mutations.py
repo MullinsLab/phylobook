@@ -1,10 +1,8 @@
-import string, math
-
 from functools import cache
 from typing import Union
 
 import Bio
-from Bio import Graphics, Phylo
+from Bio import Graphics
 from Bio.Align import AlignInfo
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -12,54 +10,16 @@ from Bio.SeqRecord import SeqRecord
 class Mutations:
     """ Get mutation info from an alignment """
 
-    def __init__(self, alignment, *, type: str=None, codon_offset: int=0):
+    def __init__(self, alignment, *, seq_type: str=None, codon_offset: int=0):
         """ Initialize the Mutations object """
 
         self.alignment = alignment
         self.codon_offet: int=codon_offset % 3
 
-        if type not in ("NT", "AA"):
+        if seq_type not in ("NT", "AA"):
             raise ValueError("type must be provided (either 'NT' or 'AA')")
         else:
-            self.type = type
-
-        self.mutations: dict[dict[int: list]] = {}
-        self.reference: int = 0
-
-    def list_mutations(self, *, reference: Union[int, str]=0, apobec: bool=False, g_to_a: bool=False, stop_codons: bool=False, glycosylation: bool=False, codon_offset: int=0) -> dict[int: list]:
-        """ Get mutations from a sequence and a reference sequence """
-
-        reference_str: str = ""
-        mutations: list[dict[str: list]] = []
-
-        if isinstance(reference, str):
-            reference = self.get_seq_index_by_id(reference)
-        elif not isinstance(reference, int):
-            raise TypeError(f"Expected reference to be an int or str, got {type(reference)}")
-        
-        self.reference = reference
-
-        if isinstance(self.alignment[reference], SeqRecord):
-            reference_str = str(self.alignment[reference].seq)
-        elif isinstance(self.alignment[reference], Seq):
-            reference_str = str(self.alignment[reference])
-        elif isinstance(self.alignment[reference], str):
-            reference_str = self.alignment[reference]
-
-        if reference_str == "":
-            raise ValueError(f"Reference sequence {reference} is empty")
-        
-        for sequence in self.alignment:
-            if isinstance(sequence, SeqRecord):
-                sequence_str = str(sequence.seq)
-            elif isinstance(sequence, Seq):
-                sequence_str = str(sequence)
-            elif isinstance(sequence, str):
-                sequence_str = sequence
-
-            mutations.append(self.get_mutations(sequence=sequence_str, reference=reference_str, type=self.type, apobec=apobec, g_to_a=g_to_a, stop_codons=stop_codons, glycosylation=glycosylation, codon_offset=codon_offset))
-
-        return mutations
+            self.seq_type = seq_type
         
     def get_seq_index_by_id(self, id: str) -> str:
         """ Get a sequence from the alignment by its id """
@@ -70,12 +30,34 @@ class Mutations:
         
         raise IndexError(f"Could not find sequence with id {id}")
 
-    @staticmethod
-    def get_mutations(*, sequence: Union[str, Seq, SeqRecord], reference: Union[str, Seq, SeqRecord], type: str=None, apobec: bool=False, g_to_a: bool=False, stop_codons: bool=False, glycosylation: bool=False, codon_offset: int=0) -> dict[int: list]:
-        """ Get mutations from a a sequence and a reference sequence 
-        returns a dictionary of mutations where the key is the position of the mutation and the value is a list of types of mutations """
+    def list_mismatches(self, *, references: Union[int, str]=0, apobec: bool=False, g_to_a: bool=False, stop_codons: bool=False, glycosylation: bool=False, codon_offset: int=0) -> list[dict[str: list]]:
+        """ Get matches from a sequence and a reference sequence """
 
-        if type not in ("NT", "AA"):
+        mismatches: list[dict[str: list]] = []
+
+        if isinstance(references, str):
+            references = self.get_seq_index_by_id(references)
+        elif not isinstance(references, int):
+            raise TypeError(f"Expected reference to be an int or str, got {type(references)}")
+
+        self.references = references
+
+        reference_object = self.alignment[references]
+
+        if not reference_object:
+            raise ValueError(f"Reference sequence {references} is empty")
+        
+        for sequence in self.alignment:
+            mismatches.append(self.get_mismatches(sequence=sequence, references=reference_object, seq_type=self.seq_type, apobec=apobec, g_to_a=g_to_a, stop_codons=stop_codons, glycosylation=glycosylation, codon_offset=codon_offset))
+
+        return mismatches
+
+    @staticmethod
+    def get_mismatches(*, sequence: Union[str, Seq, SeqRecord], references: Union[str, Seq, SeqRecord], seq_type: str=None, apobec: bool=False, g_to_a: bool=False, stop_codons: bool=False, glycosylation: bool=False, codon_offset: int=0) -> dict[int: list]:
+        """ Get mismatches from a sequence and a reference sequence 
+        returns a dictionary of mismatches where the key is the position of the mismatch and the value is a list of types of mismatches """
+
+        if seq_type not in ("NT", "AA"):
             raise ValueError("type must be provided (either 'NT' or 'AA')")
 
         if isinstance(sequence, Seq):
@@ -85,52 +67,52 @@ class Mutations:
         elif not isinstance(sequence, str):
                 raise TypeError(f"Expected sequence to be a string, Seq, or SeqRecord, got {type(sequence)}")
 
-        if isinstance(reference, Seq):
-                reference = str(reference)
-        elif isinstance(reference, SeqRecord):
-                reference = str(reference.seq)
-        elif not isinstance(reference, str):
-                raise TypeError(f"Expected reference to be a string, Seq, or SeqRecord, got {type(reference)}")
+        if isinstance(references, Seq):
+                references = str(references)
+        elif isinstance(references, SeqRecord):
+                references = str(references.seq)
+        elif not isinstance(references, str):
+                raise TypeError(f"Expected reference to be a string, Seq, or SeqRecord, got {type(references)}")
             
-        if len(sequence) != len(reference):
+        if len(sequence) != len(references):
             raise ValueError("Reference and sequence must be the same length")
         
-        return Mutations.get_mutations_from_str(sequence=sequence, reference=reference, type=type, apobec=apobec, g_to_a=g_to_a, stop_codons=stop_codons, glycosylation=glycosylation, codon_offset=codon_offset)
+        return Mutations.get_mismatches_from_str(sequence=sequence, references=references, seq_type=seq_type, apobec=apobec, g_to_a=g_to_a, stop_codons=stop_codons, glycosylation=glycosylation, codon_offset=codon_offset)
     
     @staticmethod
     @cache
-    def get_mutations_from_str(*, sequence: str, reference: str, type: str, apobec: bool, g_to_a: bool, stop_codons: bool=False, glycosylation: bool, codon_offset: int=0) -> dict[int: list]:
+    def get_mismatches_from_str(*, sequence: str, references: str, seq_type: str, apobec: bool, g_to_a: bool, stop_codons: bool=False, glycosylation: bool, codon_offset: int=0) -> dict[int: list]:
         """ Get mutations from a sequence and a reference sequence
         separated out so it can be cached (Seq and SeqRecord are not hashable) """
 
-        if type not in ("NT", "AA"):
+        if seq_type not in ("NT", "AA"):
             raise ValueError("type must be provided (either 'NT' or 'AA')")
 
-        mutations: dict = {}
+        mismatches: dict = {}
 
-        if sequence == reference and (type == "NT" and not stop_codons) and (type == "AA" and not glycosylation):
-            return mutations
+        if sequence == references and (seq_type == "NT" and not stop_codons) and (seq_type == "AA" and not glycosylation):
+            return mismatches
 
         for base_index in range(len(sequence)):
-            if reference[base_index] != sequence[base_index]:
-                mutations[base_index] = []
+            if references[base_index] != sequence[base_index]:
+                mismatches[base_index] = []
                 
                 if sequence[base_index] != "-":
-                    mutations[base_index].append(sequence[base_index])
+                    mismatches[base_index].append(sequence[base_index])
                 else:
-                    mutations[base_index].append("Gap")
+                    mismatches[base_index].append("Gap")
 
                 # APOBEC and G->A mutations only apply to NT sequences
-                if type == "NT":
-                    if reference[base_index] == "G" and sequence[base_index] == "A":
+                if seq_type == "NT":
+                    if references[base_index] == "G" and sequence[base_index] == "A":
                         if g_to_a:
-                            mutations[base_index].append("G->A mutation")
+                            mismatches[base_index].append("G->A mutation")
 
                         if apobec and base_index <= len(sequence)-3 and sequence[base_index+1] in "AG" and sequence[base_index+2] != "C":
-                            mutations[base_index].append("APOBEC")
+                            mismatches[base_index].append("APOBEC")
 
             # Stop codons only apply to NT sequences
-            if type == "NT":
+            if seq_type == "NT":
                 if stop_codons and sequence[base_index] in "TU" and base_index <= len(sequence)-3 and SeqUtils.codon_position(sequence, base_index, codon_offset=codon_offset) == 0:
                     base_snippet: str = ""
                     snippet_index: int = base_index+1
@@ -140,13 +122,13 @@ class Mutations:
                         snippet_index += 1
 
                         if base_snippet in ("AA", "AG", "GA"):
-                            if base_index not in mutations:
-                                mutations[base_index] = []
+                            if base_index not in mismatches:
+                                mismatches[base_index] = []
 
-                            mutations[base_index].append("Stop codon")
+                            mismatches[base_index].append("Stop codon")
 
             # Glycosylation only applies to AA sequences
-            elif type == "AA":
+            elif seq_type == "AA":
                 if glycosylation and sequence[base_index] == "N" and base_index <= len(sequence)-3:
                     base_snippet: str = ""
                     snippet_index: int = base_index+1
@@ -156,12 +138,164 @@ class Mutations:
                         snippet_index += 1
                     
                     if base_snippet[0] != "P" and base_snippet[1] in "ST":
-                        if base_index not in mutations:
-                            mutations[base_index] = []
+                        if base_index not in mismatches:
+                            mismatches[base_index] = []
 
-                        mutations[base_index].append("Glycosylation")
+                        mismatches[base_index].append("Glycosylation")
         
-        return mutations
+        return mismatches
+    
+    def list_matches(self, *, references: tuple[Union[int, str]]=0) -> list[dict[str: list]]:
+        """ Get matches from a sequence and a reference sequence """
+
+        matches: list[dict[str: list]] = []
+
+        if not isinstance(references, list):
+            references = [references]
+
+        reference_objects: list = []
+        self.references = []
+
+        for reference in references:
+            if isinstance(reference, str):
+                self.references.append(self.get_seq_index_by_id(reference))
+
+            elif isinstance(reference, int):
+                if reference >= len(self.alignment):
+                    raise IndexError(f"Reference index {reference} is out of range")
+                
+                self.references.append(reference)
+
+            else:
+                raise TypeError(f"Expected reference to be an int or str, got {type(reference)}")
+            
+            reference_objects.append(self.alignment[self.references[-1]])
+
+        for sequence in self.alignment:
+            matches.append(self.get_matches(sequence=sequence, references=reference_objects, seq_type=self.seq_type))
+
+        return matches
+    
+    @staticmethod
+    def get_matches(*, sequence: Union[str, Seq, SeqRecord], references: Union[list[str, Seq, SeqRecord], str, Seq, SeqRecord], seq_type: str=None) -> dict[int: list]:
+        """ Get matches of a sequence to one or more reference sequences
+        returns a dictionary of matches where the key is the position of the match and the value is a list of types of matches """
+        
+        if seq_type not in ("NT", "AA"):
+            raise ValueError("type must be provided (either 'NT' or 'AA')")
+        
+        if isinstance(sequence, Seq):
+                sequence = str(sequence)
+        elif isinstance(sequence, SeqRecord):
+                sequence = str(sequence.seq)
+        elif not isinstance(sequence, str):
+                raise TypeError(f"Expected sequence to be a string, Seq, or SeqRecord, got {type(sequence)}")
+        
+        if not isinstance(references, list):
+            references = [references]
+
+        new_references: list = []
+
+        for reference in references:
+            if isinstance(reference, Seq):
+                reference = str(reference)
+            elif isinstance(reference, SeqRecord):
+                reference = str(reference.seq)
+            elif not isinstance(reference, str):
+                raise TypeError(f"Expected reference to be a string, Seq, or SeqRecord, got {type(reference)}")
+            
+            if len(sequence) != len(reference):
+                raise ValueError("All references and sequence must be the same length")
+            
+            new_references.append(reference)
+
+        return Mutations.get_matches_from_str(sequence=sequence, references=tuple(new_references), seq_type=seq_type)
+
+    @staticmethod
+    @cache
+    def get_matches_from_str(*, sequence: str, references: tuple[str], seq_type: str) -> dict[int: list]:
+        """ Get matches from a sequence and a reference sequence
+        separated out so it can be cached (Seq and SeqRecord are not hashable) """
+
+        if seq_type not in ("NT", "AA"):
+            raise ValueError("type must be provided (either 'NT' or 'AA')")
+
+        matches: dict = {}
+        
+        if sequence in references:
+            return matches
+
+        for base_index in range(len(sequence)):
+            matches[base_index] = []
+            for reference_index, reference in enumerate(references):
+                if reference[base_index] == sequence[base_index]:
+                    matches[base_index].append(reference_index)
+
+            if not matches[base_index]:
+                matches[base_index].append("Unique")
+
+            elif len(matches[base_index]) == len(references):
+                del matches[base_index]
+
+        return matches
+    
+    def export_matches(self, output_file, *, references: tuple[Union[int, str]]=0) -> None:
+        """ Export matches to a .txt file """
+
+        output: str = ""
+        matches = self.list_matches(references=references)
+        
+        for sequence_index, sequence in enumerate(self.alignment):
+            matched: dict = {}
+
+            for base, codes in matches[sequence_index].items():
+                if "Unique" in codes:
+                    if "Unique" not in matched:
+                        matched["Unique"] = []
+                    
+                    matched["Unique"].append(base+1)
+                
+                elif len(codes) > 1:
+                    if "Multiple" not in matched:
+                        matched["Multiple"] = []
+                    
+                    matched["Multiple"].append(base+1)
+
+                else:
+                    if codes[0] not in matched:
+                        matched[codes[0]] = []
+                    
+                    matched[codes[0]].append(base+1)
+
+            if sequence.id == "696": 
+                print(matched)
+                print(matches[sequence_index])
+                print(references)
+
+            if sequence_index in self.references:
+                output += f"{sequence.id} (R{self.references.index(sequence_index)+1})\n"
+            else:
+                output += f"{sequence.id}\n"
+
+            for code in list(range(10)) + ["Unique", "Multiple"]:
+                if code not in matched:
+                    continue
+
+                if code == "Unique":
+                    output += f"Unique in query "
+
+                elif code == "Multiple":
+                    output += f"Multiple matches "
+                    
+                else:
+                    output += f"R{code+1} "
+
+                output += f"[{' '.join([str(thing) for thing in matched[code]])}]\n"
+
+            output += "\n"
+
+        with open(output_file, mode="wt") as file:
+            file.write(output)
     
 AlignInfo.Mutations = Mutations
 
@@ -182,7 +316,7 @@ from Bio.Align import AlignInfo
 class MutationPlot:
     """ Create and output a mutation plot """
 
-    def __init__(self, alignment, *, type: str=None, tree: Union[str, object]=None, output_format: str="svg", plot_width: int = 4*inch, seq_name_font: str="Helvetica", seq_name_font_size: int=8, seq_gap: int=None, left_margin: float=.25*inch, top_margin: float=.25*inch, bottom_margin: float=0, right_margin: float=0, mark_reference: bool=True, title: str=None, title_font="Helvetica", title_font_size: int=12, ruler: bool=True, ruler_font: str="Helvetica", ruler_font_size: int=6, ruler_major_ticks: int=10, ruler_minor_ticks=3, codon_offset: int=0):
+    def __init__(self, alignment, *, type: str=None, tree: Union[str, object]=None, plot_width: int = 4*inch, seq_name_font: str="Helvetica", seq_name_font_size: int=8, seq_gap: int=None, left_margin: float=.25*inch, top_margin: float=.25*inch, bottom_margin: float=0, right_margin: float=0, mark_reference: bool=True, title_font="Helvetica", title_font_size: int=12, ruler: bool=True, ruler_font: str="Helvetica", ruler_font_size: int=6, ruler_major_ticks: int=10, ruler_minor_ticks=3, codon_offset: int=0):
         """ Initialize the MutationPlot object """
 
         self.alignment = alignment
@@ -199,12 +333,10 @@ class MutationPlot:
             else:
                 raise TypeError("Tree must be a Bio.Phylo.BaseTree.Tree object (or a derivative)")
 
-        self._mutations = AlignInfo.Mutations(alignment, type=self.type)
         self._seq_count = len(alignment)
         self._seq_length = len(alignment[0])
         self.mark_reference: bool = mark_reference
 
-        self.output_format: str = output_format
         self.seq_name_font: str = seq_name_font
         self.seq_name_font_size: int = seq_name_font_size
 
@@ -213,11 +345,8 @@ class MutationPlot:
         self.left_margin: float = left_margin
         self.right_margin: float = right_margin
 
-        self.title: str = title
         self.title_font: str = title_font
         self.title_font_size: int = title_font_size
-        self._title_font_height: float = self.title_font_size
-        self._title_height = 0 if not title else self._title_font_height*2
 
         self.ruler: bool = ruler
         self.ruler_font: str = ruler_font
@@ -225,19 +354,28 @@ class MutationPlot:
         self.ruler_major_ticks: int = ruler_major_ticks
         self.ruler_minor_ticks: int = ruler_minor_ticks
         self._ruler_font_height: float = self.ruler_font_size
-        self._ruler_height = 0 if not ruler else self._ruler_font_height * 3
 
         self.plot_width: float = plot_width
-        self._plot_floor: float = self.bottom_margin + self._ruler_height
 
-        self._seq_name_width: float = self._max_seq_name_width
-        self._width: float = self.left_margin + self.plot_width + (inch/4) + self._seq_name_width + self.right_margin
-        
         self._seq_height: float = self.seq_name_font_size
         self.seq_gap: float = self._seq_height / 5 if seq_gap is None else seq_gap
-        self._height: float = len(self.alignment) * (self._seq_height + self.seq_gap) + self.top_margin + self.bottom_margin + self._title_height + self._ruler_height
 
-        self._plot_colors: dict[str: [dict[str: str]]] = {
+        self.match_plot_colors: dict[str: dict] = {
+            "ML": {
+                "references": ["#FF0000", "#537EFF", "#00CB85", "#000000", "#FFA500"],
+                "unique": "#EFE645",
+                "multiple": "#808080",
+            },
+            "LANL": {
+                "references": ["#ED1C24", "#235192", "#FFC20E", "#00A651", "#8DC73F"],
+                "unique": "#000000",
+                "multiple": "#666666",
+            }
+        }
+        self.match_plot_unique_color: str = "#EFE645"
+        self.match_plot_multiple_color: str = "#808080"
+
+        self.mismatch_plot_colors: dict[str: [dict[str: str]]] = {
             "NT": {
                 "LANL": {
                     "A": "#42FF00", 
@@ -282,110 +420,184 @@ class MutationPlot:
             }
         }
 
-    def draw(self, output_file, reference: Union[str, int]=0, apobec: bool=False, g_to_a: bool=False, stop_codons: bool=False, glycosylation: bool=False, sort: str="similar", mark_width: float=1, scheme: str="LANL"):
-        """ Writes out the mutation plot to a file """
+    def setup_drawing(self, *, plot_type: str, output_format: str="svg", title: str=None, sort: str="similar", mark_width: float=1, scale: float=1, scheme: str="LANL"):
+        """ Setus up the drawing """
         
-        drawing = self.drawing = Drawing(self._width, self._height)
+        self.output_format: str = output_format
+
+        self.title: str = title
+        self._title_font_height: float = self.title_font_size
+        self._title_height = 0 if not title else self._title_font_height*2
+
+        self._ruler_height = 0 if not self.ruler else self._ruler_font_height * 3
+
+        self._plot_floor: float = self.bottom_margin + self._ruler_height
+
+        self._seq_name_width: float = self._max_seq_name_width
+        self._width: float = self.left_margin + self.plot_width + (inch/4) + self._seq_name_width + self.right_margin
+        
+        self._height: float = len(self.alignment) * (self._seq_height + self.seq_gap) + self.top_margin + self.bottom_margin + self._title_height + self._ruler_height
+
+        self.mark_width: float = mark_width
+
+        self.scale = scale
+
+        self.drawing = Drawing(self._width, self._height)
+
+        if sort == "similar":
+            self.sorted_keys = self._sort_similar()
+        
+        elif sort == "tree":
+            if self.tree is None:
+                raise ValueError("Cannot sort by tree if no tree is provided")
+            
+            self.sorted_keys = self._indexes_by_tree_order()
+
+        else: 
+            self.sorted_keys = range(len(self.matches_list))
+
+        self._draw_title()
+        if self.ruler:
+            self._draw_ruler()
+
+        for plot_index, seq_index in enumerate(self.sorted_keys):
+
+            # Add label for sequence
+            id = self.alignment[seq_index].id
+            if self.mark_reference:
+                if isinstance(self._mutations.references, int):
+                    if seq_index == self._mutations.references:
+                        id += " (r)"
+                elif seq_index in self._mutations.references:
+                    id += f" (r{self._mutations.references.index(seq_index)+1})"
+                
+
+            x: float = self.left_margin + self.plot_width + (inch/4)
+            y: float = ((self._seq_count-(plot_index + .75)) * (self._seq_height + self.seq_gap))  + self.seq_gap + self._plot_floor
+            sequence_str: String = String(x, y, id, fontName="Helvetica", fontSize=self.seq_name_font_size)
+            self.drawing.add(sequence_str, id)
+
+            # Add base line for sequence
+            if plot_type == "match" and seq_index in self._mutations.references:
+                color: Color = self._hex_to_color(self._current_scheme[self._mutations.references.index(seq_index)])
+            else:
+                color: Color = colors.lightgrey
+
+            x1: float = self.left_margin
+            x2: float = self.left_margin + self.plot_width
+            y: float = (self._seq_count-(plot_index + .5)) * (self._seq_height + self.seq_gap) + self.seq_gap + self._plot_floor
+            sequence_baseline: Line = Line(x1, y, x2, y, strokeColor=color)
+            self.drawing.add(sequence_baseline)
+    
+    def draw_mismatches(self, output_file, *, output_format: str="svg", title: str=None, reference: Union[str, int]=0, apobec: bool=False, g_to_a: bool=False, stop_codons: bool=False, glycosylation: bool=False, sort: str="similar", mark_width: float=1, scheme: str="LANL", scale: float=1):
+        """ Draw mismatches compared to a reference sequence """
+
+        self._mutations = AlignInfo.Mutations(self.alignment, seq_type=self.type)
+        
+        self.matches_list = self._mutations.list_mismatches(references=reference, apobec=apobec, g_to_a=g_to_a, stop_codons=stop_codons, glycosylation=glycosylation, codon_offset=self.codon_offset)
+        self.references = self._mutations.references
+
+        self.setup_drawing(output_format=output_format, title=title, sort=sort, mark_width=mark_width, scale=scale, plot_type="mismatch")
 
         self.scheme: str = scheme
-        self._current_scheme: dict = self._plot_colors[self.type][self.scheme] if self.scheme in self._plot_colors[self.type] else self._plot_colors[self.type]["LANL"]
+        self._current_scheme: dict = self.mismatch_plot_colors[self.type][self.scheme] if self.scheme in self.mismatch_plot_colors[self.type] else self.mismatch_plot_colors[self.type]["LANL"]
 
         self._apobec: bool = apobec
         self._g_to_a: bool = g_to_a
         self._glycosylation: bool = glycosylation
         self._stop_codons: bool = stop_codons
 
-        self.mutations_list = self._mutations.list_mutations(reference=reference, apobec=apobec, g_to_a=g_to_a, stop_codons=stop_codons, glycosylation=glycosylation, codon_offset=self.codon_offset)
-        self.reference = self._mutations.reference
+        for plot_index, seq_index in enumerate(self.sorted_keys):
+            matches = self.matches_list[seq_index]
+            self._draw_marks_mismatch(plot_index, matches, is_reference=(seq_index == self.references))
 
-        self.mark_width: float = mark_width
+        return _write(self.drawing, output_file, self.output_format, dpi=288*self.scale)
 
-        if sort == "similar":
-            sorted_keys = self._sort_similar()
-        
-        elif sort == "tree":
-            if self.tree is None:
-                raise ValueError("Cannot sort by tree if no tree is provided")
-            
-            sorted_keys = self._indexes_by_tree_order()
+    def _draw_marks_mismatch(self, plot_index: int, matches: dict[int: list], is_reference: bool=False) -> None:
+        """ Draw marks for a mismatch sequence """
 
-        else: 
-            sorted_keys = range(len(self.mutations_list))
-
-        self._draw_title()
-        if self.ruler:
-            self._draw_ruler()
-
-        # for seq_index, mutations in enumerate(self.mutations_list):
-        for plot_index, seq_index in enumerate(sorted_keys):
-            mutations = self.mutations_list[seq_index]
-
-            # Add label for sequence
-            id = self.alignment[seq_index].id
-            if self.mark_reference and seq_index == self._mutations.reference:
-                id += " (r)"
-
-            x: float = self.left_margin + self.plot_width + (inch/4)
-            #y: float = ((self._seq_count-(plot_index + .5)) * (self._seq_height + self.seq_gap)) + self._plot_floor
-            y: float = ((self._seq_count-(plot_index + .75)) * (self._seq_height + self.seq_gap))  + self.seq_gap + self._plot_floor
-            sequence_str: String = String(x, y, id, fontName="Helvetica", fontSize=self.seq_name_font_size)
-            drawing.add(sequence_str, id)
-
-            # Add base line for sequence
-            x1: float = self.left_margin
-            x2: float = self.left_margin + self.plot_width
-            y: float = (self._seq_count-(plot_index + .5)) * (self._seq_height + self.seq_gap) + self.seq_gap + self._plot_floor
-            sequence_baseline: Line = Line(x1, y, x2, y, strokeColor=colors.lightgrey)
-            drawing.add(sequence_baseline)
-
-            self._draw_mutations(plot_index, mutations, is_reference=(seq_index == self.reference))
-
-        return _write(drawing, output_file, self.output_format)
-    
-    def _draw_mutations(self, plot_index: int, mutations: dict[int: list], is_reference: bool=False) -> None:
-        """ Draw mutations for a sequence """
-
-        for base, mutation in mutations.items():
-            for code in mutation:
+        for base, match_item in matches.items():
+            for code in match_item:
                 if code in self._current_scheme:
-                    x1: float = self.left_margin + self._base_left(base)
-                    x2: float = self.left_margin + self._base_left(base+self.mark_width)
-
-                    y1: float = ((self._seq_count-plot_index) * (self._seq_height + self.seq_gap)) + (self.seq_gap/2) + self._plot_floor
-                    y2: float = ((self._seq_count-(plot_index+1)) * (self._seq_height + self.seq_gap)) + self.seq_gap + self._plot_floor
-
-                    base_color: Color = self._hex_to_color(self._current_scheme[code])
-                    base_mark: Rect = Rect(x1, y1, x2-x1, y2-y1, fillColor=base_color, strokeColor=base_color, strokeWidth=0.1)
-                    self.drawing.add(base_mark)
+                    color: Color = self._hex_to_color(self._current_scheme[code])
+                    self.drawing.add(self._base_mark(plot_index, base, color))
         
         # Symboloic markers need to be drawn second so they are on top of the rectangles
-        for base, mutation in mutations.items():
+        for base, match_item in matches.items():
             x: float = self.left_margin + self._base_left(base) + ((self._base_left(base+1)-self._base_left(base))/2)
             y: float = (self._seq_count-(plot_index + .5)) * (self._seq_height + self.seq_gap) + self.seq_gap + self._plot_floor
                 
-            if "APOBEC" in mutation:
+            if "APOBEC" in match_item:
                 self.draw_circle(x, y)
                 
-            elif "G->A mutation" in mutation:
+            elif "G->A mutation" in match_item:
                 self.draw_diamond(x, y)
 
-            elif "Glycosylation" in mutation:
+            elif "Glycosylation" in match_item:
                 if is_reference:
                     self.draw_circle(x, y)
                 else:
-                    if "Glycosylation" not in self.mutations_list[self.reference].get(base, {}):
+                    if "Glycosylation" not in self.matches_list[self.references].get(base, {}):
                         self.draw_diamond(x, y, filled=True)
 
-            elif "Stop codon" in mutation:
+            elif "Stop codon" in match_item:
                 self.draw_diamond(x, y, color="#0000FF")
 
         if self.type == "AA" and self._glycosylation:
-            for base, mutation in self.mutations_list[self.reference].items():
-                if "Glycosylation" in mutation and "Glycosylation" not in mutations.get(base, {}):
+            for base, match_item in self.matches_list[self.references].items():
+                if "Glycosylation" in match_item and "Glycosylation" not in matches.get(base, {}):
                     x: float = self.left_margin + self._base_left(base) + ((self._base_left(base+1)-self._base_left(base))/2)
                     y: float = (self._seq_count-(plot_index + .5)) * (self._seq_height + self.seq_gap) + self.seq_gap + self._plot_floor
 
                     self.draw_diamond(x, y, color="#0000FF")
+
+    def draw_matches(self, output_file, *, output_format: str="svg", title: str=None, references: list[Union[str, int]]=0, sort: str="similar", mark_width: float=1, scheme: str="LANL", scale: float=1):
+        """ Draw mismatches compared to a reference sequence """
+
+        self._mutations = AlignInfo.Mutations(self.alignment, seq_type=self.type)
+        
+        self.matches_list = self._mutations.list_matches(references=references)
+        self.references = self._mutations.references
+
+        self.scheme: str = scheme
+        self._current_scheme: list = self.match_plot_colors[self.scheme]["references"]
+        self._current_unique_color: str = self.match_plot_colors[self.scheme]["unique"]
+        self._current_multiple_color: str = self.match_plot_colors[self.scheme]["multiple"]
+
+        self.setup_drawing(output_format=output_format, title=title, sort=sort, mark_width=mark_width, scale=scale, plot_type="match", scheme=scheme)
+
+        for plot_index, seq_index in enumerate(self.sorted_keys):
+            matches = self.matches_list[seq_index]
+            self._draw_marks_match(plot_index, matches, is_reference=(seq_index in self.references))
+
+        return _write(self.drawing, output_file, self.output_format, dpi=288*self.scale)
+
+    def _draw_marks_match(self, plot_index: int, matches: dict[int, list], is_reference: bool) -> None:
+        """ Draw the marks for a match sequence """
+
+        for base, match_item in matches.items():
+            if "Unique" in match_item:
+                color: Color = self._hex_to_color(self._current_unique_color)
+                self.drawing.add(self._base_mark(plot_index, base, color))
+
+            elif len(match_item) > 1:
+                color: Color = self._hex_to_color(self._current_multiple_color)
+                self.drawing.add(self._base_mark(plot_index, base, color))
+
+            else:
+                for code in match_item:
+                    color: Color = self._hex_to_color(self._current_scheme[code])
+                    self.drawing.add(self._base_mark(plot_index, base, color))
+
+    def _base_mark(self, plot_index, base, color):
+        """ Returns a mark for a particular base """
+        x1: float = self.left_margin + self._base_left(base)
+        x2: float = self.left_margin + self._base_left(base+self.mark_width)
+
+        y1: float = ((self._seq_count-plot_index) * (self._seq_height + self.seq_gap)) + (self.seq_gap/2) + self._plot_floor
+        y2: float = ((self._seq_count-(plot_index+1)) * (self._seq_height + self.seq_gap)) + self.seq_gap + self._plot_floor
+
+        return Rect(x1, y1, x2-x1, y2-y1, fillColor=color, strokeColor=color, strokeWidth=0.1)
 
     def _draw_title(self) -> None:
         """ Draw the title at the top of the plot """
@@ -500,7 +712,7 @@ class MutationPlot:
         max_width: float = 0
 
         for sequence in self.alignment:
-            width: float = stringWidth(f"{sequence.id} (r)", self.seq_name_font, self.seq_name_font_size)
+            width: float = stringWidth(f"{sequence.id} (r10)", self.seq_name_font, self.seq_name_font_size)
             if width > max_width:
                 max_width = width
         
@@ -517,7 +729,7 @@ class MutationPlot:
         """ Sort sequences by similarity to the reference sequence 
         returns list of indexes"""
 
-        return sorted(range(len(self.mutations_list)), key=lambda x: len(self.mutations_list[x]))
+        return sorted(range(len(self.matches_list)), key=lambda x: len(self.matches_list[x]))
     
     def draw_diamond(self, x: float, y: float, color: str="#FF00FF", filled: bool=False) -> None:
         """ Draw a rectangle on the plot """
