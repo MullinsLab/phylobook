@@ -33,7 +33,7 @@ def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, *,
     project = Project.objects.get(name=name)
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
 
-        ensure_project_highlighter_svgs(project, width=width)
+        # ensure_project_highlighter_svgs(project, width=width)
 
         entries = []
         projectPath = os.path.join(PROJECT_PATH, name)
@@ -66,7 +66,7 @@ def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, *,
                                 tree.type = fasta_type(tree=tree)
                                 tree.save()
 
-                            if tree.has_svg_highlighter(width=width):
+                            if tree.has_svg_highlighter(width=width, no_build=True):
                                 file = tree.highlighter_file_name_svg(width=width, path=False)
 
                             data = None

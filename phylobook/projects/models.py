@@ -316,7 +316,6 @@ class Tree(models.Model):
 
         lineage_counts: dict = self.phylotree.lineage_counts
 
-
         if self.settings is not None and self.settings.get("lineages"):
             lineage_names = self.settings.get("lineages")
         else:
@@ -400,10 +399,6 @@ class Tree(models.Model):
 
         elif sort == "frequency":
             counts: dict[int: list] = {}
-
-            # sequence_names_temp = self.ordered_sequence_names()
-            # if not sequence_names_temp:
-            #     sequence_names_temp = self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names)
 
             for sequence_name in self.get_sequence_names_by_color(color=color, all_sequence_names=all_sequence_names):
                 count: int = int(sequence_name.split("_")[-1])
@@ -580,7 +575,7 @@ class Tree(models.Model):
         
         return ordered_sequence_names
     
-    def has_svg_highlighter(self, *, width: int=1) -> bool:
+    def has_svg_highlighter(self, *, width: int=3, no_build: bool=False) -> bool:
         """ Create a mutation highlighter plot """
 
         if not self.nexus_file_name or not self.fasta_file_name or not os.path.exists(self.nexus_file_name) or not os.path.exists(self.fasta_file_name):
@@ -589,27 +584,27 @@ class Tree(models.Model):
         if os.path.exists(self.highlighter_file_name_svg(width=width)):
             return True
         
-        retry: bool = False
+        elif no_build:
+            return False
+        
+        alignment = AlignIO.read(self.origional_fasta_file_name, "fasta")
+        nexus_tree = Phylo.read(self.nexus_file_name, "nexus")
 
         try:
-            alignment = AlignIO.read(self.origional_fasta_file_name, "fasta")
-            nexus_tree = Phylo.read(self.nexus_file_name, "nexus")
-
             mutation_plot = MutationPlot(alignment, tree=nexus_tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10) # (46*2)-36
             mutation_plot.draw_mismatches(self.highlighter_file_name_svg(width=width), apobec=True, g_to_a=True, glycosylation=True, sort="tree", scheme="LANL", mark_width=width)
-        
         except:
-            retry = True
-
-        if retry:
-            alignment = AlignIO.read(self.fasta_file_name, "fasta")
-            nexus_tree = Phylo.read(self.nexus_file_name, "nexus")
-
-            mutation_plot = MutationPlot(alignment, tree=nexus_tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10) # (46*2)-36
-            mutation_plot.draw_mismatches(self.highlighter_file_name_svg(width=width), apobec=True, g_to_a=True, glycosylation=True, sort="tree", scheme="LANL", mark_width=width)
-
+            return False
+    
         return True
         
+    def get_lineage_consensus(self, *, fasta: str="origional"):
+        """ Returns the consensus sequence for a lineage """
+
+        if not self.phylotree:
+            self.load_file()
+
+        return self.phylotree.get_lineage_consensus(fasta=self.origional_fasta_file_name)
 
 # Importing last to avoid circular imports
 from phylobook.projects.utils import svg_file_name, fasta_file_name, nexus_file_name, tree_sequence_names, PhyloTree, get_lineage_dict

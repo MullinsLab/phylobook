@@ -751,7 +751,7 @@ class MutationPlot:
             if sequence.id == id:
                 return index
         
-        return None
+        raise IndexError(f"Sequence with id '{id}' not found")
     
     def _indexes_by_tree_order(self) -> list[int]:
         """ Get the indexes of the sequences in the order they appear in the tree """
