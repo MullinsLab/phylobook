@@ -55,7 +55,8 @@ def svg_file_name(*, tree: Tree, project: Project) -> str:
     # svg_base: str = highlighter_png.replace("_highlighter.png", "")
     # svg_list = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{svg_base}*.svg"))
 
-    svg_list = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*.svg"))
+    svg_set = set(glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*.svg")))
+    svg_list = list(svg_set - set(glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}_highlighter*.svg"))))
 
     if svg_list:
         svg: str = svg_list[0]
