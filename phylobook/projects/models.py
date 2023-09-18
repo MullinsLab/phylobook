@@ -589,11 +589,12 @@ class Tree(models.Model):
         if os.path.exists(self.highlighter_file_name_svg(width=width)):
             return True
         
-        alignment = AlignIO.read(self.origional_fasta_file_name, "fasta")
+        #alignment = AlignIO.read(self.origional_fasta_file_name, "fasta")
+        alignment = AlignIO.read(self.fasta_file_name, "fasta")
         nexus_tree = Phylo.read(self.nexus_file_name, "nexus")
 
         mutation_plot = MutationPlot(alignment, tree=nexus_tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10) # (46*2)-36
-        mutation_plot.draw(self.highlighter_file_name_svg(width=width), apobec=True, g_to_a=True, glycosylation=True, sort="tree", scheme="LANL", mark_width=width)
+        mutation_plot.draw_mismatches(self.highlighter_file_name_svg(width=width), apobec=True, g_to_a=True, glycosylation=True, sort="tree", scheme="LANL", mark_width=width)
 
         return True
         

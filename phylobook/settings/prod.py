@@ -351,3 +351,5 @@ logging.config.dictConfig({
     
     },
 })
+
+HIGHLIGHTER_MARK_WIDTH = 3

@@ -29,12 +29,11 @@ def projects(request):
     return render(request, "projects.html", context)
 
 
-def displayProject(request, name, width=1, *, test_svg=False):
+def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, *, test_svg=False):
     project = Project.objects.get(name=name)
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
 
-        if (test_svg):
-            ensure_project_highlighter_svgs(project, width=width)
+        ensure_project_highlighter_svgs(project, width=width)
 
         entries = []
         projectPath = os.path.join(PROJECT_PATH, name)
@@ -67,16 +66,8 @@ def displayProject(request, name, width=1, *, test_svg=False):
                                 tree.type = fasta_type(tree=tree)
                                 tree.save()
 
-                            if (test_svg):
-                                # if os.path.exists(Path(os.path.join(projectPath, file.replace(".png", ".svg")))):
-                                #     file = file.replace(".png", ".svg")
-
-                                # else:
-                                #     if tree.has_svg_highlighter():
-                                #         file = file.replace(".png", ".svg")
-
-                                if tree.has_svg_highlighter(width=width):
-                                    file = tree.highlighter_file_name_svg(width=width, path=False)
+                            if tree.has_svg_highlighter(width=width):
+                                file = tree.highlighter_file_name_svg(width=width, path=False)
 
                             data = None
 

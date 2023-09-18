@@ -171,8 +171,11 @@ class Mutations:
             
             reference_objects.append(self.alignment[self.references[-1]])
 
-        for sequence in self.alignment:
-            matches.append(self.get_matches(sequence=sequence, references=reference_objects, seq_type=self.seq_type))
+        for sequence_index, sequence in enumerate(self.alignment):
+            if sequence_index in self.references:
+                matches.append({})
+            else:
+                matches.append(self.get_matches(sequence=sequence, references=reference_objects, seq_type=self.seq_type))
 
         return matches
     
@@ -222,8 +225,8 @@ class Mutations:
 
         matches: dict = {}
         
-        if sequence in references:
-            return matches
+        # if sequence in references:
+        #     return matches
 
         for base_index in range(len(sequence)):
             matches[base_index] = []
@@ -266,11 +269,6 @@ class Mutations:
                         matched[codes[0]] = []
                     
                     matched[codes[0]].append(base+1)
-
-            if sequence.id == "696": 
-                print(matched)
-                print(matches[sequence_index])
-                print(references)
 
             if sequence_index in self.references:
                 output += f"{sequence.id} (R{self.references.index(sequence_index)+1})\n"

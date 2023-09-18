@@ -247,17 +247,24 @@ class PhyloTree(object):
 def ensure_tree_highlighter_svg(tree: Tree, width: int=1) -> None:
     """ Makes sure that a particular tree has a highlighter svg file """
 
-    tree.has_svg_highlighter(width=width)
-
+    try:
+        tree.has_svg_highlighter(width=width)
+    except Exception as error:
+        return f"Error generating SVG for {tree.project} - {tree.name}: {error}\n\tOrigional Fasta: {tree.origional_fasta_file_name}\n\tFasta: {tree.fasta_file_name}\n\tTree: {tree.nexus_file_name}"
 
 def ensure_project_highlighter_svgs(project: Project, width: int=1) -> None:
     """ Makes sure that all trees in a particular project have highlighter svg files"""
 
+    errors: list = []
+
     pool = Pool()
-    pool.starmap(ensure_tree_highlighter_svg, [(tree, width) for tree in project.trees.all()])
+    if error := pool.starmap(ensure_tree_highlighter_svg, [(tree, width) for tree in project.trees.all()]):
+        errors.append(error)
 
     pool.close()
     pool.join()
+
+    return errors
 
 
 ####################################################################################################
