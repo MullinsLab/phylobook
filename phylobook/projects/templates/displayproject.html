@@ -541,6 +541,9 @@
                            <div id="{{ entry.uniquesvg }}-straightedge" class="straightedge"></div>
                            <img src="{{ entry.highlighter }}" class="highlighterimg" />
                        </div>
+                       <div class='matchimage'>
+                            <img src="{% static 'images/empty_match.svg' %}" />
+                       </div>
                     </div>
                 </div>
                 <script type="text/javascript">
@@ -611,6 +614,10 @@
                         {% endif %}
                     });
 
+                    // Load the match highlighter
+                    $('#{{ entry.uniquesvg }}').find(".matchimage").load("match_image/{{ project }}/{{ entry.uniquesvg }}")
+
+                    // Start drag?
                     dragElement(document.getElementById("{{ entry.uniquesvg }}-straightedge"));
                 </script>
             </div>

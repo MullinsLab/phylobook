@@ -29,12 +29,20 @@ function resizeHighlighterWidth(imgparentid, adjustment) {
 }
 
 function resizeSVGWidth(imgparentid, adjustment) {
-    var svgheight = $('#' + imgparentid).find('svg').attr('height');
-    var svgwidth = $('#' + imgparentid).find('svg').attr('width');
+    var svgheight = $('#' + imgparentid).find('.svgimage').find('svg').attr('height');
+    var svgwidth = $('#' + imgparentid).find('.svgimage').find('svg').attr('width');
     var svgratio = svgwidth/svgheight;
     var svgimagewidth = adjustment * svgratio;
     $('#' + imgparentid).find('.svgimage').width(svgimagewidth);
 }
+
+function resizeMatchWidth(imgparentid, adjustment) {
+    var svgheight = $('#' + imgparentid).find('.matchimage').find('svg').attr('height');
+    var svgwidth = $('#' + imgparentid).find('.matchimage').find('svg').attr('width');
+    var svgratio = svgwidth/svgheight;
+    var svgimagewidth = adjustment * svgratio;
+    $('#' + imgparentid).find('.matchimage').width(svgimagewidth);
+};
 
 $(document).ready(function() {
     // Get project object
@@ -45,10 +53,11 @@ $(document).ready(function() {
 
     $( ".fullsize" ).on( "click", function() {
         var imgparentid = $(this).attr('id').replace("full-", "");
-        var svgoriginalheight = $('#' + imgparentid).find('svg').attr('height');
+        var svgoriginalheight = $('#' + imgparentid).find('.svgimage').find('svg').attr('height');
         $('#' + imgparentid).height(svgoriginalheight);
         resizeSVGWidth(imgparentid, svgoriginalheight);
         resizeHighlighterWidth(imgparentid, svgoriginalheight);
+        resizeMatchWidth(imgparentid, svgoriginalheight);
     });
     $( ".minsize" ).on( "click", function() {
         var imgparentid = $(this).attr('id').replace("minsize-", "");
@@ -56,6 +65,7 @@ $(document).ready(function() {
         $('#' + imgparentid).height(minheight);
         resizeSVGWidth(imgparentid, minheight);
         resizeHighlighterWidth(imgparentid, minheight);
+        resizeMatchWidth(imgparentid, minheight);
     });
     $( ".zoomin" ).on( "click", function() {
         var imgparentid = $(this).attr('id').replace("zin-", "");
@@ -63,6 +73,7 @@ $(document).ready(function() {
         var increase = currentheight * 1.1;
         resizeSVGWidth(imgparentid, increase);
         resizeHighlighterWidth(imgparentid, increase);
+        resizeMatchWidth(imgparentid, increase);
         $('#' + imgparentid).height(increase);
     });
     $( ".zoomout" ).on( "click", function() {
@@ -77,6 +88,7 @@ $(document).ready(function() {
         $('#' + imgparentid).find('.svgimage').width(svgimagewidth);
         resizeSVGWidth(imgparentid, decrease);
         resizeHighlighterWidth(imgparentid, decrease);
+        resizeMatchWidth(imgparentid, decrease);
         $('#' + imgparentid).height(decrease);
     });
     $("#downloadproject").click(function() {

@@ -78,6 +78,9 @@ $(document).ready(function() {
                             success: function() {
                                 setDirtySaved(edId);
                                 //alert( id + " saved successfully." );
+
+                                // Once saved, load the new match plot
+                                loadMatch(id);
                             },
                             error: function (err) {
                                 console.log(err)
@@ -374,6 +377,8 @@ function saveAll() {
                                 }, 2000);
 
                             }
+                            // Once saved, load the new match plot
+                            loadMatch(id);
                         },
                         error: function (err) {
                             alert( id + " Failed to save tree in saveall!!!/nContact dev team.\n\n"  + err.responseText + "(" + err.status + ")");
@@ -1311,6 +1316,15 @@ function loadSVG(id){
                     //console.log('end drag');
                     })
             );
+    });
+};
+
+
+function loadMatch(id){
+    // Load the match plot for the tree
+    console.log("Loading match plot for " + id)
+    $('#' + id).find(".matchimage").load("match_image/" + projectName + "/" + id, function() {
+        console.log("Finished loading match plot")
     });
 };
 

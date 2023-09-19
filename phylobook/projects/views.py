@@ -51,7 +51,7 @@ def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, *,
                 uniquesvg = file[0:file.index("_highlighter.png")]
                                         
                 for svg in os.listdir(projectPath):
-                    if svg.endswith(".svg") and "_highlighter" not in svg: # not svg.endswith("_highlighter.svg"):
+                    if svg.endswith(".svg") and "_highlighter." not in svg and "_match." not in svg:
                         if uniquesvg in svg:
                             filePath = Path(os.path.join(projectPath, uniquesvg + ".json"))
 
@@ -136,6 +136,25 @@ def get_user_project_tree(user) -> dict:
     
     return projects_tree
 
+class MatchImage(LoginRequredSimpleErrorMixin, View):
+    """ Returns the match image for a tree """
+
+    def get(self, request, *args, **kwargs):
+        """ Return the match image """
+
+        project_name: str = kwargs["project"]
+        project: Project = Project.objects.get(name=project_name)
+
+        if not project or not (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
+            return render(request, "projects.html", {"noaccess": project_name, "projects": get_user_project_tree(request.user)})
+
+        tree_name: str = kwargs["tree"]
+        tree: Tree = Tree.objects.get(project=project, name=tree_name)
+
+        if tree.has_svg_match():
+            return FileResponse(open(tree.match_file_name_svg(), "rb"), content_type="image/svg+xml")
+        else:
+            return FileResponse(open("/phylobook/phylobook/static/images/empty_match.svg", "rb"), content_type="image/svg+xml")
 
 def getFile(request, name, file, *, throw_away=None):
     project = Project.objects.get(name=name)

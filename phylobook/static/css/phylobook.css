@@ -76,6 +76,11 @@ a, a:hover,a:visited, a:focus {
     display: inline-block;
     height: 100%;
 }
+.matchimage {
+    display: inline-block;
+    height: 100%;
+    position: relative;
+}
 svg {
     font-size: 8px !important;
     height: 100% !important;

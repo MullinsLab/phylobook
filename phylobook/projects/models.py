@@ -269,7 +269,7 @@ class Tree(models.Model):
 
         return os.path.join(self.project.files_path, f"{self.name}_highlighter.png")
 
-    def highlighter_file_name_svg(self, *, width: int=1, path=True) -> str:
+    def highlighter_file_name_svg(self, *, width: int=3, path: bool=True) -> str:
         """ Returns the name of the highlighter file for the tree (svg)"""
 
         if path:
@@ -277,6 +277,15 @@ class Tree(models.Model):
         
         else:
             return f"{self.name}_highlighter.{width}.svg"
+        
+    def match_file_name_svg(self, *, width: int=3, path: bool=True) -> str:
+        """ Returns the name of the match file for the tree (svg)"""
+
+        if path:
+            return os.path.join(self.project.files_path, f"{self.name}_match.{width}.svg")
+        
+        else:
+            return f"{self.name}_match.{width}.svg"
     
     @property
     def ready_to_extract(self) -> bool:
@@ -621,23 +630,75 @@ class Tree(models.Model):
 
         tree_file_name = self.tree_file_name
         if "nexus" in tree_file_name:
-            nexus_tree = Phylo.read(self.tree_file_name, "nexus")
+            tree = Phylo.read(self.tree_file_name, "nexus")
         else:
-            nexus_tree = Phylo.read(self.tree_file_name, "newick")
+            tree = Phylo.read(self.tree_file_name, "newick")
 
         try:
-            mutation_plot = MutationPlot(alignment, tree=nexus_tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10) # (46*2)-36
+            mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10) # (46*2)-36
             mutation_plot.draw_mismatches(self.highlighter_file_name_svg(width=width), apobec=True, g_to_a=True, glycosylation=True, sort="tree", scheme="LANL", mark_width=width)
         except:
             return False
     
         return True
+    
+    def has_svg_match(self, *, width: int=3, no_build: bool=False) -> bool:
+        """ Create a match highlighter plot """
         
-    def get_lineage_consensuses(self):
+        if not self.tree_file_name or not self.fasta_file_name or not os.path.exists(self.tree_file_name) or not os.path.exists(self.fasta_file_name):
+            return False
+        
+        elif no_build:
+            return False
+
+        if os.path.exists(self.match_file_name_svg(width=width)):
+            tree_file_time: float = os.path.getmtime(self.svg_file_name)
+            match_file_time: float = os.path.getmtime(self.match_file_name_svg(width=width))
+            # log.debug(f"Match file ({self.match_file_name_svg(width=width)}) time: {match_file_time}, Tree file ({self.svg_file_name}) time: {tree_file_time}, Match newer: {match_file_time > tree_file_time}")
+            if match_file_time > tree_file_time:
+                return True
+        
+        # log.debug("Building match file")
+
+        alignment = AlignIO.read(self.origional_fasta_file_name, "fasta")
+
+        tree_file_name = self.tree_file_name
+        if "nexus" in tree_file_name:
+            tree = Phylo.read(self.tree_file_name, "nexus")
+        else:
+            tree = Phylo.read(self.tree_file_name, "newick")
+
+        references: list[Seq] = []
+        colors_by_short: dict[str: str] = {color["short"]: f"#{color['value']}" for color in settings.ANNOTATION_COLORS if not color["has_UOLs"]}
+        consensus = self.get_lineage_consensus()
+        colors: dict = {
+            "references": [],
+            "unique": "#EFE645",
+            "multiple": "#808080",
+        }
+
+        for color, sequence in consensus.items():
+            if color in colors_by_short:
+                colors["references"].append(colors_by_short[color])
+                references.append(sequence)
+
+        if not references:
+            return False
+
+        try:
+            mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10)
+            mutation_plot.draw_matches(self.match_file_name_svg(width=width), references=references, sort="tree", scheme=colors, mark_width=width, sequence_labels=False)
+        except Exception as error:
+            log.debug(f"Got exception while creating mutation plot: {error}")
+            return False
+
+        return True
+        
+    def get_lineage_consensus(self):
         """ Returns the consensus sequence for a lineage """
 
         sequences_by_color: dict[str, MultipleSeqAlignment] = {}
-        consensuses: dict = {}
+        consensus: dict = {}
 
         if not self.phylotree:
             self.load_svg_tree()
@@ -656,9 +717,9 @@ class Tree(models.Model):
 
         for color, alignment in sequences_by_color.items():
             alignment_summary = AlignInfo.SummaryInfo(alignment)
-            consensuses[color] = alignment_summary.dumb_consensus(threshold=0.5)
+            consensus[color] = alignment_summary.dumb_consensus(threshold=0.5)
         
-        return consensuses
+        return consensus
     
     def get_sequence_by_id(self, id: str) -> str:
         """ Get a sequence from the alignment by its id """
