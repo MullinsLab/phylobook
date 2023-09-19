@@ -152,12 +152,14 @@ class PhyloTree(object):
         style = element.attrib["style"]
         new_rgb = color_hex_to_rgb_string(hex_value=hex_value)
 
-        if "rgb" in str(element.attrib["style"]):
-            element.attrib["style"] = re.sub(r"rgb\((.*)\)", new_rgb, style)
-        elif self.sequences[sequence]["color"] in element.attrib["style"]:
-            element.attrib["style"] = element.attrib["style"].replace(self.sequences[sequence]["color"], new_rgb)
-        else:
-            raise RuntimeError(f"Could not find color {self.sequences[sequence]['color']} or color code in style '{style}' for sequence {sequence}")
+        element.attrib["style"] = re.sub(r"stroke: (.*?);", f"stroke: {new_rgb};", style)
+
+        # if "rgb" in str(element.attrib["style"]):
+        #     element.attrib["style"] = re.sub(r"rgb\((.*)\)", new_rgb, style)
+        # elif self.sequences[sequence]["color"] in element.attrib["style"]:
+        #     element.attrib["style"] = element.attrib["style"].replace(self.sequences[sequence]["color"], new_rgb)
+        # else:
+        #     raise RuntimeError(f"Could not find color {self.sequences[sequence]['color']} or color code in style '{style}' for sequence {sequence}")
         
     def _prep_tree_lineage_counts(self) -> dict[str: dict]:
         """ Get the counts of each lineage in the tree 
