@@ -5,8 +5,10 @@ import io, zipfile, shutil, datetime, os, glob
 
 import Bio
 from Bio import AlignIO, Phylo, SeqIO
-from Bio.Align import AlignInfo
+from Bio.Align import AlignInfo, MultipleSeqAlignment
 from Bio.Phylo import NexusIO, BaseTree
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
 from typing import Union
 
@@ -226,6 +228,7 @@ class Tree(models.Model):
         return self.name
     
     phylotree = None
+    alignment = None
     
     @property
     def unassigned_sequences(self) -> int:
@@ -300,7 +303,7 @@ class Tree(models.Model):
         """ Returns true if the tree has timepoints """
 
         if not self.phylotree:
-            self.load_file()
+            self.load_svg_tree()
 
         return self.phylotree.timepoints
 
@@ -312,7 +315,7 @@ class Tree(models.Model):
         # lineage_counts: dict = tree_lineage_counts(tree=self.svg_file_name)
 
         if not self.phylotree:
-            self.load_file()
+            self.load_svg_tree()
 
         lineage_counts: dict = self.phylotree.lineage_counts
 
@@ -340,7 +343,11 @@ class Tree(models.Model):
     def get_sequence_names(self) -> dict:
         """ Returns a dictionary of sequences for the tree """
 
-        return tree_sequence_names(self.svg_file_name)
+        if not self.phylotree:
+            self.load_svg_tree()
+
+        #return tree_sequence_names(self.svg_file_name)
+        return self.phylotree.tree_sequence_names()
 
     def get_sequence_names_by_color(self, color: str, all_sequence_names: dict=None) -> list:
         """ Returns a list of sequences for the given color """
@@ -359,7 +366,10 @@ class Tree(models.Model):
         sequence_names: list = []
 
         if not all_sequence_names:
-            all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
+            if not self.phylotree:
+                self.load_svg_tree()
+            all_sequence_names: dict = self.phylotree.tree_sequence_names()
+            #all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
         
         if not sequences:
             sequences = SeqIO.index(self.fasta_file_name, "fasta")
@@ -425,7 +435,12 @@ class Tree(models.Model):
         fasta: str = ""
 
         if not all_sequence_names:
-            all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
+            if not self.phylotree:
+                self.load_svg_tree()
+            
+            all_sequence_names: dict = self.phylotree.tree_sequence_names()
+
+            #all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
         
         if not sequences:
             sequences = SeqIO.index(self.fasta_file_name, "fasta")
@@ -439,7 +454,17 @@ class Tree(models.Model):
 
         fastas: dict = {}
 
-        all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
+        # all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
+        
+        # log.debug(all_sequence_names)
+        # log.debug("\n\n\n")
+        if not self.phylotree:
+            self.load_svg_tree()
+        # log.debug(self.phylotree.tree_sequence_names())
+        # log.debug(self.phylotree.sequences)
+
+        all_sequence_names = self.phylotree.tree_sequence_names()
+
         sequences = SeqIO.index(self.fasta_file_name, "fasta")
 
         lineage_counts = self.lineage_counts()
@@ -535,13 +560,18 @@ class Tree(models.Model):
 
         return csv_collector
     
-    def load_file(self) -> None:
+    def load_svg_tree(self) -> None:
         """ Loads the file for the tree """
 
         if self.phylotree:
             self.phylotree.load_file()
         else:
             self.phylotree = PhyloTree(file_name=self.svg_file_name)
+
+    def load_alignment(self) -> None:
+        """ Loads the alignment for the tree """
+
+        self.alignment = AlignIO.read(self.fasta_file_name, "fasta")
 
     def swap_by_counts(self) -> Union[None, str]:
         """ Swap lineages that have lower counts than lineages later in the list """
@@ -603,15 +633,43 @@ class Tree(models.Model):
     
         return True
         
-    def get_lineage_consensus(self, *, fasta: str="origional"):
+    def get_lineage_consensuses(self):
         """ Returns the consensus sequence for a lineage """
 
-        if not self.phylotree:
-            self.load_file()
+        sequences_by_color: dict[str, MultipleSeqAlignment] = {}
+        consensuses: dict = {}
 
-        return self.phylotree.get_lineage_consensus(fasta=self.origional_fasta_file_name)
+        if not self.phylotree:
+            self.load_svg_tree()
+
+        if not self.alignment:
+            self.load_alignment()
+
+        for id, sequence_object in self.phylotree.sequences.items():
+            if sequence_object["color"] not in sequences_by_color:
+                sequences_by_color[sequence_object["color"]] = MultipleSeqAlignment([])
+
+            sequence = self.get_sequence_by_id(id)
+ 
+            for _ in range(parse_sequence_name(id)["multiplicity"]):
+                sequences_by_color[sequence_object["color"]].append(SeqRecord(Seq(sequence)))
+
+        for color, alignment in sequences_by_color.items():
+            alignment_summary = AlignInfo.SummaryInfo(alignment)
+            consensuses[color] = alignment_summary.dumb_consensus(threshold=0.5)
+        
+        return consensuses
+    
+    def get_sequence_by_id(self, id: str) -> str:
+        """ Get a sequence from the alignment by its id """
+
+        for index, sequence in enumerate(self.alignment):
+            if sequence.id == id:
+                return str(sequence.seq)
+        
+        raise IndexError(f"Could not find sequence with id {id}")
 
 # Importing last to avoid circular imports
-from phylobook.projects.utils import svg_file_name, fasta_file_name, nexus_file_name, newick_file_name, tree_sequence_names, PhyloTree, get_lineage_dict
+from phylobook.projects.utils import svg_file_name, fasta_file_name, nexus_file_name, newick_file_name, PhyloTree, get_lineage_dict, parse_sequence_name
 from phylobook.projects.utils import mutations
 from Bio.Graphics import MutationPlot

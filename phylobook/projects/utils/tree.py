@@ -112,6 +112,10 @@ class PhyloTree(object):
     def _prep_sequences(self) -> None:
         """ Set up the self.elements dictionary """
 
+        rgb_lookup: dict[str, str] = {color_hex_to_rgb_string(hex_value=color["value"]): color["short"] for color in settings.ANNOTATION_COLORS}
+        rgb_lookup = rgb_lookup | {key.replace(",", ", "): value for key, value in rgb_lookup.items()}
+        
+
         for text_element in self.root.iter("{http://www.w3.org/2000/svg}text"):
             if text_element.attrib.get("class") and text_element.attrib["class"].startswith("box"):
                 if text_element.text not in self.sequences:
@@ -129,9 +133,16 @@ class PhyloTree(object):
                     self.sequences[path_element.attrib["id"]] = {}
                 self.sequences[path_element.attrib["id"]]["box"] = path_element 
 
-                if "rgb" not in path_element.attrib["style"]:
-                    temp_color = re.search(r"stroke: (.*?);", path_element.attrib["style"]).group(1)
-                    if temp_color:
+                # if "rgb" not in path_element.attrib["style"]:
+                #     temp_color = re.search(r"stroke: (.*?);", path_element.attrib["style"]).group(1)
+                #     if temp_color:
+                #         self.sequences[path_element.attrib["id"]]["color"] = temp_color
+
+                temp_color = re.search(r"stroke: (.*?);", path_element.attrib["style"]).group(1)
+                if temp_color:
+                    if temp_color in rgb_lookup:
+                        self.sequences[path_element.attrib["id"]]["color"] = rgb_lookup[temp_color]
+                    else:
                         self.sequences[path_element.attrib["id"]]["color"] = temp_color
 
     def _set_color_in_box(self, *, sequence: str, hex_value: str) -> str:
@@ -242,6 +253,11 @@ class PhyloTree(object):
                             break
 
         return False
+    
+    def tree_sequence_names(self) -> list[dict[str: str]]:
+        """ Get all the sequence names from the a specific tree """
+
+        return [{"name": sequence["name"], "color": sequence["color"]} for sequence in self.sequences.values()]
 
 def ensure_tree_highlighter_svg(tree: Tree, width: int=1) -> None:
     """ Makes sure that a particular tree has a highlighter svg file """
@@ -262,29 +278,6 @@ def ensure_project_highlighter_svgs(project: Project, width: int=1) -> None:
     pool.join()
 
     return errors
-
-
-####################################################################################################
-# Should get rid of these, but need to point tests at Phylotree :(
-####################################################################################################
-
-def tree_sequence_names(tree_file: str) -> list[dict[str: str]]:
-    """ Get all the sequence names from the a specific tree """
-
-    if not tree_file:
-        return None
-
-    root = ET.parse(tree_file).getroot()
-    sequences: list[dict[str: str]] = []
-
-    for sequence in root.iter("{http://www.w3.org/2000/svg}text"):
-        if "class" not in sequence.attrib or not sequence.attrib["class"] or not sequence.attrib["class"].startswith("box"):
-            continue
-        
-        sequences.append({"name": sequence.text, "color": sequence.attrib["class"].replace("box", "")})
-
-    return sequences
-
 
 def parse_sequence_name(sequence_name: str) -> dict:
     """ Get the timepoint and mulitplicity from a sequence name """
@@ -307,7 +300,6 @@ def parse_sequence_name(sequence_name: str) -> dict:
 
     return sequence
 
-
 def parse_sequences(sequences: list[dict[str: str]]) -> tuple[list[dict[str: str]], tuple[int]]:
     """ Returns True if the tree has timepoints """
 
@@ -323,6 +315,27 @@ def parse_sequences(sequences: list[dict[str: str]]) -> tuple[list[dict[str: str
 
     return sequences_out, tuple(sorted(timepoints))
 
+
+####################################################################################################
+# Should get rid of these, but need to point tests at Phylotree :(
+####################################################################################################
+
+def tree_sequence_names(tree_file: str) -> list[dict[str: str]]:
+    """ Get all the sequence names from the a specific tree """
+
+    if not tree_file:
+        return None
+
+    root = ET.parse(tree_file).getroot()
+    sequences: list[dict[str: str]] = []
+
+    for sequence in root.iter("{http://www.w3.org/2000/svg}text"):
+        if "class" not in sequence.attrib or not sequence.attrib["class"] or not sequence.attrib["class"].startswith("box"):
+            continue
+        
+        sequences.append({"name": sequence.text, "color": sequence.attrib["class"].replace("box", "")})
+
+    return sequences
 
 def tree_lineage_counts(tree: str) -> dict[str: dict]:
     """ Get all the lineage counts from a specific tree """

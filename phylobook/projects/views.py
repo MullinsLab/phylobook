@@ -447,7 +447,7 @@ class TreeLineages(LoginRequredSimpleErrorMixin, View):
         if not tree.fasta_file_name:
             return JsonResponse({"error": "This tree does not have an associate .fasta file.  Extractions can not be performed on it."})
 
-        tree.load_file()
+        tree.load_svg_tree()
         tree_lineage: dict = tree.phylotree.lineage_counts
         
         if swap_message := tree.swap_by_counts():
