@@ -222,6 +222,28 @@
     {% if user.is_authenticated %}
         <input type="hidden" id="project" value="{{ project }}" />
 
+        <!-- Modal for pages -->
+        <div class="modal fade" id="pages_modal" tabindex="-1" role="dialog" aria-labelledby="annotations" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="annotations_modal_title">Jump to page</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body" id="annotations_modal_body">
+                    {% for page in pages%}<a href="/projects/{{ project }}/{{ page.1}}">{{ page.0 }}</a><br>{% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="annotations_close_button">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <!-- End annotations modal -->
+
+
         <!-- Generic modal for annotations -->
         <div class="modal fade" id="annotations_modal" tabindex="-1" role="dialog" aria-labelledby="annotations" aria-hidden="true">
             <div class="modal-dialog modal-dialog-scrollable" role="document">
@@ -313,6 +335,11 @@
             <div class="row">
                 <div class="col-auto align-self-center"><a href="/projects">Projects</a> &gt; <b>{{ project }}</b>&nbsp;({{ range }}{{ tree_count }} trees)</div>
                 <div class="col-auto mr-auto align-self-center"><button type="button" id="downloadproject" class="btn btn-outline-primary btn-sm">Download Project Files</button>&nbsp;&nbsp;&nbsp;&nbsp;<a target="_blank" class="highlighterdoc" href="https://www.hiv.lanl.gov/content/sequence/HIGHLIGHT/help.html">Highlighter plot explanation >></a>
+                </div>
+                <div class="col-auto align-self-right">
+                    <a href="{{ previous_url }}" class="btn btn-outline-primary btn-sm{% if not previous_url %} disabled{% endif %}" role="button"><<</a>
+                    <button type="button" id="jump_page_button" class="btn btn-outline-primary btn-sm" onclick="showPagesModal(); return false;">Jump to Page</button>
+                    <a href="{{ next_url }}" class="btn btn-outline-primary btn-sm{% if not next_url %} disabled{% endif %}" role="button">>></a>
                 </div>
             </div>
             {% if "change_project" in context_perms and not project_obj.edit_locked %}
@@ -622,6 +649,17 @@
                 </script>
             </div>
         {% endfor %}
+        <div class="row">
+            {% comment %} <div class="col-auto align-self-center"><a href="/projects">Projects</a> &gt; <b>{{ project }}</b>&nbsp;({{ range }}{{ tree_count }} trees)</div> {% endcomment %}
+            <div class="col-auto mr-auto align-self-center">
+            </div>
+            <div class="col-auto align-self-right">
+                <a href="{{ previous_url }}" class="btn btn-outline-primary btn-sm{% if not previous_url %} disabled{% endif %}" role="button"><<</a>
+                <button type="button" id="jump_page_button" class="btn btn-outline-primary btn-sm" onclick="showPagesModal(); return false;">Jump to Page</button>
+                <a href="{{ next_url }}" class="btn btn-outline-primary btn-sm{% if not next_url %} disabled{% endif %}" role="button">>></a>
+            </div>
+        </div>
+        <br>
         </form>
         {% else %}
             Permissions failed.

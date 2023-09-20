@@ -164,6 +164,23 @@ class Project(models.Model):
         """ Returns the content type id for the project """
 
         return ContentType.objects.get_for_model(self).id
+    
+    def pages(self) -> list[tuple[str, str]]:
+        """ Returns a list of pages for the project """
+
+        pages: list[tuple[str, str]] = []
+
+        trees = self.trees.all()
+
+        for page in range(int(trees.count() / settings.TREES_PER_PAGE) + 1):
+            first_tree_index: int = page * settings.TREES_PER_PAGE
+            last_tree_index: int = (page + 1) * settings.TREES_PER_PAGE - 1
+            if last_tree_index > trees.count():
+                last_tree_index = trees.count() - 1
+
+            pages.append((f"{trees[first_tree_index].name} - {trees[last_tree_index].name}", f"{first_tree_index+1}-{last_tree_index+1}"))
+
+        return pages
 
 
 class ProjectCategory(MP_Node):

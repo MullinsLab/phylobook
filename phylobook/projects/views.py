@@ -48,7 +48,13 @@ def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, st
             log.warning(f"Error reading project directory: {e}")
             return HttpResponseBadRequest(f"Error reading project directory (probably due to permissions): {projectPath}")
 
-        if start is not None and end is not None and start > 0 and end >= start:
+        if start is None and end is None:
+            start = 1
+            end = settings.TREES_PER_PAGE
+            
+        if start > 0 and end >= start:
+            if end > project.trees.all().count():
+                end = project.trees.all().count()
             trees: QuerySet = project.trees.all()[start-1:end]
         else:
             trees: bool = False
@@ -102,12 +108,40 @@ def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, st
                                 entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", \
                                                 "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
 
+        # previous_start: int
+        # previous_end: int
+
+        if start == 1:
+            previous_url = None
+        else:
+            previous_start = ((int(start/settings.TREES_PER_PAGE)-1)*settings.TREES_PER_PAGE)+1
+            previous_end = previous_start + settings.TREES_PER_PAGE - 1
+            previous_url = f"/projects/{name}/{previous_start}-{previous_end}"
+
+        if not previous_url:
+            next_start = settings.TREES_PER_PAGE+1
+            next_end = settings.TREES_PER_PAGE*2
+        else:
+            next_start = previous_end + settings.TREES_PER_PAGE + 1
+            next_end = next_start + settings.TREES_PER_PAGE - 1
+
+        if next_end > tree_count:
+            next_end = tree_count
+
+        if next_start > tree_count:
+            next_url = None
+        else:
+            next_url = f"/projects/{name}/{next_start}-{next_end}"
+
         context = {
             "entries": entries,
             "project": name,
             "project_obj": project, 
             "tree_count": tree_count,
             "range": f"{start}-{end} of " if trees else "",
+            "previous_url": previous_url,
+            "next_url": next_url,
+            "pages": project.pages(),
         }
         return render(request, "displayproject.html", context)
 

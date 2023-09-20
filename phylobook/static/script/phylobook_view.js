@@ -801,3 +801,8 @@ class projectObject {
         };
     };
 };
+
+function showPagesModal() {
+    let modal = $("#pages_modal");
+    modal.modal("show");
+};

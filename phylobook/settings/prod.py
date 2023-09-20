@@ -354,4 +354,4 @@ logging.config.dictConfig({
 
 HIGHLIGHTER_MARK_WIDTH = 3
 
-PROJECTS_PER_PAGE = 10
+TREES_PER_PAGE = 10
