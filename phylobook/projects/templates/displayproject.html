@@ -311,7 +311,7 @@
 
         <div class="container-fluid app-container">
             <div class="row">
-                <div class="col-auto align-self-center"><a href="/projects">Projects</a> &gt; <b>{{ project }}</b>&nbsp;({{ entries | length }} trees)</div>
+                <div class="col-auto align-self-center"><a href="/projects">Projects</a> &gt; <b>{{ project }}</b>&nbsp;({{ range }}{{ tree_count }} trees)</div>
                 <div class="col-auto mr-auto align-self-center"><button type="button" id="downloadproject" class="btn btn-outline-primary btn-sm">Download Project Files</button>&nbsp;&nbsp;&nbsp;&nbsp;<a target="_blank" class="highlighterdoc" href="https://www.hiv.lanl.gov/content/sequence/HIGHLIGHT/help.html">Highlighter plot explanation >></a>
                 </div>
             </div>
@@ -539,16 +539,16 @@
                        <div class='svgimage'></div>
                        <div class='highlighter'>
                            <div id="{{ entry.uniquesvg }}-straightedge" class="straightedge"></div>
-                           <img src="{{ entry.highlighter }}" class="highlighterimg" />
+                           <img src="/projects/{{ entry.highlighter }}" class="highlighterimg" />
                        </div>
                        <div class='matchimage'>
-                            <img src="{% static 'images/empty_match.svg' %}" />
+                            {% comment %} <img src="{% static 'images/empty_match.svg' %}" /> {% endcomment %}
                        </div>
                     </div>
                 </div>
                 <script type="text/javascript">
                     var rect;
-                    $('#{{ entry.uniquesvg }}').find(".svgimage").load('{{ entry.svg }}', function() {
+                    $('#{{ entry.uniquesvg }}').find(".svgimage").load('/projects/{{ entry.svg }}', function() {
                         
                         // Set up the sequenceAnnotator and the treeLineagesCount after the svg loads
                         {% if "change_project" in context_perms and not project_obj.edit_locked %}
@@ -615,7 +615,7 @@
                     });
 
                     // Load the match highlighter
-                    $('#{{ entry.uniquesvg }}').find(".matchimage").load("match_image/{{ project }}/{{ entry.uniquesvg }}")
+                    $('#{{ entry.uniquesvg }}').find(".matchimage").load("/projects/match_image/{{ project }}/{{ entry.uniquesvg }}")
 
                     // Start drag?
                     dragElement(document.getElementById("{{ entry.uniquesvg }}-straightedge"));

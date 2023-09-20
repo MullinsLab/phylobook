@@ -111,7 +111,7 @@ function showCluster(project, file, id, drawboxes) {
         cache: false,
         success: function(csvAsString) {
             clusterArray=csvAsString.csvToArray({ rSep:'\n' });
-            var svg = $("#" + id).find("svg")[0];
+            var svg = $("#" + id).find('.svgimage').find("svg")[0];
             //var max = 0;
             var set = new Set();
             for (let i = 0; i < clusterArray.length; i++) {
@@ -481,7 +481,7 @@ $(document).ready(function() {
         } else {
             var id = saveid.replace("sequencecolor-", "");
             removeAllSeqnum(id);
-            var svg = $("#" + id).find("svg")[0];
+            var svg = $("#" + id).find('.svgimage').find("svg")[0];
             textitems = d3.select(svg).selectAll('text');
             colorizeSeqnum(textitems, id);
             var values = $("#slider-range-" + id).slider("values");
@@ -507,7 +507,7 @@ $(document).ready(function() {
 
     function removeAllSeqnum(id) {
         if (id) {
-            var svg = $("#" + id).find("svg")[0];
+            var svg = $("#" + id).find('.svgimage').find("svg")[0];
             d3.select(svg).selectAll(".seqnum").each(function(d, i) {
                 d3.select(this).remove();
             });
@@ -1272,7 +1272,7 @@ function loadSVG(id){
         // Set up the sequenceAnnotator and the treeLineagesCount after the svg loads
         // console.log("Loaded SVG for " + id);
         
-        d3.select($("#" + id).find("svg")[0])
+        d3.select($("#" + id).find('.svgimage').find("svg")[0])
             .call(d3.drag()
                 .on("start", function (event, d) {
                     //console.log('start', "x=" + event.x, "y=" + event.y);
@@ -1323,7 +1323,7 @@ function loadSVG(id){
 function loadMatch(id){
     // Load the match plot for the tree
     console.log("Loading match plot for " + id)
-    $('#' + id).find(".matchimage").load("match_image/" + projectName + "/" + id, function() {
+    $('#' + id).find(".matchimage").load("/projects/match_image/" + projectName + "/" + id, function() {
         console.log("Finished loading match plot")
     });
 };

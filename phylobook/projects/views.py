@@ -13,6 +13,7 @@ from pathlib import Path
 from django.conf import settings
 from guardian.shortcuts import get_perms
 from django.views.generic.base import View
+from django.db.models import QuerySet
 
 from phylobook.projects.mixins import LoginRequredSimpleErrorMixin
 from phylobook.projects.models import Project, ProjectCategory, Tree
@@ -29,7 +30,7 @@ def projects(request):
     return render(request, "projects.html", context)
 
 
-def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, *, test_svg=False):
+def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, start: int=None, end: int=None, test_svg=False):
     project = Project.objects.get(name=name)
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
 
@@ -38,13 +39,19 @@ def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, *,
         entries = []
         projectPath = os.path.join(PROJECT_PATH, name)
 
-        file: list = []
+        #file: list = []
+        tree_count: int = 0
 
         try:
             files = os.listdir(projectPath)
         except Exception as e:
             log.warning(f"Error reading project directory: {e}")
             return HttpResponseBadRequest(f"Error reading project directory (probably due to permissions): {projectPath}")
+
+        if start is not None and end is not None and start > 0 and end >= start:
+            trees: QuerySet = project.trees.all()[start-1:end]
+        else:
+            trees: bool = False
 
         for file in sorted(files):
             if file.endswith("_highlighter.png"):
@@ -61,6 +68,11 @@ def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, *,
                                 tree = project.trees.get(name=uniquesvg)
                             except Tree.DoesNotExist:
                                 tree = project.trees.create(name=uniquesvg)
+
+                            tree_count += 1
+
+                            if trees and tree not in trees:
+                                continue
 
                             if not tree.type:
                                 tree.type = fasta_type(tree=tree)
@@ -93,7 +105,9 @@ def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, *,
         context = {
             "entries": entries,
             "project": name,
-            "project_obj": project
+            "project_obj": project, 
+            "tree_count": tree_count,
+            "range": f"{start}-{end} of " if trees else "",
         }
         return render(request, "displayproject.html", context)
 
@@ -156,7 +170,7 @@ class MatchImage(LoginRequredSimpleErrorMixin, View):
         else:
             return FileResponse(open("/phylobook/phylobook/static/images/empty_match.svg", "rb"), content_type="image/svg+xml")
 
-def getFile(request, name, file, *, throw_away=None):
+def getFile(request, name, file, **kwargs):
     project = Project.objects.get(name=name)
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
         filePath = os.path.join(PROJECT_PATH, name, file)

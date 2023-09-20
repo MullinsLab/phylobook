@@ -23,6 +23,8 @@ urlpatterns = [
     path("extract_to_zip/<str:project>/<str:tree>", views.ExtractToZip.as_view(), name="extract_lineage"),
     path("match_image/<str:project>/<str:tree>", views.MatchImage.as_view(), name="match_image"),
     path("<str:name>", login_required(views.displayProject)),
+    path("<str:name>/<int:start>-<int:end>", login_required(views.displayProject), name="project_by_page"),
+    path("<str:name>/<int:start>-<int:end>/<str:file>", login_required(views.getFile), name="get_file_by_page"),
     path("<str:name>/<str:file>", login_required(views.getFile)),
 ]
 

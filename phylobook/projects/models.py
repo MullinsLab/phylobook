@@ -222,6 +222,7 @@ class Tree(models.Model):
 
     class Meta:
         unique_together = ('project', 'name',)
+        ordering = ['name']
 
     def __str__(self):
         """ Returns the name of the tree for print() """
@@ -684,6 +685,10 @@ class Tree(models.Model):
 
         if not references:
             return False
+
+        # print(colors)
+        # for reference in references:
+        #     print(str(reference))
 
         try:
             mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10)
