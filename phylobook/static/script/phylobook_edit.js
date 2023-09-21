@@ -1268,7 +1268,7 @@ function setLineagesByColor(id) {
 
 function loadSVG(id){
     // Load the SVG for the tree
-    $('#' + id).find(".svgimage").load(projectName + "/" + id, function() {
+    $('#' + id).find(".svgimage").load("/projects/" + projectName + "/" + id, function() {
         // Set up the sequenceAnnotator and the treeLineagesCount after the svg loads
         // console.log("Loaded SVG for " + id);
         
@@ -1317,6 +1317,8 @@ function loadSVG(id){
                     })
             );
     });
+
+    loadMatch(id);
 };
 
 

@@ -223,20 +223,20 @@
         <input type="hidden" id="project" value="{{ project }}" />
 
         <!-- Modal for pages -->
-        <div class="modal fade" id="pages_modal" tabindex="-1" role="dialog" aria-labelledby="annotations" aria-hidden="true">
+        <div class="modal fade" id="pages_modal" tabindex="-1" role="dialog" aria-labelledby="pages" aria-hidden="true">
             <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
               <div class="modal-content">
                 <div class="modal-header">
-                  <h5 class="modal-title" id="annotations_modal_title">Jump to page</h5>
+                  <h5 class="modal-title" id="pages_modal_title">Jump to page</h5>
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>
-                <div class="modal-body" id="annotations_modal_body">
+                <div class="modal-body" id="pages_modal_body">
                     {% for page in pages%}<a href="/projects/{{ project }}/{{ page.1}}">{{ page.0 }}</a><br>{% endfor %}
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="annotations_close_button">Close</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="pages_close_button">Close</button>
                 </div>
               </div>
             </div>
