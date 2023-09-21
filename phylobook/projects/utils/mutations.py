@@ -247,8 +247,8 @@ class Mutations:
 
         matches: dict = {}
         
-        if sequence in references:
-            return matches
+        # if sequence in references:
+        #     return matches
 
         for base_index in range(len(sequence)):
             matches[base_index] = []

@@ -743,7 +743,7 @@ class Tree(models.Model):
 
         for color, alignment in sequences_by_color.items():
             alignment_summary = AlignInfo.SummaryInfo(alignment)
-            consensus[color] = alignment_summary.dumb_consensus(threshold=0.5)
+            consensus[color] = alignment_summary.gap_consensus(threshold=0.5)
         
         return consensus
     
