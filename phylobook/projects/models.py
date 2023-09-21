@@ -719,7 +719,6 @@ class Tree(models.Model):
         """ Returns the consensus sequence for a lineage """
 
         valid_colors: list = {color["short"] for color in settings.ANNOTATION_COLORS if color["swapable"]}
-        print(valid_colors)
         sequences_by_color: dict[str, MultipleSeqAlignment] = {}
         consensus: dict = {}
 
