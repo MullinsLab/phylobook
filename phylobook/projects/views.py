@@ -315,26 +315,30 @@ def updateNote(request, name, file):
         return response
 
 
-def updateSVG(request, name, file):
-    project = Project.objects.get(name=name)
+def updateSVG(request, project_name, tree_name):
+    project: Project = Project.objects.get(name=project_name)
+    tree: Tree = project.trees.get(name=tree_name)
+    log.debug(f"Tree file name: {tree.svg_file_name}")
+    
     if project and request.user.has_perm('projects.change_project', project) and request.is_ajax():
         if request.method == 'POST':
-            projectPath = os.path.join(PROJECT_PATH, name)
-            for f in sorted(os.listdir(projectPath)):
-                if f.endswith(".svg") and f.startswith(file):
-                    filePath = Path(os.path.join(PROJECT_PATH, name, f))
-                    svg = request.POST.get('svg')
-                    
-                    try:
-                        with open(filePath, "w") as f:
-                            f.write(svg)
-                            f.close()
-                        return HttpResponse("SVG Saved.")
-                    except PermissionError:
-                        log.warn(f"Error: Permission denied: {filePath}")
-                        return HttpResponseForbidden(f"\nPermission Denied for file: '{file}'.")
+            # projectPath = os.path.join(PROJECT_PATH, project_name)
+            # for f in sorted(os.listdir(projectPath)):
+            #     if f.endswith(".svg") and f.startswith(tree_name):
+            #         filePath = Path(os.path.join(PROJECT_PATH, project_name, f))
+            #         log.debug(f"Filepath: {tree.svg_file_name}")
+            svg = request.POST.get('svg')
+            
+            try:
+                with open(tree.svg_file_name, "w") as f:
+                    f.write(svg)
+                    f.close()
+                return HttpResponse("SVG Saved.")
+            except PermissionError:
+                log.warn(f"Error: Permission denied: {tree.svg_file_name}")
+                return HttpResponseForbidden(f"\nPermission Denied for file: '{tree_name}'.")
     else:
-        log.warn(f"Error: Permission denied: {file}")
+        log.warn(f"Error: Permission denied: {tree_name}")
         response = HttpResponseForbidden("Permission Denied.")
         return response
 
