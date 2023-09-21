@@ -51,16 +51,18 @@ def svg_file_name(*, tree: Tree, project: Project) -> str:
     """ Returns the name of the tree file
     It's found this way because there can be variations in the file name """
 
-    # highlighter_png: str = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*_highlighter.png"))[0]
-    # svg_base: str = highlighter_png.replace("_highlighter.png", "")
-    # svg_list = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{svg_base}*.svg"))
+    svg_list = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*.svg"))
+    # svg_list = list(svg_set - set(glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}_highlighter*.svg"))))
+    # svg_list = list(svg_set - set(glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}_match*.svg"))))
 
-    svg_set = set(glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*.svg")))
-    svg_list = list(svg_set - set(glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}_highlighter*.svg"))))
-    svg_list = list(svg_set - set(glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}_match*.svg"))))
+    new_svg_list: list = []
 
-    if svg_list:
-        svg: str = svg_list[0]
+    for test_svg in svg_list:
+        if "_highlighter" not in test_svg and "_match" not in test_svg:
+            new_svg_list.append(test_svg)
+
+    if new_svg_list:
+        svg: str = new_svg_list[0]
     else:
         svg = None
 

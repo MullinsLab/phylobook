@@ -253,7 +253,7 @@ class Tree(models.Model):
         """ Returns the number of unassigned sequences in the tree """
 
         if not self.phylotree:
-            self.phylotree.load_file()
+            self.load_svg_tree()
 
         return self.phylotree.unassigned_sequences
 
@@ -481,14 +481,8 @@ class Tree(models.Model):
 
         fastas: dict = {}
 
-        # all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
-        
-        # log.debug(all_sequence_names)
-        # log.debug("\n\n\n")
         if not self.phylotree:
             self.load_svg_tree()
-        # log.debug(self.phylotree.tree_sequence_names())
-        # log.debug(self.phylotree.sequences)
 
         all_sequence_names = self.phylotree.tree_sequence_names()
 
@@ -593,7 +587,8 @@ class Tree(models.Model):
         if self.phylotree:
             self.phylotree.load_file()
         else:
-            self.phylotree = PhyloTree(file_name=self.svg_file_name)
+            file_name: str = self.svg_file_name
+            self.phylotree = PhyloTree(file_name=file_name)
 
     def load_alignment(self) -> None:
         """ Loads the alignment for the tree """
@@ -676,11 +671,10 @@ class Tree(models.Model):
             if match_file_time > tree_file_time:
                 return True
         
-        # log.debug("Building match file")
-
         alignment = AlignIO.read(self.origional_fasta_file_name, "fasta")
 
         tree_file_name = self.tree_file_name
+        
         if "nexus" in tree_file_name:
             tree = Phylo.read(self.tree_file_name, "nexus")
         else:
@@ -728,7 +722,8 @@ class Tree(models.Model):
         if not self.alignment:
             self.load_alignment()
 
-        for id, sequence_object in self.phylotree.sequences.items():
+        sequences = self.phylotree.sequences.items()
+        for id, sequence_object in sequences:
             if sequence_object["color"] not in sequences_by_color:
                 sequences_by_color[sequence_object["color"]] = MultipleSeqAlignment([])
 

@@ -200,8 +200,10 @@ class MatchImage(LoginRequredSimpleErrorMixin, View):
         tree: Tree = Tree.objects.get(project=project, name=tree_name)
 
         if tree.has_svg_match():
+            # log.debug("Got match image")
             return FileResponse(open(tree.match_file_name_svg(), "rb"), content_type="image/svg+xml")
         else:
+            # log.debug("No match image")
             return FileResponse(open("/phylobook/phylobook/static/images/empty_match.svg", "rb"), content_type="image/svg+xml")
 
 def getFile(request, name, file, **kwargs):

@@ -1323,9 +1323,11 @@ function loadSVG(id){
 function loadMatch(id){
     // Load the match plot for the tree
     console.log("Loading match plot for " + id)
-    $('#' + id).find(".matchimage").find('img').load("/projects/match_image/" + projectName + "/" + id, function() {
-        console.log("Finished loading match plot")
-    });
+    // $('#' + id).find(".matchimage").find('img').load("/projects/match_image/" + projectName + "/" + id + "/" + new Date().getTime(), function() {
+    //     console.log("Finished loading match plot")
+    // });
+
+    $('#' + id).find(".matchimage").find('img').attr("src","/projects/match_image/" + projectName + "/" + id + "/" + new Date().getTime())
 };
 
 
