@@ -2,6 +2,7 @@ import logging
 log = logging.getLogger('app')
 
 import io, zipfile, shutil, datetime, os, glob
+from functools import cache
 
 import Bio
 from Bio import AlignIO, Phylo, SeqIO
@@ -258,35 +259,41 @@ class Tree(models.Model):
         return self.phylotree.unassigned_sequences
 
     @property
+    @cache
     def svg_file_name(self) -> str:
         """ Returns the name of the SVG file for the tree """
 
         return svg_file_name(project=self.project, tree=self)
     
     @property
+    @cache
     def fasta_file_name(self) -> str:
         """ Returns the name of the FASTA file for the tree """
 
         return fasta_file_name(project=self.project, tree=self)
     
     @property
+    @cache
     def origional_fasta_file_name(self) -> str:
         """ Returns the name of the origional FASTA file (when available) for the tree """
 
         return fasta_file_name(project=self.project, tree=self, prefer_origional=True)
     
     @property
+    @cache
     def tree_file_name(self) -> str:
         """ Returns the name of the NEXUS file for the tree """
 
         return nexus_file_name(project=self.project, tree=self) or newick_file_name(project=self.project, tree=self)
 
     @property
+    @cache
     def highlighter_file_name_png(self) -> str:
         """ Returns the name of the highlighter file for the tree (png) """
 
         return os.path.join(self.project.files_path, f"{self.name}_highlighter.png")
 
+    @cache
     def highlighter_file_name_svg(self, *, width: int=3, path: bool=True) -> str:
         """ Returns the name of the highlighter file for the tree (svg)"""
 
@@ -295,7 +302,8 @@ class Tree(models.Model):
         
         else:
             return f"{self.name}_highlighter.{width}.svg"
-        
+    
+    @cache
     def match_file_name_svg(self, *, width: int=3, path: bool=True) -> str:
         """ Returns the name of the match file for the tree (svg)"""
 
