@@ -381,7 +381,6 @@ class Tree(models.Model):
         if not self.phylotree:
             self.load_svg_tree()
 
-        #return tree_sequence_names(self.svg_file_name)
         return self.phylotree.tree_sequence_names()
 
     def get_sequence_names_by_color(self, color: str, all_sequence_names: dict=None) -> list:
@@ -403,8 +402,8 @@ class Tree(models.Model):
         if not all_sequence_names:
             if not self.phylotree:
                 self.load_svg_tree()
+
             all_sequence_names: dict = self.phylotree.tree_sequence_names()
-            #all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
         
         if not sequences:
             sequences = SeqIO.index(self.fasta_file_name, "fasta")
@@ -474,8 +473,6 @@ class Tree(models.Model):
                 self.load_svg_tree()
             
             all_sequence_names: dict = self.phylotree.tree_sequence_names()
-
-            #all_sequence_names: dict = tree_sequence_names(self.svg_file_name)
         
         if not sequences:
             sequences = SeqIO.index(self.fasta_file_name, "fasta")
@@ -689,7 +686,7 @@ class Tree(models.Model):
             tree = Phylo.read(self.tree_file_name, "newick")
 
         references: list[Seq] = []
-        colors_by_short: dict[str: str] = {color["short"]: f"#{color['value']}" for color in settings.ANNOTATION_COLORS if not color["has_UOLs"]}
+        colors_by_short: dict[str: str] = {color["short"]: f"#{color['value']}" for color in settings.ANNOTATION_COLORS if color["swapable"]}
         consensus = self.get_lineage_consensus()
         colors: dict = {
             "references": [],
@@ -721,6 +718,8 @@ class Tree(models.Model):
     def get_lineage_consensus(self):
         """ Returns the consensus sequence for a lineage """
 
+        valid_colors: list = {color["short"] for color in settings.ANNOTATION_COLORS if color["swapable"]}
+        print(valid_colors)
         sequences_by_color: dict[str, MultipleSeqAlignment] = {}
         consensus: dict = {}
 
@@ -732,6 +731,9 @@ class Tree(models.Model):
 
         sequences = self.phylotree.sequences.items()
         for id, sequence_object in sequences:
+            if sequence_object["color"] not in valid_colors:
+                continue
+
             if sequence_object["color"] not in sequences_by_color:
                 sequences_by_color[sequence_object["color"]] = MultipleSeqAlignment([])
 
