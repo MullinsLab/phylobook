@@ -71,23 +71,6 @@ def fasta_file_name(*, tree: Tree, project: Project, prefer_origional: bool=Fals
     """ Returns the name of the tree file
     It's found this way because there can be variations in the file name """
 
-    # highlighter_png: str = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*_highlighter.png"))[0]
-    # file_base: str = highlighter_png.replace("_highlighter.png", "")
-    # fasta: str = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{file_base}*_highlighter.fasta"))
-
-    # if len(fasta):
-    #     return fasta[0]
-    
-    # fasta: str = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{file_base}*.fasta"))
-    # if len(fasta):
-    #     return fasta[0]
-    
-    # fasta: str = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{project.name}*.fasta"))
-    # if len(fasta):
-    #     return fasta[0]
-    
-    # return None
-
     fasta: str = None
     fasta_list = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*.fasta"))
 

@@ -570,6 +570,8 @@
                        </div>
                        <div class='matchimage'>
                             {% comment %} <img src="{% static 'images/empty_match.svg' %}" /> {% endcomment %}
+                            <img src="/projects/match_image/{{ project }}/{{ entry.uniquesvg }}" />
+                            {% comment %} "/projects/match_image/{{ project }}/{{ entry.uniquesvg }}" {% endcomment %}
                        </div>
                     </div>
                 </div>
@@ -642,7 +644,7 @@
                     });
 
                     // Load the match highlighter
-                    $('#{{ entry.uniquesvg }}').find(".matchimage").load("/projects/match_image/{{ project }}/{{ entry.uniquesvg }}")
+                    {% comment %} $('#{{ entry.uniquesvg }}').find(".matchimage").load("/projects/match_image/{{ project }}/{{ entry.uniquesvg }}") {% endcomment %}
 
                     // Start drag?
                     dragElement(document.getElementById("{{ entry.uniquesvg }}-straightedge"));
