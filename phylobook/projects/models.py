@@ -702,8 +702,8 @@ class Tree(models.Model):
         consensus = self.get_lineage_consensus()
         colors: dict = {
             "references": [],
-            "unique": "#EFE645",
-            "multiple": "#808080",
+            "unique": "#C4BD3B", #"#EFE645",
+            "multiple": "#BDBDBD", #"#808080",
         }
 
         for color, sequence in consensus.items():
