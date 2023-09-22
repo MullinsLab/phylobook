@@ -337,9 +337,11 @@
                 <div class="col-auto mr-auto align-self-center"><button type="button" id="downloadproject" class="btn btn-outline-primary btn-sm">Download Project Files</button>&nbsp;&nbsp;&nbsp;&nbsp;<a target="_blank" class="highlighterdoc" href="https://www.hiv.lanl.gov/content/sequence/HIGHLIGHT/help.html">Highlighter plot explanation >></a>
                 </div>
                 <div class="col-auto align-self-right">
-                    <a href="{{ previous_url }}" class="btn btn-outline-primary btn-sm{% if not previous_url %} disabled{% endif %}" role="button"><<</a>
+                    <a href="{{ first_url }}" class="btn btn-outline-primary btn-sm{% if not first_url %} disabled{% endif %}" role="button"><<</a>
+                    <a href="{{ previous_url }}" class="btn btn-outline-primary btn-sm{% if not previous_url %} disabled{% endif %}" role="button"><</a>
                     <button type="button" id="jump_page_button" class="btn btn-outline-primary btn-sm" onclick="showPagesModal(); return false;">Jump to Page</button>
-                    <a href="{{ next_url }}" class="btn btn-outline-primary btn-sm{% if not next_url %} disabled{% endif %}" role="button">>></a>
+                    <a href="{{ next_url }}" class="btn btn-outline-primary btn-sm{% if not next_url %} disabled{% endif %}" role="button">></a>
+                    <a href="{{ last_url }}" class="btn btn-outline-primary btn-sm{% if not last_url %} disabled{% endif %}" role="button">>></a>
                 </div>
             </div>
             {% if "change_project" in context_perms and not project_obj.edit_locked %}
@@ -656,9 +658,11 @@
             <div class="col-auto mr-auto align-self-center">
             </div>
             <div class="col-auto align-self-right">
-                <a href="{{ previous_url }}" class="btn btn-outline-primary btn-sm{% if not previous_url %} disabled{% endif %}" role="button"><<</a>
+                <a href="{{ first_url }}" class="btn btn-outline-primary btn-sm{% if not first_url %} disabled{% endif %}" role="button"><<</a>
+                <a href="{{ previous_url }}" class="btn btn-outline-primary btn-sm{% if not previous_url %} disabled{% endif %}" role="button"><</a>
                 <button type="button" id="jump_page_button" class="btn btn-outline-primary btn-sm" onclick="showPagesModal(); return false;">Jump to Page</button>
-                <a href="{{ next_url }}" class="btn btn-outline-primary btn-sm{% if not next_url %} disabled{% endif %}" role="button">>></a>
+                <a href="{{ next_url }}" class="btn btn-outline-primary btn-sm{% if not next_url %} disabled{% endif %}" role="button">></a>
+                <a href="{{ last_url }}" class="btn btn-outline-primary btn-sm{% if not last_url %} disabled{% endif %}" role="button">>></a>
             </div>
         </div>
         <br>

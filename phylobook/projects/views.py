@@ -110,12 +110,17 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
         # previous_start: int
         # previous_end: int
 
+        pages: list = project.pages()
+
         if start == 1:
             previous_url = None
+            first_url = None
         else:
             previous_start = ((int(start/settings.TREES_PER_PAGE)-1)*settings.TREES_PER_PAGE)+1
             previous_end = previous_start + settings.TREES_PER_PAGE - 1
             previous_url = f"/projects/{name}/{previous_start}-{previous_end}"
+
+            first_url = pages[0][1]
 
         if not previous_url:
             next_start = settings.TREES_PER_PAGE+1
@@ -132,6 +137,11 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
         else:
             next_url = f"/projects/{name}/{next_start}-{next_end}"
 
+        if end == tree_count:
+            last_url = None
+        else:
+            last_url: str = pages[-1][1]
+
         context = {
             "entries": entries,
             "project": name,
@@ -140,7 +150,9 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
             "range": f"{start}-{end} of " if trees else "",
             "previous_url": previous_url,
             "next_url": next_url,
-            "pages": project.pages(),
+            "first_url": first_url,
+            "last_url": last_url,
+            "pages": pages,
         }
         return render(request, "displayproject.html", context)
 
