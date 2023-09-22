@@ -22,7 +22,7 @@ class Command(BaseCommand):
 
         for project in Project.objects.all():
             print(f"Processing {project}")
-            errors: list = ensure_project_highlighter_svgs(project, width=options["width"])
+            errors: list = ensure_project_highlighter_svgs(project)
             
             for error_list in errors:
                 for error in error_list:

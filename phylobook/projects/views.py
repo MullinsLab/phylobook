@@ -4,6 +4,7 @@ log = logging.getLogger('app')
 import os, tarfile, time, json, glob, time
 from io import StringIO
 from datetime import datetime
+from pathlib import Path
 
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
@@ -30,11 +31,9 @@ def projects(request):
     return render(request, "projects.html", context)
 
 
-def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, start: int=None, end: int=None, test_svg=False):
+def displayProject(request, name, width: int=None, start: int=None, end: int=None, test_svg=False):
     project = Project.objects.get(name=name)
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
-
-        # ensure_project_highlighter_svgs(project, width=width)
 
         entries = []
         projectPath = os.path.join(PROJECT_PATH, name)
@@ -84,8 +83,8 @@ def displayProject(request, name, width: int=settings.HIGHLIGHTER_MARK_WIDTH, st
                                 tree.type = fasta_type(tree=tree)
                                 tree.save()
 
-                            if tree.has_svg_highlighter(width=width, no_build=True):
-                                file = tree.highlighter_file_name_svg(width=width, path=False)
+                            if tree.has_svg_highlighter(width=settings.HIGHLIGHTER_MARK_WIDTH, no_build=True):
+                                file = tree.highlighter_file_name_svg(width=settings.HIGHLIGHTER_MARK_WIDTH, path=False)
 
                             data = None
 
@@ -318,7 +317,6 @@ def updateNote(request, name, file):
 def updateSVG(request, project_name, tree_name):
     project: Project = Project.objects.get(name=project_name)
     tree: Tree = project.trees.get(name=tree_name)
-    log.debug(f"Tree file name: {tree.svg_file_name}")
     
     if project and request.user.has_perm('projects.change_project', project) and request.is_ajax():
         if request.method == 'POST':
@@ -483,6 +481,8 @@ class TreeSettings(LoginRequredSimpleErrorMixin, View):
                 tree.settings.pop(setting)
             else:
                 tree.settings[setting] = value
+                if setting == "lineages":
+                    Path(tree.svg_file_name).touch()
 
         tree.save()
 

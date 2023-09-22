@@ -569,6 +569,7 @@ class treeLineagesCount {
 
         // Send the data to the server
         setTreeSetting({tree: this.svgID, callback: jQuery.proxy(this.saveLineageNamesCallback, this), settings: {lineages: my_lineages}})
+        
     };
 
     saveLineageNamesCallback(args){
@@ -576,6 +577,8 @@ class treeLineagesCount {
 
         this.showModalForm({download: true});
         this.setLineageNamesAssigned(true);
+        loadMatch(this.svgID);
+        console.log("Should reload match.")
     };
 
     clearLineageNames(){

@@ -14,7 +14,7 @@ from Bio.SeqRecord import SeqRecord
 from typing import Union
 
 from django.db import models
-from django.conf import settings
+from django.conf import settings as django_settings
 from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.models import ContentType
 
@@ -138,8 +138,8 @@ class Project(models.Model):
     def copy_files(self, *, name: str, overwrite: bool=False) -> None:
         """ Copy files from one project to another """
 
-        old_path = os.path.join(settings.PROJECT_PATH, self.name)
-        new_path = os.path.join(settings.PROJECT_PATH, name)
+        old_path = os.path.join(django_settings.PROJECT_PATH, self.name)
+        new_path = os.path.join(django_settings.PROJECT_PATH, name)
 
         if overwrite:
             shutil.copytree(old_path, new_path, dirs_exist_ok=True)
@@ -153,7 +153,7 @@ class Project(models.Model):
     def files_path(self) -> str:
         """ Returns the path to the project directory """
 
-        return os.path.join(settings.PROJECT_PATH, self.name)
+        return os.path.join(django_settings.PROJECT_PATH, self.name)
     
     def files(self) -> list:
         """ Returns a list of files in the project directory """
@@ -173,9 +173,9 @@ class Project(models.Model):
 
         trees = self.trees.all()
 
-        for page in range(int(trees.count() / settings.TREES_PER_PAGE) + 1):
-            first_tree_index: int = page * settings.TREES_PER_PAGE
-            last_tree_index: int = (page + 1) * settings.TREES_PER_PAGE - 1
+        for page in range(int(trees.count() / django_settings.TREES_PER_PAGE) + 1):
+            first_tree_index: int = page * django_settings.TREES_PER_PAGE
+            last_tree_index: int = (page + 1) * django_settings.TREES_PER_PAGE - 1
             if last_tree_index > trees.count():
                 last_tree_index = trees.count() - 1
 
@@ -294,8 +294,11 @@ class Tree(models.Model):
         return os.path.join(self.project.files_path, f"{self.name}_highlighter.png")
 
     @cache
-    def highlighter_file_name_svg(self, *, width: int=3, path: bool=True) -> str:
+    def highlighter_file_name_svg(self, *, width: int=None, path: bool=True) -> str:
         """ Returns the name of the highlighter file for the tree (svg)"""
+
+        if not width:
+            width = django_settings.HIGHLIGHTER_MARK_WIDTH
 
         if path:
             return os.path.join(self.project.files_path, f"{self.name}_highlighter.{width}.svg")
@@ -304,8 +307,11 @@ class Tree(models.Model):
             return f"{self.name}_highlighter.{width}.svg"
     
     @cache
-    def match_file_name_svg(self, *, width: int=3, path: bool=True) -> str:
+    def match_file_name_svg(self, *, width: int=None, path: bool=True) -> str:
         """ Returns the name of the match file for the tree (svg)"""
+
+        if not width:
+            width = django_settings.MATCH_MARK_WIDTH
 
         if path:
             return os.path.join(self.project.files_path, f"{self.name}_match.{width}.svg")
@@ -632,8 +638,11 @@ class Tree(models.Model):
         
         return ordered_sequence_names
     
-    def has_svg_highlighter(self, *, width: int=3, no_build: bool=False) -> bool:
+    def has_svg_highlighter(self, *, width: int=None, no_build: bool=False) -> bool:
         """ Create a mutation highlighter plot """
+
+        if not width:
+            width = django_settings.HIGHLIGHTER_MARK_WIDTH
 
         if not self.tree_file_name or not self.fasta_file_name or not os.path.exists(self.tree_file_name) or not os.path.exists(self.fasta_file_name):
             return False
@@ -660,9 +669,12 @@ class Tree(models.Model):
     
         return True
     
-    def has_svg_match(self, *, width: int=3, no_build: bool=False) -> bool:
+    def has_svg_match(self, *, width: int=None, no_build: bool=False) -> bool:
         """ Create a match highlighter plot """
         
+        if not width:
+            width = django_settings.MATCH_MARK_WIDTH
+
         if not self.tree_file_name or not self.fasta_file_name or not os.path.exists(self.tree_file_name) or not os.path.exists(self.fasta_file_name):
             return False
         
@@ -686,7 +698,7 @@ class Tree(models.Model):
             tree = Phylo.read(self.tree_file_name, "newick")
 
         references: list[Seq] = []
-        colors_by_short: dict[str: str] = {color["short"]: f"#{color['value']}" for color in settings.ANNOTATION_COLORS if color["swapable"]}
+        colors_by_short: dict[str: str] = {color["short"]: f"#{color['value']}" for color in django_settings.ANNOTATION_COLORS}
         consensus = self.get_lineage_consensus()
         colors: dict = {
             "references": [],
@@ -718,7 +730,11 @@ class Tree(models.Model):
     def get_lineage_consensus(self):
         """ Returns the consensus sequence for a lineage """
 
-        valid_colors: list = {color["short"] for color in settings.ANNOTATION_COLORS if color["swapable"]}
+        if self.settings is not None and self.settings.get("lineages"):
+            valid_colors: list = [key for key, value in self.settings["lineages"].items() if "." not in value and value != "Rec"]
+        else:
+            valid_colors: list = [color["short"] for color in django_settings.ANNOTATION_COLORS if color["swapable"]]
+
         sequences_by_color: dict[str, MultipleSeqAlignment] = {}
         consensus: dict = {}
 
@@ -744,7 +760,7 @@ class Tree(models.Model):
         for color, alignment in sequences_by_color.items():
             alignment_summary = AlignInfo.SummaryInfo(alignment)
             consensus[color] = alignment_summary.gap_consensus(threshold=0.5)
-        
+
         return consensus
     
     def get_sequence_by_id(self, id: str) -> str:
