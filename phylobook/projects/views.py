@@ -107,9 +107,6 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
                                 entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", \
                                                 "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
 
-        # previous_start: int
-        # previous_end: int
-
         pages: list = project.pages()
 
         if start == 1:
