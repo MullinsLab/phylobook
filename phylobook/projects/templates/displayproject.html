@@ -568,7 +568,7 @@
                        <div class='svgimage'></div>
                        <div class='highlighter'>
                            <div id="{{ entry.uniquesvg }}-straightedge" class="straightedge"></div>
-                           <img src="/projects/{{ entry.highlighter }}" data-origional-height=953 data-origional-width=609 class="highlighterimg" />
+                           <img src="/projects/{{ entry.highlighter }}" height=953 width=609 {{ entry.origional_dimensions }}class="highlighterimg" />
                        </div>
                        <div class='matchimage'>
                             {% comment %} <img src="{% static 'images/empty_match.svg' %}" /> {% endcomment %}

@@ -18,7 +18,7 @@ from django.db.models import QuerySet
 
 from phylobook.projects.mixins import LoginRequredSimpleErrorMixin
 from phylobook.projects.models import Project, ProjectCategory, Tree
-from phylobook.projects.utils import fasta_type, get_lineage_dict, ensure_project_highlighter_svgs
+from phylobook.projects.utils import fasta_type, get_lineage_dict, svg_dimensions
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -83,9 +83,12 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
                                 tree.type = fasta_type(tree=tree)
                                 tree.save()
 
+                            origional_dimensions: str = ""
+
                             if tree.has_svg_highlighter(width=settings.HIGHLIGHTER_MARK_WIDTH, no_build=True):
                                 file = tree.highlighter_file_name_svg(width=settings.HIGHLIGHTER_MARK_WIDTH, path=False)
-
+                                (width, height) = svg_dimensions(tree.highlighter_file_name_svg(width=settings.HIGHLIGHTER_MARK_WIDTH))
+                                origional_dimensions = f"data-origional-width={width} data-origional-height={height} "
                             data = None
 
                             if filePath.is_file():
@@ -102,7 +105,8 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
                                 colorhighval = data["colorhighval"] if (data["colorhighval"] != "None" and data["colorhighval"] != None and data["colorhighval"] != "") else ""
                                 iscolored = data["iscolored"] if (data["iscolored"] != "None" and data["iscolored"] != None and data["iscolored"] != "") else "false"
                                 entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": minval, \
-                                                "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored, "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
+                                                "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored, \
+                                                    "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree, "origional_dimensions": origional_dimensions})
                             else:
                                 entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", \
                                                 "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})

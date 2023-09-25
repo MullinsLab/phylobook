@@ -10,6 +10,17 @@ import xml.etree.ElementTree as ET
 from phylobook.projects.models import Tree, Project, Lineage
 
 
+def svg_dimensions(svg_file_name: str) -> tuple[int, int]:
+    """ Returns the dimensions of an svg file as a tuple of (width, height) """
+
+    tree_svg = ET.parse(svg_file_name)
+    root = tree_svg.getroot()
+    view_box = root.attrib["viewBox"]
+    _, _, width, height = view_box.split(" ")
+
+    return (int(float(width)), int(float(height)))
+
+
 def fasta_type(*, tree: Tree) -> str:
     """ Returns either 'NT' (nucleotide) or 'AA' (amino acid) """
 
@@ -52,8 +63,6 @@ def svg_file_name(*, tree: Tree, project: Project) -> str:
     It's found this way because there can be variations in the file name """
 
     svg_list = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*.svg"))
-    # svg_list = list(svg_set - set(glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}_highlighter*.svg"))))
-    # svg_list = list(svg_set - set(glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}_match*.svg"))))
 
     new_svg_list: list = []
 
