@@ -81,8 +81,6 @@ class Project(models.Model):
         with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zipped_lineages:
 
             for tree in self.trees.all():
-                lineages = tree.extract_all_lineages_to_fasta()
-            
                 for lineage_name, lineage in tree.extract_all_lineages_to_fasta(sort="tree").items():
                     zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_tree_position", f"{tree.name}_{lineage_name}.fasta"), lineage)
 
@@ -90,6 +88,9 @@ class Project(models.Model):
                     zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_frequency", f"{tree.name}_{lineage_name}.fasta"), lineage)
 
                 zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_lineage_summary.csv"), tree.lineage_info_csv())
+
+                with open(tree.fasta_file_name) as starting_fasta:
+                    zipped_lineages.writestr(f"{tree.name}.fasta", starting_fasta.read())
 
         return mem_zip.getvalue()
 
@@ -109,7 +110,7 @@ class Project(models.Model):
             self.edit_locked = True
             self.save()
 
-        origional_id: int = self.id
+        original_id: int = self.id
 
         self.copy_files(name=name)
 
@@ -118,17 +119,17 @@ class Project(models.Model):
         self.edit_locked = was_locked
         self.save()
 
-        for user_object_permission in UserObjectPermission.objects.filter(object_pk=origional_id, content_type_id=content_type_id):
+        for user_object_permission in UserObjectPermission.objects.filter(object_pk=original_id, content_type_id=content_type_id):
             user_object_permission.id = None
             user_object_permission.object_pk = self.id
             user_object_permission.save()
 
-        for group_object_permission in GroupObjectPermission.objects.filter(object_pk=origional_id, content_type_id=content_type_id):
+        for group_object_permission in GroupObjectPermission.objects.filter(object_pk=original_id, content_type_id=content_type_id):
             group_object_permission.id = None
             group_object_permission.object_pk = self.id
             group_object_permission.save()
 
-        for tree in Tree.objects.filter(project=origional_id):
+        for tree in Tree.objects.filter(project=original_id):
             tree.project=self
             tree.id=None
             tree.save()
@@ -274,10 +275,10 @@ class Tree(models.Model):
     
     @property
     @cache
-    def origional_fasta_file_name(self) -> str:
-        """ Returns the name of the origional FASTA file (when available) for the tree """
+    def original_fasta_file_name(self) -> str:
+        """ Returns the name of the original FASTA file (when available) for the tree """
 
-        return fasta_file_name(project=self.project, tree=self, prefer_origional=True)
+        return fasta_file_name(project=self.project, tree=self, prefer_original=True)
     
     @property
     @cache
@@ -511,7 +512,6 @@ class Tree(models.Model):
         """ Returns a zip file of all the lineages in the tree """
 
         mem_zip = io.BytesIO()
-        lineages = self.extract_all_lineages_to_fasta()
 
         with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zipped_lineages:
             for lineage_name, lineage in self.extract_all_lineages_to_fasta(sort="tree").items():
@@ -521,6 +521,9 @@ class Tree(models.Model):
                 zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_frequency", f"{self.name}_{lineage_name}.fasta"), lineage)
 
             zipped_lineages.writestr(f"{self.name}_lineage_summary.csv", self.lineage_info_csv())
+
+            with open(self.fasta_file_name) as starting_fasta:
+                zipped_lineages.writestr(f"{self.name}.fasta", starting_fasta.read())
 
         return mem_zip.getvalue()
     
@@ -653,7 +656,7 @@ class Tree(models.Model):
         elif no_build:
             return False
         
-        alignment = AlignIO.read(self.origional_fasta_file_name, "fasta")
+        alignment = AlignIO.read(self.original_fasta_file_name, "fasta")
 
         tree_file_name = self.tree_file_name
         if "nexus" in tree_file_name:
@@ -664,7 +667,8 @@ class Tree(models.Model):
         try:
             mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10) # (46*2)-36
             mutation_plot.draw_mismatches(self.highlighter_file_name_svg(width=width), apobec=True, g_to_a=True, glycosylation=True, sort="tree", scheme="LANL", mark_width=width)
-        except:
+        except Exception as error:
+            print(error)
             return False
     
         return True
@@ -688,7 +692,7 @@ class Tree(models.Model):
             if match_file_time > tree_file_time:
                 return True
         
-        alignment = AlignIO.read(self.origional_fasta_file_name, "fasta")
+        alignment = AlignIO.read(self.original_fasta_file_name, "fasta")
 
         tree_file_name = self.tree_file_name
         
@@ -713,10 +717,6 @@ class Tree(models.Model):
 
         if not references:
             return False
-
-        # print(colors)
-        # for reference in references:
-        #     print(str(reference))
 
         try:
             mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10)

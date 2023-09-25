@@ -265,10 +265,10 @@ def ensure_tree_highlighter_svg(tree: Tree) -> None:
     """ Makes sure that a particular tree has a highlighter svg file """
 
     if not tree.has_svg_highlighter(width=settings.HIGHLIGHTER_MARK_WIDTH):
-        return f"Error generating SVG for {tree.project} - {tree.name}\n\tOrigional Fasta: {tree.origional_fasta_file_name}\n\tFasta: {tree.fasta_file_name}\n\tTree: {tree.tree_file_name}"
+        return f"Error generating SVG for {tree.project} - {tree.name}\n\tOrigional Fasta: {tree.original_fasta_file_name}\n\tFasta: {tree.fasta_file_name}\n\tTree: {tree.tree_file_name}"
     
     if not tree.has_svg_match(width=settings.MATCH_MARK_WIDTH):
-        return f"Error generating Match for {tree.project} - {tree.name}\n\tOrigional Fasta: {tree.origional_fasta_file_name}\n\tFasta: {tree.fasta_file_name}\n\tTree: {tree.tree_file_name}"
+        return f"Error generating Match for {tree.project} - {tree.name}\n\tOrigional Fasta: {tree.original_fasta_file_name}\n\tFasta: {tree.fasta_file_name}\n\tTree: {tree.tree_file_name}"
 
 def ensure_project_highlighter_svgs(project: Project) -> None:
     """ Makes sure that all trees in a particular project have highlighter svg files"""

@@ -78,7 +78,7 @@ def svg_file_name(*, tree: Tree, project: Project) -> str:
     return svg
 
 
-def fasta_file_name(*, tree: Tree, project: Project, prefer_origional: bool=False) -> str:
+def fasta_file_name(*, tree: Tree, project: Project, prefer_original: bool=False) -> str:
     """ Returns the name of the tree file
     It's found this way because there can be variations in the file name """
 
@@ -86,18 +86,17 @@ def fasta_file_name(*, tree: Tree, project: Project, prefer_origional: bool=Fals
     fasta_list = glob.glob(os.path.join(settings.PROJECT_PATH, project.name, f"{tree.name}*.fasta"))
 
     if fasta_list:
-        if len(fasta_list) == 1:
-            fasta: str = fasta_list[0]
-        else:
-            match_fasta: bool = False if prefer_origional else True
+        while len(fasta_list) > 1:   
+            test_fasta = fasta_list.pop()
+            if prefer_original and "collapsed" in test_fasta:
+                fasta = test_fasta
+                break
 
-            while len(fasta_list) > 1:   
-                test_fasta = fasta_list.pop()
-                if test_fasta.endswith("_highlighter.fasta") == match_fasta:
-                    fasta = test_fasta
-                    break
-            else:
-                fasta = fasta_list[0]
+            elif test_fasta.endswith("_highlighter.fasta") and not prefer_original:
+                fasta = test_fasta
+                break
+        else:
+            fasta = fasta_list[0]
 
     return fasta
 
