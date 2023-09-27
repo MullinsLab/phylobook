@@ -90,7 +90,7 @@ class Project(models.Model):
                 zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_lineage_summary.csv"), tree.lineage_info_csv())
 
                 with open(tree.fasta_file_name) as starting_fasta:
-                    zipped_lineages.writestr(f"{tree.name}.fasta", starting_fasta.read())
+                    zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_frequency", f"{tree.name}_ALL.fasta"), starting_fasta.read())
 
         return mem_zip.getvalue()
 
@@ -523,7 +523,8 @@ class Tree(models.Model):
             zipped_lineages.writestr(f"{self.name}_lineage_summary.csv", self.lineage_info_csv())
 
             with open(self.fasta_file_name) as starting_fasta:
-                zipped_lineages.writestr(f"{self.name}.fasta", starting_fasta.read())
+                zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_frequency", f"{self.name}_ALL.fasta"), starting_fasta.read())
+                # zipped_lineages.writestr(f"{self.name}.fasta", starting_fasta.read())
 
         return mem_zip.getvalue()
     
