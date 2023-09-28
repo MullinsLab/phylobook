@@ -5,6 +5,7 @@ import os, glob, hashlib
 
 from django.conf import settings
 
+from Bio.Align import MultipleSeqAlignment
 import xml.etree.ElementTree as ET
 
 from phylobook.projects.models import Tree, Project, Lineage
@@ -193,3 +194,51 @@ def color_by_short(color: str) -> dict[str: str]:
         raise ValueError(f"Color {color} not found in settings.ANNOTATION_COLORS")
     
     return color_object[0]
+
+
+class SequenceNameShortenizer(object):
+    """ Class to shorten sequence names """
+
+    def __init__(self, alignment: MultipleSeqAlignment):
+        """ Set upt the shortenizer """
+
+        self.alignment = alignment
+        self.setup_tags()
+
+    def setup_tags(self):
+        """ Setup the tags """
+        
+        self.used_tags: list = []
+        
+        tags: dict[int: str] = {}
+        tag_count: int = None
+
+        for sequence in self.alignment:
+            for index, tag in enumerate(sequence.id.split("_")):
+
+                if tag_count is None:
+                    tag_count = len(sequence.id.split("_"))
+                elif tag_count != len(sequence.id.split("_")):
+                    raise ValueError("All sequences must have the same number of tags")
+
+                if index in self.used_tags:
+                    continue
+
+                if index not in tags:
+                    tags[index] = tag
+                
+                elif tag != tags[index]:
+                    self.used_tags.append(index)
+
+    def shortenize(self, sequence_name: str) -> str:
+        """ Shortenize a record """
+
+        tags = sequence_name.split("_")
+        new_tags = []
+
+        for index in sorted(self.used_tags):
+            new_tags.append(tags[index])
+
+        return "_".join(new_tags)
+                
+

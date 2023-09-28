@@ -666,7 +666,18 @@ class Tree(models.Model):
             tree = Phylo.read(self.tree_file_name, "newick")
 
         try:
-            mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10) # (46*2)-36
+            shortenizer = SequenceNameShortenizer(alignment)
+
+            for sequence in alignment:
+                sequence.id = shortenizer.shortenize(sequence.id)
+                
+            for terminal in tree.get_terminals():
+                terminal.name = shortenizer.shortenize(terminal.name)
+        except:
+            pass
+
+        try:
+            mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, left_margin=0, right_margin=0, plot_label_gap=3) # (46*2)-36
             mutation_plot.draw_mismatches(self.highlighter_file_name_svg(width=width), apobec=True, g_to_a=True, glycosylation=True, sort="tree", scheme="LANL", mark_width=width)
         except Exception as error:
             print(error)
@@ -720,7 +731,7 @@ class Tree(models.Model):
             return False
 
         try:
-            mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, right_margin=10)
+            mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, left_margin=0, right_margin=0, plot_label_gap=3)
             mutation_plot.draw_matches(self.match_file_name_svg(width=width), references=references, sort="tree", scheme=colors, mark_width=width, sequence_labels=False)
         except Exception as error:
             log.debug(f"Got exception while creating mutation plot: {error}")
@@ -774,6 +785,6 @@ class Tree(models.Model):
         raise IndexError(f"Could not find sequence with id {id}")
 
 # Importing last to avoid circular imports
-from phylobook.projects.utils import svg_file_name, fasta_file_name, nexus_file_name, newick_file_name, PhyloTree, get_lineage_dict, parse_sequence_name
+from phylobook.projects.utils import svg_file_name, fasta_file_name, nexus_file_name, newick_file_name, PhyloTree, get_lineage_dict, parse_sequence_name, SequenceNameShortenizer
 from phylobook.projects.utils import mutations
 from Bio.Graphics import MutationPlot
