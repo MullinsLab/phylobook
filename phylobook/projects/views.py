@@ -142,6 +142,7 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
             last_url = None
         else:
             last_url: str = pages[-1][1]
+            last_url: str = f"/projects/{name}/{pages[-1][1]}"
 
         context = {
             "entries": entries,
@@ -212,10 +213,8 @@ class MatchImage(LoginRequredSimpleErrorMixin, View):
         tree: Tree = Tree.objects.get(project=project, name=tree_name)
 
         if tree.has_svg_match():
-            # log.debug("Got match image")
             return FileResponse(open(tree.match_file_name_svg(), "rb"), content_type="image/svg+xml")
         else:
-            # log.debug("No match image")
             return FileResponse(open("/phylobook/phylobook/static/images/empty_match.svg", "rb"), content_type="image/svg+xml")
 
 def getFile(request, name, file, **kwargs):
@@ -333,11 +332,6 @@ def updateSVG(request, project_name, tree_name):
     
     if project and request.user.has_perm('projects.change_project', project) and request.is_ajax():
         if request.method == 'POST':
-            # projectPath = os.path.join(PROJECT_PATH, project_name)
-            # for f in sorted(os.listdir(projectPath)):
-            #     if f.endswith(".svg") and f.startswith(tree_name):
-            #         filePath = Path(os.path.join(PROJECT_PATH, project_name, f))
-            #         log.debug(f"Filepath: {tree.svg_file_name}")
             svg = request.POST.get('svg')
             
             try:
