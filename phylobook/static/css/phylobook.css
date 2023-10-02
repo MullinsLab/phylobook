@@ -449,9 +449,11 @@ img {
     position: absolute;
     left: 0px;
     top: 0px;
-    background-color: gray;
-    opacity: 0.2;
-    width: 2px;
+    background-color: #800080;
+    /* gray; */
+    opacity: 0.1;
+    width: 1px;
+    /* 2px; */
     z-index: 1000;
     cursor: pointer;
 }
