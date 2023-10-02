@@ -14,9 +14,6 @@ function showhideColorRange(id, tag) {
 }
 
 function resizeHighlighterWidth(imgparentid, adjustment) {
-    // var imgheight = $('#' + imgparentid).find('img').prop("naturalHeight");
-    // var imgwidth = $('#' + imgparentid).find('img').prop("naturalWidth");
-    
     var imgheight = $('#' + imgparentid).find('img').data("origional-height");
     var imgwidth = $('#' + imgparentid).find('img').data("origional-width");
 
@@ -32,9 +29,11 @@ function resizeHighlighterWidth(imgparentid, adjustment) {
 
     // adjust highlighter straightedge
     var newOffsetFactor = imgimagewidth/curwidth;
-    var elmnt = $('#' + imgparentid).find(".straightedge")[0];
-    var newX = elmnt.offsetLeft * newOffsetFactor;
-    elmnt.style.left = newX + "px";
+    var elmnt = $('#' + imgparentid + "-straightedge")[0];
+    elmnt.style.left = (elmnt.offsetLeft * newOffsetFactor) + "px";
+
+    var elmnt = $('#' + imgparentid + "-match-straightedge")[0];
+    elmnt.style.left = (elmnt.offsetLeft * newOffsetFactor) + "px";
 }
 
 function resizeSVGWidth(imgparentid, adjustment) {

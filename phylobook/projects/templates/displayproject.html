@@ -33,23 +33,38 @@
         const gradientColorsRGB = [[255, 165, 0], [255, 255, 0], [0, 255, 0], [0, 0, 255], [238, 130, 238]];
 
         function dragElement(elmnt) {
-            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            if (document.getElementById(elmnt.id)) {
-                /* if present, the header is where you move the DIV from:*/
-                document.getElementById(elmnt.id).onmousedown = dragMouseDown;
-            } else {
-                /* otherwise, move the DIV from anywhere inside the DIV:*/
-                elmnt.onmousedown = dragMouseDown;
+            var xChange = 0, pointerX = 0;
+            var match = elmnt.id.includes("-match-");
+            var treeName;
+            var friend;
+            var image;
+            var friendImage;
+
+            if (match) {
+                treeName = elmnt.id.replace("-match-straightedge", "");
+                image = $("#" + treeName + "_matchimg")[0];
+
+                friend = $("#" + treeName + "-straightedge")[0];
+                friendImage = $("#" + treeName + "_highlighterimg")[0];
+                
             }
+            else {
+                treeName = elmnt.id.replace("-straightedge", "");
+                image = $("#" + treeName + "_highlighterimg")[0];
+
+                friend = $("#" + treeName + "-match-straightedge")[0];
+                friendImage = $("#" + treeName + "_matchimg")[0];
+            }
+
+            elmnt.onmousedown = dragMouseDown;
 
             function dragMouseDown(e) {
                 e = e || window.event;
                 e.preventDefault();
-                // get the mouse cursor position at startup:
-                pos3 = e.clientX;
-                pos4 = e.clientY;
+                
+                pointerX = e.clientX;
+
                 document.onmouseup = closeDragElement;
-                // call a function whenever the cursor moves:
                 document.onmousemove = elementDrag;
             }
 
@@ -57,22 +72,21 @@
                 e = e || window.event;
                 e.preventDefault();
 
-                if ($(e.target).parent() && $(e.target).parent().find(".highlighterimg")[0]) {
-                    var parentRect = $(e.target).parent().find(".highlighterimg")[0].getBoundingClientRect();
-                    var parentX = parentRect.left;
-
+                if (image) {
+                    var imageRect = image.getBoundingClientRect();
+                    var friendImageRect = friendImage.getBoundingClientRect();
+                    
                     // calculate the new cursor position:
-                    pos1 = pos3 - e.clientX;
-                    pos2 = pos4 - e.clientY;
-                    pos3 = e.clientX;
-                    pos4 = e.clientY;
-                    // set the element's new position:
-                    // move only horizontal
-                    // elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-                    var newX = elmnt.offsetLeft - pos1;
-                    if ((e.clientX >= parentX - 4) && (e.clientX <= parentRect.width + parentX + 4)) {
+                    xChange = pointerX - e.clientX;
+                    pointerX = e.clientX;
+                    
+                    var newX = elmnt.offsetLeft - xChange;
+
+                    {% comment %} if ((e.clientX >= imageRect.left - 4) && (e.clientX <= imageRect.width + imageRect.left + 4) && (newX >= 0 && newX <= friendImageRect.width)) { {% endcomment %}
+                    if (newX >= 0 && newX <= imageRect.width && (newX <= friendImageRect.width || friendImageRect.width <=100)) {
                         elmnt.style.left = newX + "px";
-                    }
+                        friend.style.left = newX + "px";
+                    };
                 }
             }
 
@@ -568,12 +582,11 @@
                        <div class='svgimage'></div>
                        <div class='highlighter'>
                            <div id="{{ entry.uniquesvg }}-straightedge" class="straightedge"></div>
-                           <img src="/projects/{{ entry.highlighter }}" height=953 width=609 {{ entry.origional_dimensions }}class="highlighterimg" />
+                           <img src="/projects/{{ entry.highlighter }}" {{ entry.origional_dimensions }}class="highlighterimg" id="{{ entry.uniquesvg }}_highlighterimg" />{% comment %} height=953 width=609 {% endcomment %}
                        </div>
                        <div class='matchimage'>
-                            {% comment %} <img src="{% static 'images/empty_match.svg' %}" /> {% endcomment %}
-                            <img src="/projects/match_image/{{ project }}/{{ entry.uniquesvg }}" />
-                            {% comment %} "/projects/match_image/{{ project }}/{{ entry.uniquesvg }}" {% endcomment %}
+                            <div id="{{ entry.uniquesvg }}-match-straightedge" class="straightedge"></div>
+                            <img src="/projects/match_image/{{ project }}/{{ entry.uniquesvg }}" id="{{ entry.uniquesvg }}_matchimg" />
                        </div>
                     </div>
                 </div>
@@ -650,6 +663,7 @@
 
                     // Start drag?
                     dragElement(document.getElementById("{{ entry.uniquesvg }}-straightedge"));
+                    dragElement(document.getElementById("{{ entry.uniquesvg }}-match-straightedge"));
                 </script>
             </div>
         {% endfor %}
