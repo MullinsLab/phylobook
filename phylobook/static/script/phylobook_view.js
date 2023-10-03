@@ -30,10 +30,14 @@ function resizeHighlighterWidth(imgparentid, adjustment) {
     // adjust highlighter straightedge
     var newOffsetFactor = imgimagewidth/curwidth;
     var elmnt = $('#' + imgparentid + "-straightedge")[0];
-    elmnt.style.left = (elmnt.offsetLeft * newOffsetFactor) + "px";
+    if (elmnt) {
+        elmnt.style.left = (elmnt.offsetLeft * newOffsetFactor) + "px";
+    }
 
     var elmnt = $('#' + imgparentid + "-match-straightedge")[0];
-    elmnt.style.left = (elmnt.offsetLeft * newOffsetFactor) + "px";
+    if (elmnt) {
+        elmnt.style.left = (elmnt.offsetLeft * newOffsetFactor) + "px";
+    }
 }
 
 function resizeSVGWidth(imgparentid, adjustment) {

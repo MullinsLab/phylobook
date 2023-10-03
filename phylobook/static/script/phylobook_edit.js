@@ -1322,14 +1322,26 @@ function loadSVG(id){
 };
 
 
+function swapMultiple(id){
+    // Swap between showing and hiding multiple matches
+    
+    loadMatch(id);
+    if ($("#swap-multiple-" + id).text() == "Show Multiple Matches"){
+        $("#swap-multiple-" + id).text("Hide Multiple Matches");
+    } else {
+        $("#swap-multiple-" + id).text("Show Multiple Matches");
+    }
+}
+
+
 function loadMatch(id){
     // Load the match plot for the tree
-    console.log("Loading match plot for " + id)
-    // $('#' + id).find(".matchimage").find('img').load("/projects/match_image/" + projectName + "/" + id + "/" + new Date().getTime(), function() {
-    //     console.log("Finished loading match plot")
-    // });
+    // console.log("Loading match plot for " + id)
 
-    $('#' + id).find(".matchimage").find('img').attr("src","/projects/match_image/" + projectName + "/" + id + "/" + new Date().getTime())
+    var type = (($("#swap-multiple-" + id).text() == "Hide Multiple Matches") ? "_no_multiple" : "");
+    console.log("Type: " + type);
+
+    $('#' + id).find(".matchimage").find('img').attr("src","/projects/match_image" + type + "/" + projectName + "/" + id + "/" + new Date().getTime())
 };
 
 

@@ -570,12 +570,16 @@
                     </div>
                 </div>
                 <!-- End legends section -->
-
-                <div class="magnifybar">
-                    <button type="button" class="fullsize btn btn-outline-secondary btn-sm" id="full-{{ entry.uniquesvg }}"> Full</button>
-                    <button type="button" class="minsize btn btn-outline-secondary btn-sm"  id="minsize-{{ entry.uniquesvg }}"> Min</button>
-                    <button type="button" class="zoomin btn btn-outline-secondary btn-sm"  id="zin-{{ entry.uniquesvg }}"><i class="fas fa-search-plus"></i></button>
-                    <button type="button" class="zoomout btn btn-outline-secondary btn-sm"  id="zout-{{ entry.uniquesvg }}"><i class="fas fa-search-minus"></i></button>
+                <div class="row">
+                    <div class="magnifybar col-auto mr-auto align-self-center">
+                        <button type="button" class="fullsize btn btn-outline-secondary btn-sm" id="full-{{ entry.uniquesvg }}"> Full</button>
+                        <button type="button" class="minsize btn btn-outline-secondary btn-sm"  id="minsize-{{ entry.uniquesvg }}"> Min</button>
+                        <button type="button" class="zoomin btn btn-outline-secondary btn-sm"  id="zin-{{ entry.uniquesvg }}"><i class="fas fa-search-plus"></i></button>
+                        <button type="button" class="zoomout btn btn-outline-secondary btn-sm"  id="zout-{{ entry.uniquesvg }}"><i class="fas fa-search-minus"></i></button>
+                    </div>
+                    <div class="col-auto align-self-right">
+                        <button type="button" class="fullsize btn btn-outline-secondary btn-sm" id="swap-multiple-{{ entry.uniquesvg }}" onclick="swapMultiple('{{ entry.uniquesvg }}'); return false;">Hide Multiple Matches</button>
+                    </div>
                 </div>
                 <div class="images">
                     <div class='imgparent' id='{{ entry.uniquesvg }}'>

@@ -203,6 +203,8 @@ class MatchImage(LoginRequredSimpleErrorMixin, View):
     def get(self, request, *args, **kwargs):
         """ Return the match image """
 
+        show_multiple: bool = kwargs.get("multiple", True)
+
         project_name: str = kwargs["project"]
         project: Project = Project.objects.get(name=project_name)
 
@@ -212,8 +214,8 @@ class MatchImage(LoginRequredSimpleErrorMixin, View):
         tree_name: str = kwargs["tree"]
         tree: Tree = Tree.objects.get(project=project, name=tree_name)
 
-        if tree.has_svg_match():
-            return FileResponse(open(tree.match_file_name_svg(), "rb"), content_type="image/svg+xml")
+        if tree.has_svg_match(show_multiple=show_multiple):
+            return FileResponse(open(tree.match_file_name_svg(show_multiple=show_multiple), "rb"), content_type="image/svg+xml")
         else:
             return FileResponse(open("/phylobook/phylobook/static/images/empty_match.svg", "rb"), content_type="image/svg+xml")
 
