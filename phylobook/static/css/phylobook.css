@@ -458,6 +458,19 @@ img {
     cursor: pointer;
 }
 
+.horizontal_straightedge {
+    height: 1px;
+    width: 100%;
+    float: top;
+    /* position: absolute; */
+    left: 0px;
+    top: 0px;
+    background-color: #800080;
+    opacity: 0.2;
+    z-index: 1000;
+    cursor: pointer;
+}
+
 .projectlink {
     color: #0000ff;
 }
