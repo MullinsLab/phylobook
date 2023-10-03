@@ -261,6 +261,7 @@ class PhyloTree(object):
 
         return [{"name": sequence["name"], "color": sequence["color"]} for sequence in self.sequences.values()]
 
+
 def ensure_tree_highlighter_svg(tree: Tree) -> None:
     """ Makes sure that a particular tree has a highlighter svg file """
 
@@ -269,6 +270,10 @@ def ensure_tree_highlighter_svg(tree: Tree) -> None:
     
     if not tree.has_svg_match(width=settings.MATCH_MARK_WIDTH):
         return f"Error generating Match for {tree.project} - {tree.name}\n\tOrigional Fasta: {tree.original_fasta_file_name}\n\tFasta: {tree.fasta_file_name}\n\tTree: {tree.tree_file_name}"
+
+    if not tree.has_svg_match(width=settings.MATCH_MARK_WIDTH, show_multiple=False):
+        return f"Error generating Match for {tree.project} - {tree.name}\n\tOrigional Fasta: {tree.original_fasta_file_name}\n\tFasta: {tree.fasta_file_name}\n\tTree: {tree.tree_file_name}"
+
 
 def ensure_project_highlighter_svgs(project: Project) -> None:
     """ Makes sure that all trees in a particular project have highlighter svg files"""
@@ -283,6 +288,7 @@ def ensure_project_highlighter_svgs(project: Project) -> None:
     pool.join()
 
     return errors
+
 
 def parse_sequence_name(sequence_name: str) -> dict:
     """ Get the timepoint and mulitplicity from a sequence name """
@@ -304,6 +310,7 @@ def parse_sequence_name(sequence_name: str) -> dict:
         return None
 
     return sequence
+
 
 def parse_sequences(sequences: list[dict[str: str]]) -> tuple[list[dict[str: str]], tuple[int]]:
     """ Returns True if the tree has timepoints """
@@ -341,6 +348,7 @@ def tree_sequence_names(tree_file: str) -> list[dict[str: str]]:
         sequences.append({"name": sequence.text, "color": sequence.attrib["class"].replace("box", "")})
 
     return sequences
+
 
 def tree_lineage_counts(tree: str) -> dict[str: dict]:
     """ Get all the lineage counts from a specific tree """

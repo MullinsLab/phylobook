@@ -63,7 +63,7 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
                 uniquesvg = file[0:file.index("_highlighter.png")]
                                         
                 for svg in os.listdir(projectPath):
-                    if svg.endswith(".svg") and "_highlighter." not in svg and "_match." not in svg:
+                    if svg.endswith(".svg") and "_highlighter." not in svg and "_match." not in svg and "_match_no_multiple." not in svg:
                         if uniquesvg in svg:
                             filePath = Path(os.path.join(projectPath, uniquesvg + ".json"))
 

@@ -308,17 +308,22 @@ class Tree(models.Model):
             return f"{self.name}_highlighter.{width}.svg"
     
     @cache
-    def match_file_name_svg(self, *, width: int=None, path: bool=True) -> str:
+    def match_file_name_svg(self, *, width: int=None, path: bool=True, show_multiple: bool=True) -> str:
         """ Returns the name of the match file for the tree (svg)"""
+
+        if show_multiple:
+            match: str = ""
+        else:
+            match: str = "_no_multiple"
 
         if not width:
             width = django_settings.MATCH_MARK_WIDTH
 
         if path:
-            return os.path.join(self.project.files_path, f"{self.name}_match.{width}.svg")
+            return os.path.join(self.project.files_path, f"{self.name}_match{match}.{width}.svg")
         
         else:
-            return f"{self.name}_match.{width}.svg"
+            return f"{self.name}_match{match}.{width}.svg"
     
     @property
     def ready_to_extract(self) -> bool:
@@ -677,7 +682,7 @@ class Tree(models.Model):
             pass
 
         try:
-            mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, left_margin=0, right_margin=0, plot_label_gap=3) # (46*2)-36
+            mutation_plot = HighlighterPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, left_margin=0, right_margin=0, plot_label_gap=3) # (46*2)-36
             mutation_plot.draw_mismatches(self.highlighter_file_name_svg(width=width), apobec=True, g_to_a=True, glycosylation=True, sort="tree", scheme="LANL", mark_width=width)
         except Exception as error:
             print(error)
@@ -685,7 +690,7 @@ class Tree(models.Model):
     
         return True
     
-    def has_svg_match(self, *, width: int=None, no_build: bool=False) -> bool:
+    def has_svg_match(self, *, width: int=None, no_build: bool=False, show_multiple: bool=True) -> bool:
         """ Create a match highlighter plot """
         
         if not width:
@@ -697,10 +702,9 @@ class Tree(models.Model):
         elif no_build:
             return False
 
-        if os.path.exists(self.match_file_name_svg(width=width)):
+        if os.path.exists(self.match_file_name_svg(width=width, show_multiple=show_multiple)):
             tree_file_time: float = os.path.getmtime(self.svg_file_name)
             match_file_time: float = os.path.getmtime(self.match_file_name_svg(width=width))
-            # log.debug(f"Match file ({self.match_file_name_svg(width=width)}) time: {match_file_time}, Tree file ({self.svg_file_name}) time: {tree_file_time}, Match newer: {match_file_time > tree_file_time}")
             if match_file_time > tree_file_time:
                 return True
         
@@ -722,6 +726,9 @@ class Tree(models.Model):
             "multiple": "#BDBDBD", #"#808080",
         }
 
+        if not show_multiple:
+            colors["multiple"] = None
+
         for color, sequence in consensus.items():
             if color in colors_by_short:
                 colors["references"].append(colors_by_short[color])
@@ -731,8 +738,8 @@ class Tree(models.Model):
             return False
 
         try:
-            mutation_plot = MutationPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, left_margin=0, right_margin=0, plot_label_gap=3)
-            mutation_plot.draw_matches(self.match_file_name_svg(width=width), references=references, sort="tree", scheme=colors, mark_width=width, sequence_labels=False)
+            mutation_plot = HighlighterPlot(alignment, tree=tree, top_margin=12, seq_gap=-0.185*2, seq_name_font_size=16, ruler_font_size=12, plot_width=6*72, bottom_margin=45, left_margin=0, right_margin=0, plot_label_gap=3)
+            mutation_plot.draw_matches(self.match_file_name_svg(width=width, show_multiple=show_multiple), references=references, sort="tree", scheme=colors, mark_width=width, sequence_labels=False)
         except Exception as error:
             log.debug(f"Got exception while creating mutation plot: {error}")
             return False
@@ -786,5 +793,5 @@ class Tree(models.Model):
 
 # Importing last to avoid circular imports
 from phylobook.projects.utils import svg_file_name, fasta_file_name, nexus_file_name, newick_file_name, PhyloTree, get_lineage_dict, parse_sequence_name, SequenceNameShortenizer
-from phylobook.projects.utils import mutations
-from Bio.Graphics import MutationPlot
+from phylobook.projects.utils import highlighter
+from Bio.Graphics import HighlighterPlot
