@@ -29,14 +29,25 @@ function resizeHighlighterWidth(imgparentid, adjustment) {
 
     // adjust highlighter straightedge
     var newOffsetFactor = imgimagewidth/curwidth;
-    var elmnt = $('#' + imgparentid + "-straightedge")[0];
-    if (elmnt) {
-        elmnt.style.left = (elmnt.offsetLeft * newOffsetFactor) + "px";
+    var element = $('#' + imgparentid + "-straightedge")[0];
+    if (element) {
+        element.style.left = (element.offsetLeft * newOffsetFactor) + "px";
     }
 
-    var elmnt = $('#' + imgparentid + "-match-straightedge")[0];
-    if (elmnt) {
-        elmnt.style.left = (elmnt.offsetLeft * newOffsetFactor) + "px";
+    var element = $('#' + imgparentid + "-match-straightedge")[0];
+    if (element) {
+        element.style.left = (element.offsetLeft * newOffsetFactor) + "px";
+    }
+
+    // adjust horizontal straightedge
+    var element = $("#" + imgparentid + "-horizontal-straightedge")[0];
+    if (element) {
+        element.style.top = (element.offsetTop * newOffsetFactor) + "px";
+    }
+
+    var element = $("#" + imgparentid + "-horizontal-straightedge-2")[0];
+    if (element) {
+        element.style.top = (element.offsetTop * newOffsetFactor) + "px";
     }
 }
 
@@ -127,7 +138,6 @@ $(document).ready(function() {
                 }
 
                 var type = xhr.getResponseHeader('Content-Type');
-                console.log("type", type);
                 var blob = new Blob([xhr.response], { type: type });
 
                 if (typeof window.navigator.msSaveBlob !== 'undefined') {
@@ -297,8 +307,6 @@ class treeLineagesCount {
                     form += "</div><br>";
                 };
             };
-
-            console.log(this.lineageCounts);
 
             if (! this.lineageOK()) {
                 form += "<div class='container border border-2 rounded warn'><br>";
@@ -537,7 +545,6 @@ class treeLineagesCount {
                 let lineage = this.lineageCounts[color["short"]]
                 // if (! ("total" in lineage && lineage["total"] && "name" in lineage && lineage["name"])){
                 if ("total" in lineage && lineage["total"]  && ! ("name" in lineage && lineage["name"])){
-                    console.log
                     return false;
                 };
             };
@@ -590,7 +597,6 @@ class treeLineagesCount {
         this.showModalForm({download: true});
         this.setLineageNamesAssigned(true);
         loadMatch(this.svgID);
-        console.log("Should reload match.")
     };
 
     clearLineageNames(){
@@ -820,4 +826,54 @@ class projectObject {
 function showPagesModal() {
     let modal = $("#pages_modal");
     modal.modal("show");
+};
+
+
+function dragHorizontal(element) {
+    // Set up everything needed to drag the horizontal straight edge
+
+    var treeName = element.id.split("-horizontal-straightedge")[0];
+    var treeDiv =  $("#" + treeName);
+    var pointerY = 0;
+    var yChange = 0;
+
+    element.onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+        // Start the drag
+
+        e = e || window.event;
+        e.preventDefault();
+
+        pointerY = e.clientY;
+
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        // Do the work of dragging the element
+
+        e = e || window.event;
+        e.preventDefault();
+
+        if (treeDiv) {
+            // calculate the new cursor position:
+            yChange = pointerY - e.clientY;
+            pointerY = e.clientY;
+            
+            var newY = element.offsetTop - yChange;
+
+            if (newY >= 0 && newY <= treeDiv.height()) {
+                element.style.top = newY + "px";
+            };
+        }
+    }
+
+    function closeDragElement() {
+        // stop moving when mouse button is released
+
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
 };

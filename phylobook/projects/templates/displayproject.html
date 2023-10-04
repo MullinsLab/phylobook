@@ -583,16 +583,17 @@
                 </div>
                 <div class="images">
                     <div class='imgparent' id='{{ entry.uniquesvg }}'>
-                        {% comment %} <div class="horizontal_straightedge"></div> {% endcomment %}
-                       <div class='svgimage'></div>
-                       <div class='highlighter'>
+                        <div class="horizontal_straightedge" id="{{ entry.uniquesvg }}-horizontal-straightedge"></div>
+                        <div class='svgimage'></div>
+                        <div class='highlighter'>
                            <div id="{{ entry.uniquesvg }}-straightedge" class="straightedge"></div>
                            <img src="/projects/{{ entry.highlighter }}" {{ entry.origional_dimensions }}class="highlighterimg" id="{{ entry.uniquesvg }}_highlighterimg" />{% comment %} height=953 width=609 {% endcomment %}
-                       </div>
-                       <div class='matchimage'>
+                        </div>
+                        <div class='matchimage'>
                             <div id="{{ entry.uniquesvg }}-match-straightedge" class="straightedge"></div>
                             <img src="/projects/match_image/{{ project }}/{{ entry.uniquesvg }}" id="{{ entry.uniquesvg }}_matchimg" />
-                       </div>
+                        </div>
+                        <div class="horizontal_straightedge_2" id="{{ entry.uniquesvg }}-horizontal-straightedge-2"></div>
                     </div>
                 </div>
                 <script type="text/javascript">
@@ -666,9 +667,11 @@
                     // Load the match highlighter
                     {% comment %} $('#{{ entry.uniquesvg }}').find(".matchimage").load("/projects/match_image/{{ project }}/{{ entry.uniquesvg }}") {% endcomment %}
 
-                    // Start drag?
+                    // Set up straight edges
                     dragElement(document.getElementById("{{ entry.uniquesvg }}-straightedge"));
                     dragElement(document.getElementById("{{ entry.uniquesvg }}-match-straightedge"));
+                    dragHorizontal(document.getElementById("{{ entry.uniquesvg }}-horizontal-straightedge"));
+                    dragHorizontal(document.getElementById("{{ entry.uniquesvg }}-horizontal-straightedge-2"));
                 </script>
             </div>
         {% endfor %}

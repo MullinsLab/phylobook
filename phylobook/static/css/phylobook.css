@@ -71,6 +71,9 @@ a, a:hover,a:visited, a:focus {
 .imgparent {
     white-space: nowrap;
     height: 200px;
+    display: inline-block;
+    /* height: 100%; */
+    position: relative;
 }
 .svgimage {
     display: inline-block;
@@ -455,20 +458,32 @@ img {
     width: 1px;
     /* 2px; */
     z-index: 1000;
-    cursor: pointer;
+    cursor: col-resize;
 }
 
 .horizontal_straightedge {
     height: 1px;
     width: 100%;
-    float: top;
-    /* position: absolute; */
+    /* float: top; */
+    position: absolute;
     left: 0px;
     top: 0px;
     background-color: #800080;
     opacity: 0.2;
     z-index: 1000;
-    cursor: pointer;
+    cursor: row-resize;
+}
+
+.horizontal_straightedge_2 {
+    height: 1px;
+    width: 100%;
+    position: absolute;
+    left: 0px;
+    top: 100%;
+    background-color: #800080;
+    opacity: 0.2;
+    z-index: 1000;
+    cursor: row-resize;
 }
 
 .projectlink {
