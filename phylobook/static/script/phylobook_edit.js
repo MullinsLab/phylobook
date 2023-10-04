@@ -1325,12 +1325,13 @@ function loadSVG(id){
 function swapMultiple(id){
     // Swap between showing and hiding multiple matches
     
-    loadMatch(id);
     if ($("#swap-multiple-" + id).text() == "Show Multiple Matches"){
         $("#swap-multiple-" + id).text("Hide Multiple Matches");
     } else {
         $("#swap-multiple-" + id).text("Show Multiple Matches");
     }
+
+    loadMatch(id);
 }
 
 
@@ -1338,7 +1339,7 @@ function loadMatch(id){
     // Load the match plot for the tree
     // console.log("Loading match plot for " + id)
 
-    var type = (($("#swap-multiple-" + id).text() == "Hide Multiple Matches") ? "_no_multiple" : "");
+    var type = (($("#swap-multiple-" + id).text() != "Hide Multiple Matches") ? "_no_multiple" : "");
     console.log("Type: " + type);
 
     $('#' + id).find(".matchimage").find('img').attr("src","/projects/match_image" + type + "/" + projectName + "/" + id + "/" + new Date().getTime())

@@ -704,7 +704,7 @@ class Tree(models.Model):
 
         if os.path.exists(self.match_file_name_svg(width=width, show_multiple=show_multiple)):
             tree_file_time: float = os.path.getmtime(self.svg_file_name)
-            match_file_time: float = os.path.getmtime(self.match_file_name_svg(width=width))
+            match_file_time: float = os.path.getmtime(self.match_file_name_svg(width=width, show_multiple=show_multiple))
             if match_file_time > tree_file_time:
                 return True
         
