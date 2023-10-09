@@ -61,15 +61,18 @@ class Project(models.Model):
     def ready_to_extract(self) -> dict[str: any]:
         """ Returns a list of trees and whether they're ready to extract or not """
 
-        ready: dict[str: any] = {"ready": True, "ready_trees": [], "not_ready_trees": []}
+        ready: dict[str: any] = {"ready": True, "ready_trees": [], "not_ready_trees": [], "inconsistant_trees": []}
 
         for tree in self.trees.all():
-            if tree.ready_to_extract:
+            ready_to_extract: str = tree.ready_to_extract
+            if ready_to_extract == "Ready":
                 ready["ready_trees"].append(tree.name)
-            else:
+            elif ready_to_extract == "Unready":
                 ready["not_ready_trees"].append(tree.name)
+            elif ready_to_extract == "InconsistantMS":
+                ready["inconsistant_trees"].append(tree.name)
 
-        if len(ready["not_ready_trees"]) > 0:
+        if len(ready["not_ready_trees"]) + len(ready["inconsistant_trees"]) > 0:
             ready["ready"] = False
 
         return ready
@@ -326,13 +329,17 @@ class Tree(models.Model):
             return f"{self.name}_match{match}.{width}.svg"
     
     @property
-    def ready_to_extract(self) -> bool:
-        """ Returns true if the tree is ready to extract lineages from """
+    def ready_to_extract(self) -> str:
+        """ Returns "Ready" if the tree is ready to extract lineages from, 'Unready' if it is not ready, or 'InconsistantMS' if the tree has inconsistant single/multiple names"""
 
-        if self.lineage_counts():
-            return True
+        if lineages := self.lineage_counts():
+            
+            if len(set([lineage[0] for lineage in lineages.keys()])) > 1:
+                return "InconsistantMS"
 
-        return False
+            return "Ready"
+        
+        return "Unready"
     
     @property
     def sample_name(self) -> str:

@@ -559,6 +559,7 @@ class treeLineagesCount {
         let modal = $("#annotations_modal");
 
         let my_lineages = {};
+        let s_or_m = "";
 
         for (let color_index in annotationColors){
             let color = annotationColors[color_index]
@@ -582,6 +583,16 @@ class treeLineagesCount {
                     name = undefined;
                 };
             }
+            else if (name != "Rec") {
+                let initial = name.charAt(0);
+                if (s_or_m && s_or_m != initial) {
+                    alert("Lineage names are a mix of single (S) and multiple (M) names.  Please fix this and try again.");
+                    return;
+                }
+                else {
+                    s_or_m = initial;
+                };
+            };
 
             my_lineages[color["short"]] = name;
         };
@@ -785,16 +796,30 @@ class projectObject {
             });
         }
         else {
-            message += "<div class='warn'> Lineages are not ready to download.<br>All trees must have lineage names assigned before downloading.</div>";
-            message += "<br>The following lineages have not been assigned names:<ul>";
-            
-            for (let lineage_index in this.readyLineages.not_ready_trees.sort()){
-                let lineage = this.readyLineages.not_ready_trees.sort()[lineage_index];
-                message += "<li>" + lineage + "</li>";
-            }
+            message += "<div class='warn'> Lineages are not ready to download.</div>";
 
-            message += "</ul>";
+            if ("inconsistant_trees" in this.readyLineages && this.readyLineages.inconsistant_trees.length > 0) {
+                message += "<br>The following trees have a mix of Single (S) and Multiple (M) lineage names:<ul>";
+                
+                for (let lineage_index in this.readyLineages.inconsistant_trees.sort()){
+                    let lineage = this.readyLineages.inconsistant_trees.sort()[lineage_index];
+                    message += "<li>" + lineage + "</li>";
+                }
 
+                message += "</ul>";
+            };
+
+            if ("not_ready_trees" in this.readyLineages && this.readyLineages.not_ready_trees.length > 0) {
+                message += "<br>The following trees have not been assigned lineage names:<ul>";
+                
+                for (let lineage_index in this.readyLineages.not_ready_trees.sort()){
+                    let lineage = this.readyLineages.not_ready_trees.sort()[lineage_index];
+                    message += "<li>" + lineage + "</li>";
+                }
+
+                message += "</ul>";
+            };
+                
             modalButton.addClass("disabled");
         };
 
