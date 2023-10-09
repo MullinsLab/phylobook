@@ -583,7 +583,7 @@ class treeLineagesCount {
                     name = undefined;
                 };
             }
-            else if (name != "Rec") {
+            else if (name != "Rec" && (color["short"] in this.lineageCounts && (this.lineageCounts[color["short"]]["count"] > 0 || "timepoints" in this.lineageCounts[color["short"]]))) {
                 let initial = name.charAt(0);
                 if (s_or_m && s_or_m != initial) {
                     alert("Lineage names are a mix of single (S) and multiple (M) names.  Please fix this and try again.");
