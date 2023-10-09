@@ -333,9 +333,6 @@ class Tree(models.Model):
         """ Returns "Ready" if the tree is ready to extract lineages from, 'Unready' if it is not ready, or 'InconsistantMS' if the tree has inconsistant single/multiple names"""
 
         if lineages := self.lineage_counts():
-            
-            log.debug(lineages)
-
             if len(set([lineage[0] for lineage in lineages.keys() if lineage != "Rec"])) > 1:
                 return "InconsistantMS"
 
