@@ -334,7 +334,9 @@ class Tree(models.Model):
 
         if lineages := self.lineage_counts():
             
-            if len(set([lineage[0] for lineage in lineages.keys()])) > 1:
+            log.debug(lineages)
+
+            if len(set([lineage[0] for lineage in lineages.keys() if lineage != "Rec"])) > 1:
                 return "InconsistantMS"
 
             return "Ready"
