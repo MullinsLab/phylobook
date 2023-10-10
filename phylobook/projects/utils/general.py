@@ -89,7 +89,7 @@ def fasta_file_name(*, tree: Tree, project: Project, prefer_original: bool=False
     if fasta_list:
         while len(fasta_list) > 1:   
             test_fasta = fasta_list.pop()
-            if prefer_original and "collapsed" in test_fasta:
+            if prefer_original and "collapsed" in test_fasta and not test_fasta.endswith("_highlighter.fasta"):
                 fasta = test_fasta
                 break
 
