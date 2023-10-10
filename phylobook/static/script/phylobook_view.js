@@ -42,12 +42,22 @@ function resizeHighlighterWidth(imgparentid, adjustment) {
     // adjust horizontal straightedge
     var element = $("#" + imgparentid + "-horizontal-straightedge")[0];
     if (element) {
-        element.style.top = (element.offsetTop * newOffsetFactor) + "px";
+        if (element.offsetTop > $('#' + imgparentid).height()) {
+            element.style.top = $('#' + imgparentid).height() + "px";
+        }
+        else {
+            element.style.top = (element.offsetTop * newOffsetFactor) + "px";
+        }
     }
 
     var element = $("#" + imgparentid + "-horizontal-straightedge-2")[0];
     if (element) {
-        element.style.top = (element.offsetTop * newOffsetFactor) + "px";
+        if (element.offsetTop > $('#' + imgparentid).height()) {
+            element.style.top = $('#' + imgparentid).height() + "px";
+        }
+        else {
+            element.style.top = (element.offsetTop * newOffsetFactor) + "px";
+        }
     }
 }
 
