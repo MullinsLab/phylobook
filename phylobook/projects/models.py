@@ -95,6 +95,9 @@ class Project(models.Model):
                 with open(tree.fasta_file_name) as starting_fasta:
                     zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_frequency", f"{tree.name}_ALL.fasta"), starting_fasta.read())
 
+                with open(tree.dist_file_name) as dist_file:
+                    zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_frequency", f"{tree.name}_pwcoldist.txt"), dist_file.read())
+
         return mem_zip.getvalue()
 
     def clone(self, *, name: str, no_lock: bool=False) -> "Project":
@@ -282,6 +285,18 @@ class Tree(models.Model):
         """ Returns the name of the original FASTA file (when available) for the tree """
 
         return fasta_file_name(project=self.project, tree=self, prefer_original=True)
+    
+    @property
+    @cache
+    def dist_file_name(self) -> str:
+        """ Returns the name of the distance file """
+
+        dist_list = glob.glob(os.path.join(django_settings.PROJECT_PATH, self.project.name, f"{self.name}*pwcoldist.txt"))
+
+        if dist_list:
+            return dist_list[0]
+
+        return None
     
     @property
     @cache
@@ -535,7 +550,9 @@ class Tree(models.Model):
 
             with open(self.fasta_file_name) as starting_fasta:
                 zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_frequency", f"{self.name}_ALL.fasta"), starting_fasta.read())
-                # zipped_lineages.writestr(f"{self.name}.fasta", starting_fasta.read())
+            
+            with open(self.dist_file_name) as dist_file:
+                zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_frequency", f"{self.name}_pwcoldist.txt"), dist_file.read())
 
         return mem_zip.getvalue()
     
