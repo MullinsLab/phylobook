@@ -180,7 +180,7 @@ class Project(models.Model):
 
         trees = self.trees.all()
 
-        for page in range(int(trees.count() / django_settings.TREES_PER_PAGE) + 1):
+        for page in range(int((trees.count()-1) / django_settings.TREES_PER_PAGE) + 1):
             first_tree_index: int = page * django_settings.TREES_PER_PAGE
             last_tree_index: int = (page + 1) * django_settings.TREES_PER_PAGE - 1
             if last_tree_index >= trees.count():
