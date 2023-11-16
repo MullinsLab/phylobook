@@ -84,19 +84,25 @@ class Project(models.Model):
         with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zipped_lineages:
 
             for tree in self.trees.all():
-                for lineage_name, lineage in tree.extract_all_lineages_to_fasta(sort="tree").items():
-                    zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_tree_position", f"{tree.name}_{lineage_name}.fasta"), lineage)
+                dir = f"{tree.name}/{tree.name}_sorted_by_frequency/Phylobook_extraction"
+
+                # for lineage_name, lineage in tree.extract_all_lineages_to_fasta(sort="tree").items():
+                #     zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_tree_position", f"{tree.name}_{lineage_name}.fasta"), lineage)
 
                 for lineage_name, lineage in tree.extract_all_lineages_to_fasta(sort="timepoint_frequency").items():
-                    zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_frequency", f"{tree.name}_{lineage_name}.fasta"), lineage)
+                    zipped_lineages.writestr(os.path.join(dir, f"{tree.name}_{lineage_name}.fasta"), lineage)
 
                 zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_lineage_summary.csv"), tree.lineage_info_csv())
 
                 with open(tree.fasta_file_name) as starting_fasta:
-                    zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_frequency", f"{tree.name}_ALL.fasta"), starting_fasta.read())
+                    zipped_lineages.writestr(os.path.join(dir, f"{tree.name}_ALL.fasta"), starting_fasta.read())
 
                 with open(tree.dist_file_name) as dist_file:
-                    zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_frequency", f"{tree.name}_pwcoldist.txt"), dist_file.read())
+                    zipped_lineages.writestr(os.path.join(dir, f"{tree.name}_pwcoldist.txt"), dist_file.read())
+
+                if tree.name_file_name:
+                    with open(tree.name_file_name) as name_file:
+                        zipped_lineages.writestr(os.path.join(dir, f"{tree.name}_name.txt"), name_file.read())
 
         return mem_zip.getvalue()
 
@@ -342,6 +348,26 @@ class Tree(models.Model):
         
         else:
             return f"{self.name}_match{match}.{width}.svg"
+        
+    @property
+    @cache
+    def name_file_name(self) -> str:
+        """ Returns the name of the name file for the tree """
+
+        starts_with: str = None
+
+        if "collapsed" in self.name:
+            starts_with= self.name.split("collapsed")[0]
+        else:
+            starts_with= self.name
+
+        for directory, _, files in os.walk(self.project.files_path):
+            for file in files:
+                if "name" in file and file.startswith(starts_with) and file.endswith(".txt"):
+                    return os.path.join(directory, file)
+                
+        return None
+
     
     @property
     def ready_to_extract(self) -> str:
@@ -540,19 +566,25 @@ class Tree(models.Model):
         mem_zip = io.BytesIO()
 
         with zipfile.ZipFile(mem_zip, mode="w",compression=zipfile.ZIP_DEFLATED) as zipped_lineages:
-            for lineage_name, lineage in self.extract_all_lineages_to_fasta(sort="tree").items():
-                zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_tree_position", f"{self.name}_{lineage_name}.fasta"), lineage)
+            # for lineage_name, lineage in self.extract_all_lineages_to_fasta(sort="tree").items():
+            #     zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_tree_position", f"{self.name}_{lineage_name}.fasta"), lineage)
+
+            dir = f"{self.name}_sorted_by_frequency/Phylobook_extraction"
 
             for lineage_name, lineage in self.extract_all_lineages_to_fasta(sort="timepoint_frequency").items():
-                zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_frequency", f"{self.name}_{lineage_name}.fasta"), lineage)
+                zipped_lineages.writestr(os.path.join(dir, f"{self.name}_{lineage_name}.fasta"), lineage)
 
             zipped_lineages.writestr(f"{self.name}_lineage_summary.csv", self.lineage_info_csv())
 
             with open(self.fasta_file_name) as starting_fasta:
-                zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_frequency", f"{self.name}_ALL.fasta"), starting_fasta.read())
+                zipped_lineages.writestr(os.path.join(dir, f"{self.name}_ALL.fasta"), starting_fasta.read())
             
             with open(self.dist_file_name) as dist_file:
-                zipped_lineages.writestr(os.path.join(f"{self.name}_sorted_by_frequency", f"{self.name}_pwcoldist.txt"), dist_file.read())
+                zipped_lineages.writestr(os.path.join(dir, f"{self.name}_pwcoldist.txt"), dist_file.read())
+
+            if self.name_file_name:
+                with open(self.name_file_name) as name_file:
+                    zipped_lineages.writestr(os.path.join(dir, f"{self.name}_name.txt"), name_file.read())
 
         return mem_zip.getvalue()
     
