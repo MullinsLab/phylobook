@@ -123,9 +123,13 @@ function showCluster(project, file, id, drawboxes) {
             // Sort numerically
             uniqueClusters.sort(collatorNumber.compare);
             var clusterColorKeys = {};
+            
             for (let i = 0; i < uniqueClusters.length; i++) {
-                clusterColorKeys[uniqueClusters[i]] = i+1;
+                // Set cluster keys equal to the cluster number
+                // clusterColorKeys[uniqueClusters[i]] = i+1;
+                clusterColorKeys[uniqueClusters[i]] = uniqueClusters[i];
             }
+
             for (let i = 0; i < clusterArray.length; i++) {
                 var key = clusterArray[i][1];
                 var classificationColor = getClassficationColor(clusterColorKeys[key]);
@@ -972,7 +976,10 @@ class sequenceAnnotator {
             let fields = this.sequenceNames[name].split("_");
 
             for (let field in fields){
-                if (! this.fieldValues[field].includes(fields[field])){
+                if (this.fieldValues[field] === undefined){
+                    console.log("Sequence: " + this.sequenceNames[name] + ", Field: " + field)
+                }
+                else if (! this.fieldValues[field].includes(fields[field])){
                     this.fieldValues[field].push(fields[field]);
                 };
             };
