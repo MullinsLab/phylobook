@@ -1029,6 +1029,8 @@ class sequenceAnnotator {
         let modalTitle = $("#annotations_modal_title");
         let modalBody = $("#annotations_modal_body");
         let modalButton = $("#annotations_modal_button");
+        let closeButton = $("annotations_close_button");
+        let bonusButton = $("annotations_bonus_button");
 
         let form = "";
     
@@ -1048,7 +1050,9 @@ class sequenceAnnotator {
         modalTitle.html("Annotate sequence names for: " + this.sequenceFieldName({field: args.field}));
         modalBody.html(form);
         modalButton.html("Color Sequences");
-        
+        closeButton.removeClass("hide");
+        bonusButton.addClass("hide");
+
         let caller = this;
         modalButton.off().on("click", function() {
             caller.setSequenceFields();
