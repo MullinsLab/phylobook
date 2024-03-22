@@ -1,2 +1,4 @@
 chown -R www-data:www-data $PROJECT_PATH*
 chmod -R 775 $PROJECT_PATH*
+
+chown -R www-data:www-data /phylobook
