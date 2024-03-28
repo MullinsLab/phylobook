@@ -100,7 +100,7 @@ Edit settings/saml.py and add your institution's SAML configuration and certific
 
 Build and deploy the containers
 
-`docker-compose up -d --build`
+`docker compose up -d --build`
 
 Perform initial database migrations
 
