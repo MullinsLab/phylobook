@@ -28,8 +28,8 @@ These are the settings that are set in the .env file.  They are settings that ar
 
     # Add a unique secret key string. For more information see https://docs.djangoproject.com/en/4.0/ref/settings/#secret-key
     # Secret key is a unique key that you are required to provide to Django.  
-    # If you have python3 installed on your system, you can issue the following command to generate a secret key:
-    # python3 -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+    # https://djecrety.ir/ or https://randomkeygen.com/ can be used to generate a strong 
+    # secret key.  The secret key should be kept private and not shared with anyone.
     SECRET_KEY=
     
     # Set debug off (0) or on (1)
