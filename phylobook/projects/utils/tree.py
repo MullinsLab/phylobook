@@ -307,7 +307,7 @@ def parse_sequence_name(sequence_name: str) -> dict:
     if sequence_bits[-1].isnumeric():    
         sequence["multiplicity"] = int(sequence_bits[-1])
     else:
-        return None
+        sequence["multiplicity"] = 1
 
     return sequence
 
