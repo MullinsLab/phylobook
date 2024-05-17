@@ -67,7 +67,7 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
                         if uniquesvg in svg:
                             filePath = Path(os.path.join(projectPath, uniquesvg + ".json"))
 
-                            prefix = uniquesvg + ".cluster"
+                            # prefix = uniquesvg + ".cluster"
 
                             try:
                                 tree = project.trees.get(name=uniquesvg)
@@ -106,10 +106,10 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
                                 iscolored = data["iscolored"] if (data["iscolored"] != "None" and data["iscolored"] != None and data["iscolored"] != "") else "false"
                                 entries.append({"uniquesvg": uniquesvg, "svg":os.path.join(name, svg), "highlighter":os.path.join(name, file), "minval": minval, \
                                                 "maxval": maxval, "colorlowval": colorlowval, "colorhighval": colorhighval, "iscolored": iscolored, \
-                                                    "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree, "origional_dimensions": origional_dimensions})
+                                                    "clusterfiles": getClusterFiles(projectPath, uniquesvg), "tree": tree, "origional_dimensions": origional_dimensions})
                             else:
                                 entries.append({"uniquesvg": uniquesvg, "svg": os.path.join(name, svg), "highlighter": os.path.join(name, file), "minval": "", \
-                                                "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, prefix), "tree": tree})
+                                                "maxval": "", "colorlowval": "", "colorhighval": "", "iscolored": "false", "clusterfiles": getClusterFiles(projectPath, uniquesvg), "tree": tree})
 
         pages: list = project.pages()
 
@@ -172,11 +172,11 @@ def getClusterFiles(projectPath, prefix):
         short_prefix = "_".join(prefix.split("_")[:4])
 
     for file in sorted(os.listdir(projectPath)):
-        if file.startswith(prefix):
+        if short_prefix and file.startswith(short_prefix) and ".cluster." in file:
             name = file[file.index(".cluster.") + 9:]
             clusters.append({ "name": name, "file": file})
 
-        if short_prefix and file.startswith(f"{short_prefix}.cluster"):
+        elif file.startswith(prefix) and ".cluster." in file:
             name = file[file.index(".cluster.") + 9:]
             clusters.append({ "name": name, "file": file})
 
