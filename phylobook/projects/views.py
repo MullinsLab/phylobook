@@ -168,9 +168,10 @@ def getClusterFiles(projectPath, prefix):
     clusters: list = []
     short_prefix: str = ""
 
-    if prefix.count("_") > 4:
+    if prefix.count("_") > 3:
+        log.warn("Hit the prefix limit")
         short_prefix = "_".join(prefix.split("_")[:4])
-    
+
     for file in sorted(os.listdir(projectPath)):
         if file.startswith(prefix):
             name = file[file.index(".cluster.") + 9:]
