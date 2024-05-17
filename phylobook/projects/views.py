@@ -163,11 +163,23 @@ def displayProject(request, name, width: int=None, start: int=None, end: int=Non
 
 
 def getClusterFiles(projectPath, prefix):
-    clusters = []
+    """ Get all the cluster names and file paths """
+
+    clusters: list = []
+    short_prefix: str = ""
+
+    if prefix.count("_") > 4:
+        short_prefix = "_".join(prefix.split("_")[:4])
+    
     for file in sorted(os.listdir(projectPath)):
         if file.startswith(prefix):
             name = file[file.index(".cluster.") + 9:]
             clusters.append({ "name": name, "file": file})
+
+        if short_prefix and file.startswith(f"{short_prefix}.cluster"):
+            name = file[file.index(".cluster.") + 9:]
+            clusters.append({ "name": name, "file": file})
+
     return clusters
 
 
