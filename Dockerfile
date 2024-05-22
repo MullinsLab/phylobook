@@ -22,3 +22,23 @@ RUN /bin/bash ./SetPerms
 EXPOSE 8000
 CMD ["apache2ctl", "-D", "FOREGROUND"]
 RUN /bin/bash ./SetPerms
+
+
+
+# Install the Phylobook Pipeline
+
+# Install Python stuff
+RUN pip install --upgrade pip
+RUN pip install -r /phylobook/phylobook_pipeline/requirements.txt
+
+# Install Image-Magick
+RUN apt-get -y update
+RUN apt-get -y install imagemagick
+
+# Overwrite /etc/ImageMagick-6/policy.xml
+RUN mv /etc/ImageMagick-6/policy.xml /etc/ImageMagick-6/policy.xml.bak
+RUN cp /phylobook/phylobook_pipeline/policy.xml /etc/ImageMagick-6/policy.xml
+
+# Install Java
+RUN apt update
+RUN apt -y install default-jre
