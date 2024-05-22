@@ -1,0 +1,3 @@
+[submodule "phylobook_pipeline"]
+	path = phylobook_pipeline
+	url = https://github.com/MullinsLab/phylobook_pipeline.git
