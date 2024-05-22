@@ -21,3 +21,4 @@ ADD ./ports.conf /etc/apache2/ports.conf
 RUN /bin/bash ./SetPerms
 EXPOSE 8000
 CMD ["apache2ctl", "-D", "FOREGROUND"]
+RUN /bin/bash ./SetPerms
