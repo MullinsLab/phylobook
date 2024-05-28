@@ -28,6 +28,7 @@ $( document ).ready(function() {
                     You don't have permission to access {{ noaccess }}.
                 </div>
             {% endif %}
+            <a href="{% url "import_project" %}" type="button" class="btn btn-primary" >Upload New Project</a><br>
             <b>Projects</b>
             <div id="tree"></div>
         </div>

@@ -5,16 +5,15 @@ import os, tarfile, time, json, glob, time
 from io import StringIO
 from datetime import datetime
 from pathlib import Path
-
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
+
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, FileResponse, HttpResponseBadRequest
 from django.shortcuts import render
-from pathlib import Path
 from django.conf import settings
-from guardian.shortcuts import get_perms
-from django.views.generic.base import View
+from django.views.generic.base import View, TemplateView
 from django.db.models import QuerySet
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from phylobook.projects.mixins import LoginRequredSimpleErrorMixin
 from phylobook.projects.models import Project, ProjectCategory, Tree
@@ -648,3 +647,19 @@ class ExtractToZip(LoginRequredSimpleErrorMixin, View):
         response = HttpResponse(tree.extract_all_lineages_to_zip(), content_type="application/force-download")
         response["Content-Disposition"] = f'attachment; filename="{tree.name}_extracted_lineages.zip"'
         return response
+
+
+class ImportProject(LoginRequiredMixin, TemplateView):
+    """ Show form for imporitng a project, and process it's results """
+
+    template_name = "import_project.html"
+
+    def post(self, request, *args, **kwargs):
+        """ Process the form and import the project """
+
+        log.warn("Testing")
+
+        if request.FILES:
+            log.debug(request.FILES)
+
+        return render(request, self.template_name, {"imported": True})
