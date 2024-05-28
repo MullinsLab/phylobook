@@ -9,7 +9,7 @@ from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, FileResponse, HttpResponseBadRequest
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.conf import settings
 from django.views.generic.base import View, TemplateView
 from django.db.models import QuerySet
@@ -658,8 +658,11 @@ class ImportProject(LoginRequiredMixin, TemplateView):
         """ Process the form and import the project """
 
         log.warn("Testing")
+        log.warn(request.POST.keys())
+        log.warn(f"Project Name: {request.POST.get('project_name')}")
 
         if request.FILES:
-            log.debug(request.FILES)
+            log.warn(request.FILES)
 
-        return render(request, self.template_name, {"imported": True})
+        return redirect("projects")
+        #return render(request, self.template_name, {"imported": True})

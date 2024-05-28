@@ -1,57 +1,29 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>Upload a file in Django 1.5 using Dropzone.js</title>
-        {% load static %}
-        <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
-        <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
-        <script>
-            window.addEventListener("dragover",function(e){
-                e = e || event;
-                e.preventDefault();
-            },false);
-            window.addEventListener("drop",function(e){
-                e = e || event;
-                e.preventDefault();
-            },false);
-        </script>
-    </head>
-    <body>
- 
-        <!-- IMPORTANT enctype attribute! -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block header_content %}
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <script src="{% static 'script/import_project.js' %}"></script>
+{% endblock %}
+
+{% block page_content %}
+    <div class="container">
+        <a href="{% url 'projects' %}">Projects</a><br><br>
+        <div class="form-group">
+            <label for="exampleInputEmail1">Project Name:</label>
+            <input type="email" class="form-control" id="outside_project_name" placeholder="Enter project name...">
+        </div>
+
         <form class="dropzone" id="myDropzone" action="{% url 'import_project' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
+            <input type="hidden" id="project_name">
         </form>
-        <button id="submit-all">
-            Submit all files
-        </button>
- 
-        <script src="{% static 'main/js/dropzone.js' %}"></script>
-        <script type="text/javascript">
-        
-            Dropzone.options.myDropzone = {
- 
-                // Prevents Dropzone from uploading dropped files immediately
-                autoProcessQueue : false,
- 
-                init : function() {
-                    var submitButton = document.querySelector("#submit-all")
-                    myDropzone = this;
- 
-                    submitButton.addEventListener("click", function() {
-                        myDropzone.processQueue();
-                        // Tell Dropzone to process all queued files.
-                    });
- 
-                    // You might want to show the submit button only when
-                    // files are dropped here:
-                    this.on("addedfile", function() {
-                        // Show submit button here and/or inform user to click it.
-                    });
- 
-                }
-            };
-        </script>
-    </body>
-</html>
+        <br>
+        <button id="submit-all" type="button" class="btn btn-primary">Upload files</button>
+    </div>
+
+    <script type="text/javascript">
+        initializeDropzone();
+    </script>
+{% endblock %}

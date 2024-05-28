@@ -20,17 +20,16 @@ $( document ).ready(function() {
 });
 </script>            
     
-<br>
-    <div class="container">
-        <div class="table-responsive">
-            {% if noaccess %}
-                <div class="alert alert-danger" role="alert">
-                    You don't have permission to access {{ noaccess }}.
-                </div>
-            {% endif %}
-            <a href="{% url "import_project" %}" type="button" class="btn btn-primary" >Upload New Project</a><br>
-            <b>Projects</b>
-            <div id="tree"></div>
-        </div>
+<div class="container">
+    <a href="{% url "import_project" %}" type="button" class="btn btn-outline-primary btn-sm">Upload New Project</a><br><br>
+    <div class="table-responsive">
+        {% if noaccess %}
+            <div class="alert alert-danger" role="alert">
+                You don't have permission to access {{ noaccess }}.
+            </div>
+        {% endif %}
+        <b>Projects</b>
+        <div id="tree"></div>
     </div>
+</div>
 {% endblock %}
