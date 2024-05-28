@@ -18,11 +18,11 @@ RUN ln -s /usr/local/lib/python3.9 /usr/local/lib/python3
 RUN python manage.py collectstatic --settings=phylobook.settings.static --noinput
 ADD ./phylobook.conf /etc/apache2/sites-available/000-default.conf
 ADD ./ports.conf /etc/apache2/ports.conf
-RUN /bin/bash ./SetPerms
+# RUN /bin/bash ./SetPerms
 EXPOSE 8000
 # CMD ["apache2ctl", "-D", "FOREGROUND"]
 # RUN /bin/bash ./SetPerms
-
+# RUN /phylobook/manage.py runserver 0.0.0.0:8002 -v 3
 
 
 # Install the Phylobook Pipeline

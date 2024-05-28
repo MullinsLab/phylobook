@@ -7,6 +7,7 @@ Django~=3.2.11
 django-crispy-forms==1.13.0
 django-guardian==2.4.0
 django-settings-export==1.2.1
+django-environ
 idna==3.3
 isodate==0.6.0
 Jinja2==2.11.3

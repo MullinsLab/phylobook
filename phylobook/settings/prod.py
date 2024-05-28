@@ -14,6 +14,8 @@ import logging
 import logging.config
 from django.utils.log import DEFAULT_LOGGING
 
+
+import environ
 import os
 from pathlib import Path
 
@@ -23,17 +25,19 @@ from django.urls import reverse_lazy
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env(DEBUG=(int, 0))
+environ.Env.read_env(os.path.join(BASE_DIR.parent, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = int(os.environ.get("DEBUG", default=0))
+DEBUG = int(env("DEBUG", default=0))
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS').split(" ")
 
 # Application definition
 INSTALLED_APPS = [
@@ -51,7 +55,7 @@ INSTALLED_APPS = [
     'treebeard',
 ]
 
-LOGIN_TYPE = os.environ.get('LOGIN_TYPE')
+LOGIN_TYPE = env('LOGIN_TYPE')
 
 # django-guardian backends
 AUTHENTICATION_BACKENDS = (
@@ -97,22 +101,16 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 WSGI_APPLICATION = 'phylobook.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'HOST': 'db', # Don't change.  db is the name of the Docker service set in docker-compose.yml
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
         'PORT': 5432,
-        #'PASSWORD': os.environ.get('DB_PASSWORD'),
+        #'PASSWORD': env('DB_PASSWORD'),
     }
 }
-
-# Password validation
-# https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -150,35 +148,23 @@ STATICFILES_DIRS = (
 )
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-PROJECT_PATH = os.environ.get('PROJECT_PATH')
-# PROJECT_PATH = "/Users/jfurlong/dev/FigTree-command-line/phylobook_fixed"
+PROJECT_PATH = env('PROJECT_PATH')
 
-SERVER_NAME = os.environ.get('SERVER_NAME')
+SERVER_NAME = env('SERVER_NAME')
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST')
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT'))
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_USE_TLS = env('EMAIL_USE_TLS')
+EMAIL_PORT = int(env('EMAIL_PORT'))
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
-# use the Django shell for testing email
-# from django.core.mail import send_mail
-#
-# send_mail(
-#     'Subject here',
-#     'Here is the message.',
-#     'adminpb@uw.edu',
-#     ['jfurlong@uw.edu'],
-#      fail_silently=False,
-# )
+SERVER_EMAIL = EMAIL_HOST_USER
 
 LOGIN_REDIRECT_URL = "/projects"
 LOGOUT_REDIRECT_URL = "/projects"
 
-# LOGIN_TYPE = os.environ.get('LOGIN_TYPE') # Needed earler to decide whether to include the UW_SAML app
-LOGIN_URL = os.environ.get('LOGIN_URL')
+LOGIN_URL = env('LOGIN_URL')
 LOGIN_SSO_TITLE = ''
 LOGIN_SSO_COLLABORATOR_TITLE = ''
 
@@ -187,8 +173,8 @@ if LOGIN_TYPE == "dual" or LOGIN_TYPE == 'sso':
     UW_SAML = UW_SAML_CONF
 
 if LOGIN_TYPE == "dual":
-    LOGIN_SSO_TITLE = os.environ.get('LOGIN_SSO_TITLE')
-    LOGIN_SSO_COLLABORATOR_TITLE = os.environ.get('LOGIN_SSO_COLLABORATOR_TITLE')
+    LOGIN_SSO_TITLE = env('LOGIN_SSO_TITLE')
+    LOGIN_SSO_COLLABORATOR_TITLE = env('LOGIN_SSO_COLLABORATOR_TITLE')
 
 if LOGIN_TYPE == "sso":
     LOGIN_URL = reverse_lazy('saml_login')
@@ -233,8 +219,9 @@ SETTINGS_EXPORT = [
 ]
 
 # Default lineage names by color.
-if os.environ.get('LINEAGE_FILE'):   
-    LINEAGE_FILE = os.path.join("/phylobook/initial_data/", os.environ.get('LINEAGE_FILE'))
+# if os.environ.get('LINEAGE_FILE'): 
+if env('LINEAGE_FILE'):   
+    LINEAGE_FILE = os.path.join("/phylobook/initial_data/", env('LINEAGE_FILE'))
 
 # Set up Logging
 LOG_DIR = os.path.join(BASE_DIR, "logs")
