@@ -5,7 +5,7 @@ from . import views
 
 
 urlpatterns = [
-    path("", login_required(views.projects)),
+    path("", login_required(views.projects), name="projects"),
     
     path("note/update/<str:name>/<str:file>", login_required(views.updateNote)),
     path("note/read/<str:name>/<str:file>", login_required(views.readNote)),
