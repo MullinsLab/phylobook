@@ -9,20 +9,28 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - .env
-    #ports:
-    #  - 25432:5432
+    # ports:
+    #   - 25432:5432
 
   web:
     build: .
+
     container_name: phylobook
+
     volumes:
       - ${PROJECT_PATH}:${PROJECT_PATH}
+
     ports:
       - '127.0.0.1:${WEB_PORT}:8000'
+
     depends_on:
       - db
+
     env_file:
       - .env
+
+    command:
+      - python manage.py runserver 0.0.0.0:${WEB_PORT} -v 3
 
 volumes:
   postgres_data:

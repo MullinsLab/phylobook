@@ -20,8 +20,8 @@ ADD ./phylobook.conf /etc/apache2/sites-available/000-default.conf
 ADD ./ports.conf /etc/apache2/ports.conf
 RUN /bin/bash ./SetPerms
 EXPOSE 8000
-CMD ["apache2ctl", "-D", "FOREGROUND"]
-RUN /bin/bash ./SetPerms
+# CMD ["apache2ctl", "-D", "FOREGROUND"]
+# RUN /bin/bash ./SetPerms
 
 
 
