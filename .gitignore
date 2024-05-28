@@ -134,3 +134,4 @@ phylobook_error_log
 phylobook/logs/
 seed_data/
 ResetSeed
+docker-compose.yml
