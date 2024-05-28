@@ -23,9 +23,19 @@ function initializeDropzone() {
 
             submitButton.addEventListener("click", function(e) {
             // Make sure that the form isn't actually being sent.
-            e.preventDefault();
-            e.stopPropagation();
-            myDropzone.processQueue();
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (! validProjectName()) {
+                    return;
+                };
+
+                console.log($("#project_name").val());
+                console.log(`Project name: ${projectName}`);
+                $("#project_name").val(projectName);
+                console.log($("#project_name").val());
+
+                myDropzone.processQueue();
             });
         }
     };
@@ -34,11 +44,35 @@ function initializeDropzone() {
 
 function validProjectName() {
     projectName = $("#outer_project_name").val();
+    console.log(projectName);
 
     if (! projectName) {
         alert("Please enter a project name.");
         return false;
     }
 
-    return projectName;
+    if (hasWhiteSpace(projectName)) {
+        alert("Project name cannot contain spaces.");
+        return false;
+    }
+
+    var available = false;
+    $.ajax({
+        url: `/projects/project_name_available/${projectName}`,
+        type: 'GET',
+        async: false,
+        success: function(response) {
+            if (! response.available) {
+                alert(`A project with this name already exists:\n "${projectName}"\n\nPlease enter a different name.`);
+                available = false;
+            }
+        }
+    });
+
+    return true;
+}
+
+
+function hasWhiteSpace(string) {
+    return /\s/g.test(string);
 }

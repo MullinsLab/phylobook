@@ -666,3 +666,16 @@ class ImportProject(LoginRequiredMixin, TemplateView):
 
         return redirect("projects")
         #return render(request, self.template_name, {"imported": True})
+
+
+class ProjectNameAvailable(LoginRequiredMixin, View):
+    """ Returns whether a project name is available (no project of that name) """
+
+    def get (self, request, *args, **kwargs):
+        """ Return whether the project name is available """
+
+        project_name: str = kwargs["project_name"]
+        if project_name and not Project.objects.filter(name=project_name).exists():
+            return JsonResponse({"available": True})
+        
+        return JsonResponse({"available": False})

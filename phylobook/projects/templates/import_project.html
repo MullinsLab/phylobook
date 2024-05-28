@@ -11,13 +11,13 @@
     <div class="container">
         <a href="{% url 'projects' %}">Projects</a><br><br>
         <div class="form-group">
-            <label for="exampleInputEmail1">Project Name:</label>
-            <input type="email" class="form-control" id="outside_project_name" placeholder="Enter project name...">
+            <label for="outer_project_name">Project Name:</label>
+            <input type="text" class="form-control" id="outer_project_name" placeholder="Enter project name...">
         </div>
 
         <form class="dropzone" id="myDropzone" action="{% url 'import_project' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <input type="hidden" id="project_name">
+            <input type="text" id="project_name" name="project_name" value="Testing">
         </form>
         <br>
         <button id="submit-all" type="button" class="btn btn-primary">Upload files</button>
