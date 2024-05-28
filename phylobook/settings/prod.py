@@ -319,6 +319,7 @@ logging.config.dictConfig({
         'app': {
             'level': LOGLEVEL,
             'handlers': ['console', 'phylobook.log'],
+            'propagate': False,
         },
 
         # Logging for tests
