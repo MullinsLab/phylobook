@@ -15,7 +15,12 @@ services:
   web:
     container_name: phylobook
     build: .
-    command: python /phylobook/manage.py runserver 0.0.0.0:${WEB_PORT} -v 3
+    command:
+      - /bin/bash
+      - -c
+      - |
+        python manage.py collectstatic --noinput
+        gunicorn -w 2 -b 0.0.0.0:${WEB_PORT} phylobook.wsgi:application
 
     volumes:
       - ${PROJECT_PATH}:${PROJECT_PATH}
