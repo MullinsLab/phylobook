@@ -856,9 +856,9 @@ class Process(models.Model):
     """ Holds information about a process in a project or Tree """
     STATUS_CHOICES: set[tuple] = (("Pending", "Pending"), ("Started", "Started"), ("Completed", "Completed"), ("Failed", "Failed"))
     
-    tree = models.OneToOneField(Tree, on_delete=models.CASCADE, related_name='processes', null=True)
-    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='processes', null=True)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='processes')
+    tree = models.OneToOneField(Tree, on_delete=models.CASCADE, related_name='process', null=True)
+    project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='process', null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='processes')
     status = models.CharField(max_length=256, choices=STATUS_CHOICES, default="Pending")
     restarts = models.IntegerField(default=0)
     pid = models.IntegerField(null=True)
