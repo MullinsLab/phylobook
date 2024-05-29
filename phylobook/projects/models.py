@@ -868,6 +868,12 @@ class Process(models.Model):
         """ Returns the name of the process for print() """
         return f"{self.id}: {self.tree or self.project} Process: {self.status}"
     
+    # def set_status(self, status: str) -> None:
+    #     """ Set the status of the process """
+
+    #     self.status = status
+    #     self.save()
+    
     def start_process(self) -> None:
         """ Start the process """
 
@@ -875,6 +881,29 @@ class Process(models.Model):
         self.pid = os.getpid()
         self.created_time = psutil.Process(self.pid).create_time()
         self.save()
+
+    def check_health(self)-> bool|None:
+        """ Check if the process is still running """
+
+        alive: bool = True
+
+        if not psutil.pid_exists(self.pid):
+            alive = True
+
+        else:
+            process = psutil.Process(self.pid)
+
+            if process.create_time() != self.created_time:
+                alive = True
+
+
+        if not alive:
+            self.status = "Failed"
+            self.pid = None
+            self.created_time = None
+            self.save()
+
+        return alive
 
 
 # Importing last to avoid circular imports
