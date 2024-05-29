@@ -22,7 +22,6 @@ function initializeDropzone() {
             myDropzone = this;
 
             submitButton.addEventListener("click", function(e) {
-            // Make sure that the form isn't actually being sent.
                 e.preventDefault();
                 e.stopPropagation();
 
@@ -35,11 +34,17 @@ function initializeDropzone() {
 
                 console.log($("#project_name").val());
                 console.log(`Project name: ${projectName}`);
+
                 $("#project_name").val(projectName);
+                $("#project_type").val(active.split("_")[0]);
                 console.log($("#project_name").val());
 
                 myDropzone.processQueue();
             });
+
+            this.on("successmultiple", function(files, response) {
+                console.log(response);
+              });
         }
     };
 };

@@ -17,7 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from phylobook.projects.mixins import LoginRequredSimpleErrorMixin
 from phylobook.projects.models import Project, ProjectCategory, Tree
-from phylobook.projects.utils import fasta_type, get_lineage_dict, svg_dimensions
+from phylobook.projects.utils import fasta_type, get_lineage_dict, svg_dimensions, save_django_file_object
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -658,17 +658,46 @@ class ImportProject(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         """ Process the form and import the project """
 
+        response: dict = {}
+
         project_name: str = request.POST.get('project_name')
-        log.warn(f"Project Name: {project_name}")
+        project_type: str = request.POST.get('project_type')
+        
+        project_path: str = os.path.join(PROJECT_PATH, project_name)
 
-        if request.FILES:
-            log.warn(request.FILES)
-            for file in request.FILES.values():
-                log.warn(f"File: {file}")
-                log.warn(file.chunks())
+        if project_type == "new":
+            if Project.objects.filter(name=project_name).exists():
+                response["error"] = f"Project '{project_name}' already exists."
+            
+            elif os.path.exists(project_path):
+                response["error"] = f"Project '{project_name}' doesn't exist, but there is already a directory there."
+            
+            if "error" not in response:
+                log.warn(f"Creating project directory: {project_path}")
+                os.makedirs(project_path)
 
-        return redirect("projects")
-        #return render(request, self.template_name, {"imported": True})
+                for file in request.FILES.values():
+                    log.warn(f"Saving File: {file}")
+                    save_django_file_object(file=file, file_name=os.path.join(project_path, str(file)))
+
+                response["success"] = f"Project '{project_name}' created, and all files uploaded successfully."
+            
+        else:
+            if not Project.objects.filter(name=project_name).exists():
+                response["error"] = f"Project '{project_name}' doesn't exist."
+            
+            elif not os.path.exists(project_path):
+                response["error"] = f"Project '{project_name}' exists, but there is no directory there."
+
+            else:
+                for file in request.FILES.values():
+                    if os.path.exists(os.path.join(project_path, file.name)):
+                        response["error"] = f"One or more of the uploaded files already exists in the project directory."
+            
+            if "error" not in response:
+                ...
+
+        return JsonResponse(response)
 
 
 class ProjectNameAvailable(LoginRequiredMixin, View):

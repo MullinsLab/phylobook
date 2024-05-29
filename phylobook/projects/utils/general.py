@@ -114,6 +114,7 @@ def nexus_file_name(*, tree: Tree, project: Project) -> str:
 
     return tre
 
+
 def newick_file_name(*, tree: Tree, project: Project) -> str:
     """ Returns the name of a nexus tree file """
 
@@ -242,3 +243,9 @@ class SequenceNameShortenizer(object):
         return "_".join(new_tags)
                 
 
+def save_django_file_object(file: object, file_name: str) -> str:
+    """ Save a Django file object to a path """
+
+    with open(file_name, 'wb') as destination:
+        for chunk in file.chunks():
+            destination.write(chunk)
