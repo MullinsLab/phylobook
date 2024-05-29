@@ -45,6 +45,9 @@ class Project(models.Model):
     description = models.TextField(null=True, blank=True)
     edit_locked = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         """ Returns the Name of the project for print() """
         return self.name

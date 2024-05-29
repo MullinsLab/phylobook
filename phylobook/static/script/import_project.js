@@ -26,6 +26,9 @@ function initializeDropzone() {
                 e.preventDefault();
                 e.stopPropagation();
 
+                var active = $("ul#type_tab a.active").attr("id");
+                console.log(active);
+
                 if (! validProjectName()) {
                     return;
                 };
@@ -43,7 +46,7 @@ function initializeDropzone() {
 
 
 function validProjectName() {
-    projectName = $("#outer_project_name").val();
+    projectName = $("#new_outer_project_name").val();
     console.log(projectName);
 
     if (! projectName) {

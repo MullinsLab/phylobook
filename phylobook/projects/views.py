@@ -653,16 +653,19 @@ class ImportProject(LoginRequiredMixin, TemplateView):
     """ Show form for imporitng a project, and process it's results """
 
     template_name = "import_project.html"
+    extra_context = {"projects": Project.objects.all()}
 
     def post(self, request, *args, **kwargs):
         """ Process the form and import the project """
 
-        log.warn("Testing")
-        log.warn(request.POST.keys())
-        log.warn(f"Project Name: {request.POST.get('project_name')}")
+        project_name: str = request.POST.get('project_name')
+        log.warn(f"Project Name: {project_name}")
 
         if request.FILES:
             log.warn(request.FILES)
+            for file in request.FILES.values():
+                log.warn(f"File: {file}")
+                log.warn(file.chunks())
 
         return redirect("projects")
         #return render(request, self.template_name, {"imported": True})

@@ -10,14 +10,40 @@
 {% block page_content %}
     <div class="container">
         <a href="{% url 'projects' %}">Projects</a><br><br>
-        <div class="form-group">
-            <label for="outer_project_name">Project Name:</label>
-            <input type="text" class="form-control" id="outer_project_name" placeholder="Enter project name...">
+        <ul class="nav nav-tabs border-primary" id="type_tab">
+            <li class="nav-item">
+              <a class="nav-link active" data-toggle="tab" id="new_project_tab" href="#new">New Project</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-toggle="tab" id="add_project_tab" href="#add">Add to Project</a>
+            </li>
+        </ul>
+        <div class="tab-content ">
+            <div class="tab-pane active" id="1">
+        <div class="tab-content tab-container">
+            <div class="tab-pane fade tab-summary-container active show border-primary border-left border-right border-bottom p-3 mb-3" id="new">
+                <div class="form-group">
+                    <label for="new_outer_project_name">New Project Name:</label>
+                    <input type="text" class="form-control" id="new_outer_project_name" placeholder="Enter project name...">
+                </div>
+            </div>
+            <div class="tab-pane fade tab-summary-container border-primary border-left border-bottom border-right p-3 mb-3" id="add">
+                <div class="form-group">
+                    <label for="add_outer_project_name">Add to Project Name:</label>
+                    <select class="form-control" id="add_outer_project_name">
+                        <option value="">Select project...</option>
+                        {% for project in projects %}
+                            <option value="{{ project }}">{{ project }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
         </div>
 
         <form class="dropzone" id="myDropzone" action="{% url 'import_project' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <input type="text" id="project_name" name="project_name" value="Testing">
+            <input type="hidden" id="project_name" name="project_name">
+            <input type="hidden" id="project_type" name="project_type">
         </form>
         <br>
         <button id="submit-all" type="button" class="btn btn-primary">Upload files</button>
