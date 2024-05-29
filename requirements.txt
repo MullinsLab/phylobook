@@ -28,3 +28,4 @@ xmlsec==1.3.12
 django-treebeard==4.6.0
 reportlab==4.0.4
 gunicorn
+psutil

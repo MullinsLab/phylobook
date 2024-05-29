@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger('app')
 
-import io, zipfile, shutil, datetime, os, glob
+import io, zipfile, shutil, datetime, os, glob, psutil
 from functools import cache
 
 import Bio
@@ -13,6 +13,7 @@ from Bio.SeqRecord import SeqRecord
 
 from typing import Union
 
+from django.contrib.auth.models import User
 from django.db import models
 from django.conf import settings as django_settings
 from django.core.exceptions import ValidationError
@@ -44,6 +45,7 @@ class Project(models.Model):
     category = models.ForeignKey("ProjectCategory", null=True, blank=True, on_delete=models.SET_NULL)
     description = models.TextField(null=True, blank=True)
     edit_locked = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['name']
@@ -217,7 +219,7 @@ class ProjectCategory(MP_Node):
         """ Recursive function to show if ProjectCategory should show for a specific user based on showing or editing the Project. """
 
         # Step through each project in this category and return True if they can view or edit it.
-        for project in self.project_set.all():
+        for project in self.project_set.filter(active=True):
             if user.has_perm('projects.change_project', project) or user.has_perm('projects.view_project', project):
                 return True
         
@@ -848,6 +850,32 @@ class Tree(models.Model):
                 return str(sequence.seq)
         
         raise IndexError(f"Could not find sequence with id {id}")
+
+
+class Process(models.Model):
+    """ Holds information about a process in a project or Tree """
+    STATUS_CHOICES: set[tuple] = (("Pending", "Pending"), ("Started", "Started"), ("Completed", "Completed"), ("Failed", "Failed"))
+    
+    tree = models.ForeignKey(Tree, on_delete=models.CASCADE, related_name='processes', null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='processes', null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='processes')
+    status = models.CharField(max_length=256, choices=STATUS_CHOICES, default="Pending")
+    restarts = models.IntegerField(default=0)
+    pid = models.IntegerField(null=True)
+    created_time = models.FloatField()
+
+    def __str__(self):
+        """ Returns the name of the process for print() """
+        return f"{self.id}: {self.tree or self.project} Process: {self.status}"
+    
+    def start_process(self) -> None:
+        """ Start the process """
+
+        self.status = "Started"
+        self.pid = os.getpid()
+        self.created_time = psutil.Process(self.pid).create_time()
+        self.save()
+
 
 # Importing last to avoid circular imports
 from phylobook.projects.utils import svg_file_name, fasta_file_name, nexus_file_name, newick_file_name, PhyloTree, get_lineage_dict, parse_sequence_name, SequenceNameShortenizer

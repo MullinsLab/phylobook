@@ -195,10 +195,11 @@ def get_user_projects(user):
 
 def get_user_project_tree(user) -> dict:
     """ Loads the Projects that a User can see, along with their categories """
+
     projects_tree = []
 
     # Start by getting projects that don't have a category
-    query_set = Project.objects.filter(category=None)
+    query_set = Project.objects.filter(category=None, active=True)
 
     for project in query_set:
         project.tree_node(user=user, list=projects_tree)
@@ -207,6 +208,7 @@ def get_user_project_tree(user) -> dict:
         category.tree_node(user=user, list=projects_tree)
     
     return projects_tree
+
 
 class MatchImage(LoginRequredSimpleErrorMixin, View):
     """ Returns the match image for a tree """
