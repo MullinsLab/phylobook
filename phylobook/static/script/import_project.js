@@ -10,7 +10,7 @@ window.addEventListener("drop",function(e){
 
 function initializeDropzone() {
     Dropzone.options.myDropzone = {
-        acceptedFiles: '.fasta,.zip',
+        // acceptedFiles: '.fasta,.zip',
         autoProcessQueue : false, // Prevents Dropzone from uploading dropped files immediately
         addRemoveLinks: true,
         uploadMultiple: true,
@@ -43,8 +43,13 @@ function initializeDropzone() {
             });
 
             this.on("successmultiple", function(files, response) {
-                console.log(response);
-              });
+                if (response.error){
+                    alert(response.error);
+                }
+                else if (response.success) {
+                    alert(response.success);
+                }
+            });
         }
     };
 };

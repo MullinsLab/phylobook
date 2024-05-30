@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger('app')
 
-import os, tarfile, time, json, glob, time
+import os, tarfile, time, json, glob, time, zipfile
 from io import StringIO
 from datetime import datetime
 from pathlib import Path
@@ -17,7 +17,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 from phylobook.projects.mixins import LoginRequredSimpleErrorMixin
 from phylobook.projects.models import Project, ProjectCategory, Tree
-from phylobook.projects.utils import fasta_type, get_lineage_dict, svg_dimensions, save_django_file_object
+from phylobook.projects.utils import fasta_type, get_lineage_dict, svg_dimensions, save_django_file_object, handle_import_file
 
 PROJECT_PATH = settings.PROJECT_PATH
 
@@ -667,6 +667,21 @@ class ImportProject(LoginRequiredMixin, TemplateView):
         
         project_path: str = os.path.join(PROJECT_PATH, project_name)
 
+        # Make a list of all files, including files in zip files (Won't recursively dive into zips)
+        file_list: list = []
+        for file in request.FILES.values():
+
+            # Inspect the zip file.  Don't need the zip name in file_list as it won't be saved.
+            if file.name.endswith(".zip"):
+                with zipfile.ZipFile(file, 'r') as zip:
+                    file_list += zip.namelist()
+            else:
+                file_list.append(file.name)
+
+        # Check for duplicate file names
+        if len(file_list) != len(set(file_list)):
+            response["error"] = "One or more of the uploaded files have the same name."
+
         if project_type == "new":
             if Project.objects.filter(name=project_name).exists():
                 response["error"] = f"Project '{project_name}' already exists."
@@ -675,12 +690,16 @@ class ImportProject(LoginRequiredMixin, TemplateView):
                 response["error"] = f"Project '{project_name}' doesn't exist, but there is already a directory there."
             
             if "error" not in response:
-                log.warn(f"Creating project directory: {project_path}")
-                os.makedirs(project_path)
+                # os.makedirs(project_path)
+                project = Project.create_with_dir(name=project_name, active=False)
 
                 for file in request.FILES.values():
-                    log.warn(f"Saving File: {file}")
-                    save_django_file_object(file=file, file_name=os.path.join(project_path, str(file)))
+                    if file.name.endswith(".zip"):
+                        with zipfile.ZipFile(file, 'r') as zip:
+                            for file_name in zip.namelist():
+                                handle_import_file(zip=zip, file_name=file_name, project=project)
+                    else:
+                        handle_import_file(project=project, file=file)
 
                 response["success"] = f"Project '{project_name}' created, and all files uploaded successfully."
             

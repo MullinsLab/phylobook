@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger('app')
 
-import os, glob, hashlib
+import os, glob, zipfile
 
 from django.conf import settings
 
@@ -249,3 +249,32 @@ def save_django_file_object(file: object, file_name: str) -> str:
     with open(file_name, 'wb') as destination:
         for chunk in file.chunks():
             destination.write(chunk)
+
+
+def handle_import_file(project: Project, file_name: str=None, file: object=None, zip: zipfile.ZipFile=None) -> str:
+    """ Returns the path of a file in the upload directory """
+
+    path = project.files_path
+
+    if not file_name and file:
+        file_name = file.name
+
+    # File is a namefile, and needs to go into namefiles
+    if "name" in file_name and file_name.endswith(".txt"):
+        path = os.path.join(path, "namefiles")
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+    if zip:
+        zip.extract(file_name, path=path)
+    elif file:
+        save_django_file_object(file, os.path.join(path, file_name))
+
+    # File is a fasta file, and needs to have a Tree object created
+    if file_name.endswith(".fasta"):
+        tree_name: str = file_name.replace(".fasta", "")
+        tree = Tree.create_with_process(project=project, name=tree_name)
+        tree.type = fasta_type(tree=tree)
+        tree.save()
+
+    return path

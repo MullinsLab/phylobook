@@ -24,7 +24,7 @@ from guardian.models import GroupObjectPermission
 
 from treebeard.mp_tree import MP_Node
 
-# from phylobook.projects.utils import svg_file_name, fasta_file_name, tree_lineage_counts
+from phylobook.utils import current_user
 
 
 class Lineage(models.Model):
@@ -90,9 +90,6 @@ class Project(models.Model):
 
             for tree in self.trees.all():
                 dir = f"{tree.name}/{tree.name}_sorted_by_frequency/Phylobook_extraction"
-
-                # for lineage_name, lineage in tree.extract_all_lineages_to_fasta(sort="tree").items():
-                #     zipped_lineages.writestr(os.path.join(tree.name, f"{tree.name}_sorted_by_tree_position", f"{tree.name}_{lineage_name}.fasta"), lineage)
 
                 for lineage_name, lineage in tree.extract_all_lineages_to_fasta(sort="timepoint_frequency").items():
                     zipped_lineages.writestr(os.path.join(dir, f"{tree.name}_{lineage_name}.fasta"), lineage)
@@ -200,6 +197,25 @@ class Project(models.Model):
             pages.append((f"{trees[first_tree_index].name} - {trees[last_tree_index].name}", f"{first_tree_index+1}-{last_tree_index+1}"))
 
         return pages
+    
+    @classmethod
+    def create_with_dir(*args, **kwargs)-> "Project":
+        """ Create a project with a directory """
+
+        name = kwargs.get("name")
+
+        if Project.objects.filter(name=name).exists():
+            raise ValidationError(f"Project with name {name} already exists.")
+        
+        if " " in name:
+            raise ValidationError("Project name cannot contain spaces.")
+
+        project = Project(**kwargs)
+        project.save()
+
+        os.makedirs(os.path.join(django_settings.PROJECT_PATH, name))
+
+        return project
 
 
 class ProjectCategory(MP_Node):
@@ -850,6 +866,18 @@ class Tree(models.Model):
                 return str(sequence.seq)
         
         raise IndexError(f"Could not find sequence with id {id}")
+    
+    @classmethod
+    def create_with_process(*args, **kwargs) -> "Tree":
+        """ Create a tree with a process """
+
+        tree = Tree(**kwargs)
+        tree.save()
+
+        process = Process(tree=tree, user=current_user(), status="Pending")
+        process.save()
+
+        return tree
 
 
 class Process(models.Model):
@@ -862,17 +890,11 @@ class Process(models.Model):
     status = models.CharField(max_length=256, choices=STATUS_CHOICES, default="Pending")
     restarts = models.IntegerField(default=0)
     pid = models.IntegerField(null=True)
-    created_time = models.FloatField()
+    created_time = models.FloatField(null=True)
 
     def __str__(self):
         """ Returns the name of the process for print() """
         return f"{self.id}: {self.tree or self.project} Process: {self.status}"
-    
-    # def set_status(self, status: str) -> None:
-    #     """ Set the status of the process """
-
-    #     self.status = status
-    #     self.save()
     
     def start_process(self) -> None:
         """ Start the process """
@@ -882,7 +904,7 @@ class Process(models.Model):
         self.created_time = psutil.Process(self.pid).create_time()
         self.save()
 
-    def check_health(self)-> bool|None:
+    def check_health(self)-> bool:
         """ Check if the process is still running """
 
         alive: bool = True
