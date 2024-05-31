@@ -1,7 +1,7 @@
 import logging
 log = logging.getLogger('app')
 
-import io, zipfile, shutil, datetime, os, glob, psutil
+import io, zipfile, shutil, datetime, os, glob, psutil, subprocess
 from functools import cache
 
 import Bio
@@ -21,10 +21,11 @@ from django.contrib.contenttypes.models import ContentType
 
 from guardian.models import UserObjectPermission
 from guardian.models import GroupObjectPermission
-
+ 
 from treebeard.mp_tree import MP_Node
 
 from phylobook.utils import current_user
+#from phylobook_pipeline.script import phylobook
 
 
 class Lineage(models.Model):
@@ -882,50 +883,94 @@ class Tree(models.Model):
 
 class Process(models.Model):
     """ Holds information about a process in a project or Tree """
-    STATUS_CHOICES: set[tuple] = (("Pending", "Pending"), ("Started", "Started"), ("Completed", "Completed"), ("Failed", "Failed"))
+
+    STATUS_CHOICES: set[tuple] = (("Pending", "Pending"), ("Running", "Running"), ("Completed", "Completed"), ("Failed", "Failed"))
     
     tree = models.OneToOneField(Tree, on_delete=models.CASCADE, related_name='process', null=True)
     project = models.OneToOneField(Project, on_delete=models.CASCADE, related_name='process', null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='processes')
     status = models.CharField(max_length=256, choices=STATUS_CHOICES, default="Pending")
-    restarts = models.IntegerField(default=0)
+    crashes = models.IntegerField(default=0)
     pid = models.IntegerField(null=True)
     created_time = models.FloatField(null=True)
 
-    def __str__(self):
+    class Meta:
+        ordering = ["pk"]
+
+    def __str__(self) -> str:
         """ Returns the name of the process for print() """
-        return f"{self.id}: {self.tree or self.project} Process: {self.status}"
+        return f"Process {self.id}: '{self.tree or self.project}' Status: {self.status}"
     
-    def start_process(self) -> None:
+    def start(self) -> None:
         """ Start the process """
 
-        self.status = "Started"
+        self.status = "Running"
         self.pid = os.getpid()
         self.created_time = psutil.Process(self.pid).create_time()
         self.save()
 
+    def complete(self) -> None:
+        """ Complete the process """
+
+        self.status = "Completed"
+        self.pid = None
+        self.created_time = None
+        self.save()
+
+    def fail(self) -> None:
+        """ Fail the process """
+
+        self.status = "Failed"
+        self.pid = None
+        self.created_time = None
+        self.save()
+
+    def run(self) -> None:
+        """ Do the work of the process """
+
+        if self.status != "Pending":
+            raise RuntimeError("Process is not pending, and can not be run")
+        
+        self.start()
+
+        try:
+            subprocess.run([f"{django_settings.BASE_DIR.parent}/phylobook_pipeline/script/phylobook.py", "-d", self.tree.project.files_path, "-f", self.tree.fasta_file_name, "-t", self.tree.type.lower()], check=True)
+
+        except subprocess.CalledProcessError as e:
+            self.fail()
+
+        self.complete()
+
     def check_health(self)-> bool:
         """ Check if the process is still running """
 
-        alive: bool = True
+        healthy: bool = True
 
-        if not psutil.pid_exists(self.pid):
-            alive = True
+        if self.status != "Running":
+            healthy = True
+
+        elif not psutil.pid_exists(self.pid):
+            healthy = False
 
         else:
             process = psutil.Process(self.pid)
 
             if process.create_time() != self.created_time:
-                alive = True
+                healthy = False
 
+        if not healthy:
+            self.crashes += 1
 
-        if not alive:
-            self.status = "Failed"
+            if self.crashes > 10:
+                self.status = "Failed"
+            else:
+                self.status = "Pending"
+
             self.pid = None
             self.created_time = None
             self.save()
 
-        return alive
+        return healthy
 
 
 # Importing last to avoid circular imports
