@@ -19,6 +19,8 @@ import environ
 import os
 from pathlib import Path
 
+import multiprocessing
+
 # Used when SSO login is configured
 from django.urls import reverse_lazy
 
@@ -344,3 +346,6 @@ HIGHLIGHTER_MARK_WIDTH = 3
 MATCH_MARK_WIDTH = 6
 
 TREES_PER_PAGE = 10
+
+# Importer settings
+MAX_FASTA_PROCESSORS = env("MAX_FASTA_PROCESSORS", default=multiprocessing.cpu_count())
