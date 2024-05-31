@@ -1,0 +1,2 @@
+# Run the fasta processing management command every minute
+* * * * * /usr/local/bin/python /phylobook/manage.py process_fasta_imports >> /var/log/cron.log 2>&1

@@ -15,6 +15,7 @@ from typing import Union
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 from django.conf import settings as django_settings
 from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.models import ContentType
@@ -217,6 +218,20 @@ class Project(models.Model):
         os.makedirs(os.path.join(django_settings.PROJECT_PATH, name))
 
         return project
+
+    def activate_if_imported(self) -> bool:
+        """ Set active = true if all of the project's trees have been imported """
+
+        if self.active:
+            return True
+        
+        if self.trees.filter(Q(process__isnull=False) & ~Q(process__status="Completed")).count() == 0:
+            self.active = True
+            self.save()
+
+            return True
+        
+        return False
 
 
 class ProjectCategory(MP_Node):

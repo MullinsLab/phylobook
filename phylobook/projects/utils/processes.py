@@ -6,7 +6,7 @@ log = logging.getLogger('app')
 from django.conf import settings as django_settings
 
 
-from phylobook.projects.models import Process
+from phylobook.projects.models import Project, Process
 
 
 def check_processes() -> bool:
@@ -14,6 +14,9 @@ def check_processes() -> bool:
 
     for process in Process.objects.filter(status="Running"):
         process.check_health()
+
+    for project in Project.objects.filter(active=False):
+        project.activate_if_imported()
 
 
 def start_next_process():

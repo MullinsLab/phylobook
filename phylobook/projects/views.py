@@ -719,6 +719,12 @@ class ImportProject(LoginRequiredMixin, TemplateView):
                 ...
 
         return JsonResponse(response)
+    
+
+class ImportProcessStatus(LoginRequiredMixin, View):
+    """ Show the status of import processes """
+
+    ...
 
 
 class ProjectNameAvailable(LoginRequiredMixin, View):

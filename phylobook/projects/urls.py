@@ -34,7 +34,7 @@ urlpatterns = [
     path("match_image_no_multiple/<str:project>/<str:tree>/<str:throwaway>", views.MatchImage.as_view(), {"multiple": False}, name="match_image_no_multiple_throwaway"),
     
     path("import_project", views.ImportProject.as_view(), name="import_project"),
-
+    path("import_project/status", views.ImportProcessStatus.as_view(), name="import_project_status"),
     path("project_name_available/<str:project_name>", views.ProjectNameAvailable.as_view(), name="project_name_available"),
     
     path("<str:name>", login_required(views.displayProject)),

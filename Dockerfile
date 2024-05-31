@@ -23,8 +23,8 @@ EXPOSE 8000
 # Install the Phylobook Pipeline
 
 # Install Python stuff
-RUN pip install --upgrade pip
-RUN pip install -r /phylobook/phylobook_pipeline/requirements.txt
+RUN pip3 install --upgrade pip
+RUN pip3 install -r /phylobook/phylobook_pipeline/requirements.txt
 
 # Install Image-Magick
 RUN apt-get -y update
