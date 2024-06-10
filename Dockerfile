@@ -9,7 +9,7 @@ WORKDIR /phylobook
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get -y install wget software-properties-common pkg-config libxml2-dev libxmlsec1-dev=1.2.31-1 \
-                            libxmlsec1-openssl=1.2.31-1 apt-utils vim curl python3-pip
+                            libxmlsec1-openssl=1.2.31-1 apt-utils vim curl python3-pip cron
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 RUN ln /usr/bin/python3 /usr/bin/python
