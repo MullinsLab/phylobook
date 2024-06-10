@@ -15,8 +15,8 @@ services:
   web:
     container_name: phylobook
     build: .
-    # command: python /phylobook/manage.py runserver 0.0.0.0:${WEB_PORT} -v 3
 
+    # command: python /phylobook/manage.py runserver 0.0.0.0:${WEB_PORT} -v 3
     command:
       - /bin/bash
       - -c
@@ -26,6 +26,7 @@ services:
         python /phylobook/manage.py runserver 0.0.0.0:${WEB_PORT} -v 3
 
     volumes:
+      - .:/phylobook
       - ${PROJECT_PATH}:${PROJECT_PATH}
 
     ports:

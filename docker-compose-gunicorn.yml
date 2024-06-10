@@ -23,6 +23,7 @@ services:
         gunicorn -w 2 -b 0.0.0.0:${WEB_PORT} phylobook.wsgi:application
 
     volumes:
+      - .:/phylobook
       - ${PROJECT_PATH}:${PROJECT_PATH}
 
     ports:
