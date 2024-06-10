@@ -949,7 +949,7 @@ class Process(models.Model):
         self.start()
 
         try:
-            subprocess.run([f"{django_settings.BASE_DIR.parent}/phylobook_pipeline/script/phylobook.py", "-d", self.tree.project.files_path, "-f", self.tree.fasta_file_name, "-t", self.tree.type.lower()], check=True)
+            subprocess.run(["/usr/local/bin/python", f"{django_settings.BASE_DIR.parent}/phylobook_pipeline/script/phylobook.py", "-d", self.tree.project.files_path, "-f", self.tree.fasta_file_name, "-t", self.tree.type.lower()], check=True)
 
         except subprocess.CalledProcessError as e:
             self.fail()
