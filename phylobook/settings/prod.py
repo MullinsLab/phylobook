@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'guardian',
     'phylobook.uw_saml',
     'treebeard',
+    "django_extensions",
 ]
 
 LOGIN_TYPE = env('LOGIN_TYPE')
