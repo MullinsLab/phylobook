@@ -25,14 +25,16 @@ function initializeDropzone() {
                 e.preventDefault();
                 e.stopPropagation();
 
-                var active = $("ul#type_tab a.active").attr("id");
+                var active = $("ul#type_tab a.active").attr("id").split("_")[0];
 
-                if (! validProjectName()) {
+                let projectName = $(`#${active}_outer_project_name`).val();
+
+                if (active == "new" && ! validProjectName(projectName)) {
                     return;
                 };
 
                 $("#project_name").val(projectName);
-                $("#project_type").val(active.split("_")[0]);
+                $("#project_type").val(active);
 
                 myDropzone.processQueue();
             });
@@ -51,8 +53,7 @@ function initializeDropzone() {
 };
 
 
-function validProjectName() {
-    projectName = $("#new_outer_project_name").val();
+function validProjectName(projectName) {
 
     if (! projectName) {
         alert("Please enter a project name.");

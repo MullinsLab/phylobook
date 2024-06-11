@@ -654,8 +654,14 @@ class ExtractToZip(LoginRequredSimpleErrorMixin, View):
 class ImportProject(LoginRequiredMixin, TemplateView):
     """ Show form for imporitng a project, and process it's results """
 
-    template_name = "import_project.html"
-    extra_context = {"projects": Project.objects.all()}
+    template_name = "upload_files.html"
+
+    def get_context_data(self, **kwargs) -> dict:
+        """ Add the projects to the context """
+        context = super().get_context_data(**kwargs)
+        context["projects"] = Project.objects.all()
+
+        return context
 
     def post(self, request, *args, **kwargs):
         """ Process the form and import the project """
@@ -691,7 +697,7 @@ class ImportProject(LoginRequiredMixin, TemplateView):
                 response["error"] = f"Project '{project_name}' doesn't exist, but there is already a directory there."
             
             if "error" not in response:
-                project = Project.create_with_dir(name=project_name, active=False)
+                project: Project = Project.create_with_dir(name=project_name, active=False)
             
         else:
             if not Project.objects.filter(name=project_name).exists():
@@ -704,6 +710,8 @@ class ImportProject(LoginRequiredMixin, TemplateView):
                 for file in request.FILES.values():
                     if os.path.exists(os.path.join(project_path, file.name)):
                         response["error"] = f"One or more of the uploaded files already exists in the project directory."
+
+            project: Project = Project.objects.get(name=project_name)
             
         if "error" not in response:
             for file in request.FILES.values():

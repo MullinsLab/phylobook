@@ -311,12 +311,14 @@ logging.config.dictConfig({
         'default': {
             'level': 'WARNING',
             'handlers': ['console', 'phylobook.log'],
+            'propagate': False,
         },
 
         # Logging for http requests
         "django.request": {
             'level': LOGLEVEL,
             'handlers': ['console', 'requests.log'],
+            'propagate': False,
         },
 
         # Logging for our apps
