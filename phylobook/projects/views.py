@@ -724,7 +724,16 @@ class ImportProject(LoginRequiredMixin, TemplateView):
 class ImportProcessStatus(LoginRequiredMixin, View):
     """ Show the status of import processes """
 
-    ...
+    def get(self, request, *args, **kwargs):
+        """ Return the status of the import process """
+
+        response: dict = {"processes": []}
+
+        # for project in Project.objects.all():
+        #     if project.importing:
+        #         response[project.name] = project.import_status()
+
+        return JsonResponse(response)
 
 
 class ProjectNameAvailable(LoginRequiredMixin, View):
