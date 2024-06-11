@@ -16,7 +16,7 @@ from django.db.models import QuerySet
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from phylobook.projects.mixins import LoginRequredSimpleErrorMixin
-from phylobook.projects.models import Project, ProjectCategory, Tree
+from phylobook.projects.models import Project, ProjectCategory, Tree, Process
 from phylobook.projects.utils import fasta_type, get_lineage_dict, svg_dimensions, save_django_file_object, handle_import_file
 
 PROJECT_PATH = settings.PROJECT_PATH
@@ -727,11 +727,17 @@ class ImportProcessStatus(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         """ Return the status of the import process """
 
-        response: dict = {"processes": []}
+        response: dict = {"processes": [], "pending": 0, "running": 0, "failed": 0}
 
-        # for project in Project.objects.all():
-        #     if project.importing:
-        #         response[project.name] = project.import_status()
+        for process in Process.objects.filter(status__in=["Running", "Pending", "Failed"]).select_related("tree"):
+            response["processes"].append({
+                "project": process.tree.project.name,
+                "tree": process.tree.name,
+                "status": process.status,
+                "crashes": process.crashes,
+            })
+
+            response[process.status.lower()] += 1
 
         return JsonResponse(response)
 

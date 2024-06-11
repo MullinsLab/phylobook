@@ -40,18 +40,18 @@
     </head>
 
     <body>
-            <div class="container-fluid">
-                <div class="row headernav">
-                    <div style="white-space:nowrap; width: 150px;" class="col-auto mr-auto">
-                        <div style="display:inline-block;" >
-                            <img class="titleimg" src="{% static 'images/phylobook.png' %}" height="50" width="50"/>
-                        </div>
-
-                        <div style="display:inline-block; vertical-align: bottom;">
-                            <h3 class=titlefont">Phylobook</h3>
-                        </div>
+        <div class="container-fluid">
+            <div class="row headernav">
+                <div style="white-space:nowrap; width: 150px;" class="col-auto mr-auto">
+                    <div style="display:inline-block;" >
+                        <img class="titleimg" src="{% static 'images/phylobook.png' %}" height="50" width="50"/>
                     </div>
-                    {% if user.is_authenticated %}
+
+                    <div style="display:inline-block; vertical-align: bottom;">
+                        <h3 class=titlefont">Phylobook</h3>
+                    </div>
+                </div>
+                {% if user.is_authenticated %}
                     <div class="col-auto">
                         <div class="btn-group">
                             <button type="button" class="btn btn-outline-secondary dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {% if user.has_usable_password == False or user.has_usable_password == None %} disabled{% endif %}>
@@ -75,8 +75,28 @@
                             <a href="/saml/logout">Logout</a>
                         {% endif %}
                     </div>
-                    {% endif %}
-            </div>
+                {% endif %}
+        </div>
         {% block page_content %}{% endblock %}
+
+        <!-- Modal for import notifications -->
+        <div class="modal fade" id="processModal" tabindex="-1" role="dialog" aria-labelledby="processes" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="processModalTitle">Fasta Imports</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body" id="processModalBody">
+                    Processes
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="processCloseButton">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
     </body>
 </html>

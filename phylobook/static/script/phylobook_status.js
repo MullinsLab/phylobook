@@ -1,8 +1,16 @@
 class processStatus {
     processes = [];
     lastCount = undefined;
+    running = 0;
+    pending = 0;
+    failed = 0;
+    modal = undefined;
+    modalBody = undefined;
 
     constructor() {
+        this.modal = $("#processModal");
+        this.modalBody = $("#processModalBody");
+
         console.log("processStatus object created");
     }
 
@@ -13,7 +21,9 @@ class processStatus {
             type: "GET",
             success: function(data) {
                 self.processes = data.processes;
-                console.log(self.processes);
+                self.running = data.running;
+                self.pending = data.pending;
+                self.failed = data.failed;
                 self.setNotification();
             },
         });
@@ -22,29 +32,99 @@ class processStatus {
     setNotification() {
         if (this.lastCount === undefined || this.lastCount != this.processes.length) {
             $("#processNotification").html(this.buttonHTML());
-            console.log(this.buttonHTML());
+            $("#processButton").on("click", function() {window.processStatus.modalShow();});
+            this.lastCount = this.processes.length;
         };
+
+        console.log("processStatus updated");
     }
 
     buttonHTML() {
-        return `&nbsp;&nbsp;<button type="button" class="btn btn-outline-${this.buttonType()} btn-sm">${this.buttonText()} <span class="badge badge-light">${this.buttonCount()}</span></button>&nbsp;&nbsp;`
+        let html = `&nbsp;&nbsp;
+            <button type="button" class="btn btn-outline-${this.buttonType()} btn-sm" id="processButton">
+            ${this.buttonText()}
+            ${this.buttonCount()}
+            ${this.buttonFailed()}
+            </button>&nbsp;&nbsp;`
+        return html;
     }
 
     buttonText() {
-        if (this.processes.length == 0) {
-            return "No processes running";
-        }
-        else {
-            return "Processes running";
-        }
+        return "Imports"
     }
 
     buttonCount() {
-        console.log(this.processes.length)
-        return this.processes.length;
+        return `<span class="badge badge-light">${this.running}/${this.processes.length}</span>`;
+    }
+
+    buttonFailed() {
+        return `<span class="badge badge-danger">${this.failed} failed!</span>`;
     }
 
     buttonType() {
-        return "secondary"
+        if (this.processes.length == 0) {
+            return "secondary";
+        }
+        else if (this.failed > 0) {
+            return "danger";
+        }
+        return "success";    
+    }
+
+    modalShow() {
+        // console.log(modalBody);
+        // console.log(modal);
+        this.modalBody.html(this.modalHTML());
+        this.modal.modal("show");
+    }
+
+    modalHTML() {
+        let html = this.modalDefaultText();
+        let lastProject = "";
+
+        for (let processIndex = 0; processIndex < this.processes.length; processIndex++) {
+            if (this.processes[processIndex].project != lastProject) {
+                html += this.modalProjectHTML(this.processes[processIndex]);
+                lastProject = this.processes[processIndex].project;
+            }
+
+            html += this.modalProcessHTML(this.processes[processIndex]);
+        }
+
+        html += "</ul>";
+
+        return html;
+    }
+
+    modalDefaultText() {
+        if (this.processes.length == 0) {
+            return "No processes running";
+        }
+
+        return `<p>There are ${this.running} processes running, ${this.pending} pending, and ${this.failed} failed.</p>`;
+    }
+
+    modalProjectHTML(project) {
+        return `<h5>Project: ${project.project}</h5><ul>`
+    }
+
+    modalProcessHTML(process) {
+        let html = "<li>";
+
+        html += `${process.tree} ${this.modalStatusHTML(process.status)}`;
+
+        return html
+    }
+
+    modalStatusHTML(status) {
+        if (status == "Running") {
+            return `<span class="badge badge-success">${status}</span>`;
+        }
+        else if (status == "Pending") {
+            return `<span class="badge badge-secondary">${status}</span>`;
+        }
+        else if (status == "Failed") {
+            return `<span class="badge badge-danger">${status}</span>`;
+        }
     }
 }
