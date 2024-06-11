@@ -660,11 +660,12 @@ class ImportProject(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         """ Process the form and import the project """
 
-        response: dict = {}
+        response: dict = {} 
 
         project_name: str = request.POST.get('project_name')
         project_type: str = request.POST.get('project_type')
-        
+        process_fasta: bool = bool(request.POST.get('process_fasta', 0))
+
         project_path: str = os.path.join(PROJECT_PATH, project_name)
 
         # Make a list of all files, including files in zip files (Won't recursively dive into zips)
@@ -690,18 +691,7 @@ class ImportProject(LoginRequiredMixin, TemplateView):
                 response["error"] = f"Project '{project_name}' doesn't exist, but there is already a directory there."
             
             if "error" not in response:
-                # os.makedirs(project_path)
                 project = Project.create_with_dir(name=project_name, active=False)
-
-                for file in request.FILES.values():
-                    if file.name.endswith(".zip"):
-                        with zipfile.ZipFile(file, 'r') as zip:
-                            for file_name in zip.namelist():
-                                handle_import_file(zip=zip, file_name=file_name, project=project)
-                    else:
-                        handle_import_file(project=project, file=file)
-
-                response["success"] = f"Project '{project_name}' created, and all files uploaded successfully."
             
         else:
             if not Project.objects.filter(name=project_name).exists():
@@ -715,8 +705,16 @@ class ImportProject(LoginRequiredMixin, TemplateView):
                     if os.path.exists(os.path.join(project_path, file.name)):
                         response["error"] = f"One or more of the uploaded files already exists in the project directory."
             
-            if "error" not in response:
-                ...
+        if "error" not in response:
+            for file in request.FILES.values():
+                if file.name.endswith(".zip"):
+                    with zipfile.ZipFile(file, 'r') as zip:
+                        for file_name in zip.namelist():
+                            handle_import_file(zip=zip, file_name=file_name, project=project, process_fasta=process_fasta)
+                else:
+                    handle_import_file(project=project, file=file, process_fasta=process_fasta)
+
+            response["success"] = f"Project '{project_name}' created, and all files uploaded successfully."
 
         return JsonResponse(response)
     

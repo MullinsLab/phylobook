@@ -26,18 +26,13 @@ function initializeDropzone() {
                 e.stopPropagation();
 
                 var active = $("ul#type_tab a.active").attr("id");
-                console.log(active);
 
                 if (! validProjectName()) {
                     return;
                 };
 
-                console.log($("#project_name").val());
-                console.log(`Project name: ${projectName}`);
-
                 $("#project_name").val(projectName);
                 $("#project_type").val(active.split("_")[0]);
-                console.log($("#project_name").val());
 
                 myDropzone.processQueue();
             });
@@ -47,7 +42,8 @@ function initializeDropzone() {
                     alert(response.error);
                 }
                 else if (response.success) {
-                    alert(response.success);
+                    console.log("Success");
+                    window.location.href = "/";
                 }
             });
         }
@@ -57,7 +53,6 @@ function initializeDropzone() {
 
 function validProjectName() {
     projectName = $("#new_outer_project_name").val();
-    console.log(projectName);
 
     if (! projectName) {
         alert("Please enter a project name.");

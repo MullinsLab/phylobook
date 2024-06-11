@@ -4,7 +4,7 @@
 {% block header_content %}
     <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
-    <script src="{% static 'script/import_project.js' %}"></script>
+    <script src="{% static 'script/phylobook_import_project.js' %}"></script>
 {% endblock %}
 
 {% block page_content %}
@@ -20,33 +20,39 @@
         </ul>
         <div class="tab-content ">
             <div class="tab-pane active" id="1">
-        <div class="tab-content tab-container">
-            <div class="tab-pane fade tab-summary-container active show rounded-bottom border-primary border-left border-right border-bottom p-3 mb-3" id="new">
-                <div class="form-group">
-                    <label for="new_outer_project_name">New Project Name:</label>
-                    <input type="text" class="form-control" id="new_outer_project_name" placeholder="Enter project name...">
+                <div class="tab-content tab-container">
+                    <div class="tab-pane fade tab-summary-container active show rounded-bottom border-primary border-left border-right border-bottom p-3 mb-3" id="new">
+                        <div class="form-group">
+                            <label for="new_outer_project_name">New Project Name:</label>
+                            <input type="text" class="form-control" id="new_outer_project_name" placeholder="Enter project name...">
+                        </div>
+                    </div>
+                    <div class="tab-pane fade tab-summary-container rounded-bottom border-primary border-left border-bottom border-right p-3 mb-3" id="add">
+                        <div class="form-group">
+                            <label for="add_outer_project_name">Add to Project Name:</label>
+                            <select class="form-control" id="add_outer_project_name">
+                                <option value="">Select project...</option>
+                                {% for project in projects %}
+                                    <option value="{{ project }}">{{ project }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="tab-pane fade tab-summary-container rounded-bottom border-primary border-left border-bottom border-right p-3 mb-3" id="add">
-                <div class="form-group">
-                    <label for="add_outer_project_name">Add to Project Name:</label>
-                    <select class="form-control" id="add_outer_project_name">
-                        <option value="">Select project...</option>
-                        {% for project in projects %}
-                            <option value="{{ project }}">{{ project }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+
+                <form class="dropzone rounded" id="myDropzone" action="{% url 'import_project' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="project_name" name="project_name">
+                    <input type="hidden" id="project_type" name="project_type">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="process_fasta" name="process_fasta" value=1 checked>
+                        <label class="form-check-label" for="process_fasta">Process .fasta files on upload</label>
+                    </div>
+                </form>
+                <br>
+                <button id="submit-all" type="button" class="btn btn-primary">Upload files</button>
             </div>
         </div>
-
-        <form class="dropzone" id="myDropzone" action="{% url 'import_project' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="hidden" id="project_name" name="project_name">
-            <input type="hidden" id="project_type" name="project_type">
-        </form>
-        <br>
-        <button id="submit-all" type="button" class="btn btn-primary">Upload files</button>
     </div>
 
     <script type="text/javascript">

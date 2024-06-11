@@ -27,8 +27,6 @@ class processStatus {
 
                 self.setNotification();
                 self.modalBody.html(self.modalHTML());
-
-                console.log("processStatus updated");
             },
         });
     }
@@ -80,8 +78,6 @@ class processStatus {
     }
 
     modalShow() {
-        // console.log(modalBody);
-        // console.log(modal);
         this.modal.modal("show");
     }
 

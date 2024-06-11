@@ -251,7 +251,7 @@ def save_django_file_object(file: object, file_name: str) -> str:
             destination.write(chunk)
 
 
-def handle_import_file(project: Project, file_name: str=None, file: object=None, zip: zipfile.ZipFile=None) -> str:
+def handle_import_file(project: Project, file_name: str=None, file: object=None, zip: zipfile.ZipFile=None, process_fasta: bool=True) -> str:
     """ Returns the path of a file in the upload directory """
 
     path = project.files_path
@@ -273,7 +273,13 @@ def handle_import_file(project: Project, file_name: str=None, file: object=None,
     # File is a fasta file, and needs to have a Tree object created
     if file_name.endswith(".fasta"):
         tree_name: str = file_name.replace(".fasta", "")
-        tree = Tree.create_with_process(project=project, name=tree_name)
+
+        if process_fasta:
+            tree = Tree.create_with_process(project=project, name=tree_name)
+        else:
+            tree = Tree(project=project, name=tree_name)
+            tree.save()
+
         tree.type = fasta_type(tree=tree)
         tree.save()
 
