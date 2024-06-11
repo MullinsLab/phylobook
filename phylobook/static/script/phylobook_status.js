@@ -15,7 +15,7 @@ class processStatus {
     }
 
     update() {
-        let self = this;
+        let self = window.processStatus;
         $.ajax({
             url: "/projects/import_project/status",
             type: "GET",
@@ -24,7 +24,11 @@ class processStatus {
                 self.running = data.running;
                 self.pending = data.pending;
                 self.failed = data.failed;
+
                 self.setNotification();
+                self.modalBody.html(self.modalHTML());
+
+                console.log("processStatus updated");
             },
         });
     }
@@ -35,8 +39,6 @@ class processStatus {
             $("#processButton").on("click", function() {window.processStatus.modalShow();});
             this.lastCount = this.processes.length;
         };
-
-        console.log("processStatus updated");
     }
 
     buttonHTML() {
@@ -58,6 +60,10 @@ class processStatus {
     }
 
     buttonFailed() {
+        if (this.failed == 0) {
+            return "";
+        }
+        
         return `<span class="badge badge-danger">${this.failed} failed!</span>`;
     }
 
@@ -74,7 +80,6 @@ class processStatus {
     modalShow() {
         // console.log(modalBody);
         // console.log(modal);
-        this.modalBody.html(this.modalHTML());
         this.modal.modal("show");
     }
 

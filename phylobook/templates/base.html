@@ -30,7 +30,8 @@
         <script>
             $(document).ready(function() {
                 window.processStatus = new processStatus();
-                setInterval(window.processStatus.update(), {{ settings.NOTIFICATION_UPDATE_INTERVAL }});
+                window.processStatus.update();
+                setInterval(window.processStatus.update, {{ settings.NOTIFICATION_UPDATE_INTERVAL }});
             });
         </script>
 
