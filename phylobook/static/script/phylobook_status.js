@@ -37,6 +37,8 @@ class processStatus {
         if (this.lastCount === undefined || this.lastCount != this.processes.length) {
             $("#processNotification").html(this.buttonHTML());
             $("#processButton").on("click", function() {window.processStatus.modalShow();});
+            $("#processModalRefreshButton").on("click", function() {window.processStatus.update();});
+            
             this.lastCount = this.processes.length;
         };
     }
@@ -63,7 +65,7 @@ class processStatus {
         if (this.failed == 0) {
             return "";
         }
-        
+
         return `<span class="badge badge-danger">${this.failed} failed!</span>`;
     }
 
@@ -103,10 +105,10 @@ class processStatus {
 
     modalDefaultText() {
         if (this.processes.length == 0) {
-            return "No processes running";
+            return "No import processes running";
         }
 
-        return `<p>There are ${this.running} processes running, ${this.pending} pending, and ${this.failed} failed.</p>`;
+        return `<p>There are ${this.running} import processes running, ${this.pending} pending, and ${this.failed} failed.</p>`;
     }
 
     modalProjectHTML(project) {
