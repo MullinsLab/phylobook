@@ -19,6 +19,8 @@ services:
       - /bin/bash
       - -c
       - |
+        cron
+        crontab /phylobook/crontab_process_fasta
         python manage.py collectstatic --noinput
         gunicorn -w 2 -b 0.0.0.0:${WEB_PORT} phylobook.wsgi:application
 
