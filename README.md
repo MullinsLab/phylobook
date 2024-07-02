@@ -97,6 +97,7 @@ Edit settings/saml.py and add your institution's SAML configuration and certific
 `nano settings/saml.py`
 
 ---
+Phylobook can be run in two different modes, a developer mode and a production mode.  Which mode is used is controlled by which docker-compose file is used.  To run in production mode, copy docker-compose-gunicorn.yml to docker-compose.yml `cp docker-compose-gunicorn.yml docker-compose.yml`.  To use developer mode, copy docker-compose-runserver.yml to docker-compose.yml `cp docker-compose-runserver.yml docker-compose.yml`.  If you do not have a good reason to choose one mode over the other, it is best to run it in production mode.  Developer mode is not secure.
 
 Build and deploy the containers
 
