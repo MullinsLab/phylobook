@@ -14,6 +14,10 @@ In your installation folder, enter the following commands in a terminal shell
 
 `git clone https://github.com/MullinsLab/phylobook.git`
 
+`git submodule init`
+
+`git submodule update`
+
 `cd phylobook`
 
 Create .env by copying .env.TEMPLATE
