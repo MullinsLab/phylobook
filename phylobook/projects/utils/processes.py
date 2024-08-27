@@ -5,7 +5,6 @@ log = logging.getLogger('app')
 
 from django.conf import settings as django_settings
 
-
 from phylobook.projects.models import Project, Process
 
 

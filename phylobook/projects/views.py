@@ -652,7 +652,7 @@ class ExtractToZip(LoginRequredSimpleErrorMixin, View):
 
 
 class ImportProject(LoginRequiredMixin, TemplateView):
-    """ Show form for imporitng a project, and process it's results """
+    """ Show form for imporitng a project, and process its results """
 
     template_name = "upload_files.html"
 
