@@ -368,7 +368,7 @@ def downloadProjectFiles(request, name):
     if project and (request.user.has_perm('projects.change_project', project) or request.user.has_perm('projects.view_project', project)):
         response = HttpResponse(content_type='application/x-gzip')
         response['Content-Disposition'] = 'attachment; filename=' + name + '-' + time.strftime("%Y%m%d-%H%M%S") + '.tar.gz'
-        tarred = tarfile.open(fileobj=response, mode='w:gz')
+        tarred = tarfile.open(fileobj=response, mode='w:gz', compresslevel=1)
         tarred.add(os.path.join(PROJECT_PATH, name), arcname=name)
         tarred.close()
     else:
